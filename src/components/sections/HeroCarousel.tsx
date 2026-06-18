@@ -76,78 +76,17 @@ export function HeroCarousel() {
   }, [current, animating]);
 
   return (
-    <section
-      style={{
-        position: "relative",
-        height: 580,
-        overflow: "hidden",
-        background: slide.bg,
-        transition: "background 0.7s ease",
-      }}
-      aria-label="Hero carousel"
-    >
+    <section className="hero-section" style={{ background: slide.bg }} aria-label="Hero carousel">
       {/* Pattern canvas */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          opacity: 0.07,
-          pointerEvents: "none",
-        }}
-      />
+      <canvas ref={canvasRef} className="hero-canvas" />
 
       {/* Decorative rings */}
-      <div
-        style={{
-          position: "absolute",
-          right: -80,
-          top: -80,
-          width: 500,
-          height: 500,
-          borderRadius: "50%",
-          border: `1.5px solid ${slide.accent}22`,
-          transition: "border-color 0.7s",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: 50,
-          top: 50,
-          width: 330,
-          height: 330,
-          borderRadius: "50%",
-          border: `1.5px solid ${slide.accent}33`,
-          transition: "border-color 0.7s",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: -60,
-          bottom: -60,
-          width: 220,
-          height: 220,
-          borderRadius: "50%",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}
-      />
+      <div className="hero-ring large" style={{ borderColor: `${slide.accent}22` }} />
+      <div className="hero-ring medium" style={{ borderColor: `${slide.accent}33` }} />
+      <div className="hero-ring small" />
 
       {/* Content */}
-      <div
-        className="container"
-        style={{
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
+      <div className="container hero-container">
         {/* Tag line */}
         <div
           style={{
@@ -181,96 +120,17 @@ export function HeroCarousel() {
         </div>
 
         {/* Heading */}
-        <h1
-          key={`h-${current}`}
-          style={{
-            fontSize: "clamp(2.4rem,5vw,4rem)",
-            fontWeight: 900,
-            color: "#fff",
-            lineHeight: 1.08,
-            fontFamily: "Georgia,'Times New Roman',serif",
-            marginBottom: 18,
-            whiteSpace: "pre-line",
-            maxWidth: 640,
-            animation: "slideUp 0.6s ease forwards",
-          }}
-        >
-          {slide.heading}
-        </h1>
+        <h1 key={`h-${current}`} className="hero-heading">{slide.heading}</h1>
 
         {/* Sub */}
-        <p
-          key={`s-${current}`}
-          style={{
-            fontSize: "1.05rem",
-            color: "rgba(255,255,255,0.8)",
-            maxWidth: 520,
-            lineHeight: 1.72,
-            marginBottom: 36,
-            animation: "slideUp 0.6s ease 0.1s both",
-          }}
-        >
-          {slide.sub}
-        </p>
+        <p key={`s-${current}`} className="hero-sub">{slide.sub}</p>
 
         {/* CTAs */}
-        <div
-          style={{
-            display: "flex",
-            gap: 14,
-            flexWrap: "wrap",
-            animation: "slideUp 0.6s ease 0.2s both",
-          }}
-        >
+        <div className="hero-ctas">
           {slide.cta === "Book Appointment" ? (
-            <button
-              onClick={() => openModal()}
-              style={{
-                padding: "14px 32px",
-                background: slide.accent,
-                color: "#0D1F1A",
-                border: "none",
-                borderRadius: 4,
-                fontSize: "0.92rem",
-                fontWeight: 800,
-                cursor: "pointer",
-                letterSpacing: "0.05em",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              {slide.cta}
-            </button>
+            <button onClick={() => openModal()} className="hero-cta" style={{ background: slide.accent }}>{slide.cta}</button>
           ) : (
-            <Link
-              href={slide.ctaHref}
-              style={{
-                display: "inline-block",
-                padding: "14px 32px",
-                background: slide.accent,
-                color: "#0D1F1A",
-                borderRadius: 4,
-                fontSize: "0.92rem",
-                fontWeight: 800,
-                letterSpacing: "0.05em",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              {slide.cta}
-            </Link>
+            <Link href={slide.ctaHref} className="hero-cta" style={{ background: slide.accent }}>{slide.cta}</Link>
           )}
           <a
             href="tel:+233322298428"
@@ -311,49 +171,14 @@ export function HeroCarousel() {
         }}
       >
         {HERO_SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            style={{
-              width: i === current ? 28 : 8,
-              height: 8,
-              borderRadius: 4,
-              background:
-                i === current ? slide.accent : "rgba(255,255,255,0.32)",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              transition: "all 0.4s ease",
-            }}
-          />
+          <button key={i} onClick={() => goTo(i)} aria-label={`Go to slide ${i + 1}`} className={`hero-dot ${i === current ? 'active' : ''}`} style={{ background: i === current ? slide.accent : 'rgba(255,255,255,0.32)' }} />
         ))}
       </div>
 
       {/* Scroll hint */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 44,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          opacity: 0.4,
-          zIndex: 3,
-        }}
-      >
-        <span
-          style={{
-            color: "#fff",
-            fontSize: "0.62rem",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-          }}
-        >
-          Scroll
-        </span>
-        <div style={{ width: 1, height: 36, background: "#fff" }} />
+      <div className="hero-scrollhint">
+        <span>Scroll</span>
+        <div />
       </div>
     </section>
   );

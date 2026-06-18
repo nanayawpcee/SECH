@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/appointment":{},"/contact":{},"/news":{},"/news/[slug]":{},"/services/[slug]":{},"/organogram":{},"/services":{},"/about":{}}}
+{"version":1,"functions":{"/about":{},"/appointment":{},"/contact":{},"/news":{},"/services/[slug]":{},"/organogram":{},"/services":{},"/news/[slug]":{}}}

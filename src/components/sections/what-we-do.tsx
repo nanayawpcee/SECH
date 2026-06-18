@@ -1,63 +1,72 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const slides = [
   {
-    title: 'Traditional West African Nutrition',
-    description: 'Discover how traditional fonio grain helps manage diabetes naturally.',
-    image: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=800&q=80',
+    title: "Traditional West African Nutrition",
+    description:
+      "Discover how traditional fonio grain helps manage diabetes naturally.",
+    image:
+      "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=800&q=80",
   },
   {
-    title: 'The Power of Fonio',
-    description: 'Ancient grain, modern solution for blood sugar management.',
-    image: 'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=800&q=80',
+    title: "The Power of Fonio",
+    description: "Ancient grain, modern solution for blood sugar management.",
+    image:
+      "https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=800&q=80",
   },
   {
-    title: 'Healthcare Partnership',
-    description: 'Join a network of professionals transforming diabetes care in Ghana.',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
+    title: "Healthcare Partnership",
+    description:
+      "Join a network of professionals transforming diabetes care in Ghana.",
+    image:
+      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80",
   },
   {
-    title: 'Measurable Impact',
-    description: 'Track patient progress and earn rewards for positive health outcomes.',
-    image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80',
+    title: "Measurable Impact",
+    description:
+      "Track patient progress and earn rewards for positive health outcomes.",
+    image:
+      "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80",
   },
   {
-    title: 'Community Wellness',
-    description: 'Empowering communities through nutrition education and support.',
-    image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80',
+    title: "Community Wellness",
+    description:
+      "Empowering communities through nutrition education and support.",
+    image:
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80",
   },
-]
+];
 
 export function WhatWeDo() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length)
-  }, [])
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, []);
 
   useEffect(() => {
-    if (isPaused) return
-    const interval = setInterval(nextSlide, 4000)
-    return () => clearInterval(interval)
-  }, [isPaused, nextSlide])
+    if (isPaused) return;
+    const interval = setInterval(nextSlide, 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, nextSlide]);
 
   return (
     <section className="py-12 sm:py-16 lg:py-24 bg-background overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <motion.div 
+        <motion.div
           className="text-center mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 mb-3 sm:mb-4"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -65,15 +74,18 @@ export function WhatWeDo() {
             transition={{ delay: 0.2 }}
           >
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs sm:text-sm font-medium text-primary">WHAT WE DO</span>
+            <span className="text-xs sm:text-sm font-medium text-primary">
+              WHAT WE DO
+            </span>
           </motion.div>
           <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-balance px-2">
-            Empowering Professionals to Lead<br className="hidden sm:inline" /> the Future of Diabetes Care
+            Empowering Professionals to Lead
+            <br className="hidden sm:inline" /> the Future of Diabetes Care
           </h2>
         </motion.div>
 
         {/* Slider */}
-        <motion.div 
+        <motion.div
           className="relative max-w-5xl mx-auto overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
@@ -83,15 +95,12 @@ export function WhatWeDo() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Slides Container */}
-          <div 
+          <div
             className="flex transition-transform duration-700 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {slides.map((slide, index) => (
-              <div 
-                key={index} 
-                className="w-full flex-shrink-0"
-              >
+              <div key={index} className="w-full flex-shrink-0">
                 <div className="relative aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9]">
                   <img
                     src={slide.image}
@@ -130,10 +139,10 @@ export function WhatWeDo() {
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={cn(
-                  'h-1 sm:h-1.5 rounded-full transition-all duration-300',
-                  currentSlide === index 
-                    ? 'w-6 sm:w-8 bg-white' 
-                    : 'w-1 sm:w-1.5 bg-white/50 hover:bg-white/70'
+                  "h-1 sm:h-1.5 rounded-full transition-all duration-300",
+                  currentSlide === index
+                    ? "w-6 sm:w-8 bg-white"
+                    : "w-1 sm:w-1.5 bg-white/50 hover:bg-white/70",
                 )}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
@@ -144,5 +153,5 @@ export function WhatWeDo() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
