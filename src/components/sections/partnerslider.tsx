@@ -234,21 +234,6 @@ export function Partners() {
       }}
     >
       {/* Keyframes */}
-      <style>{`
-        @keyframes scrollLeft {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-        @keyframes scrollRight {
-          0%   { transform: translateX(-33.333%); }
-          100% { transform: translateX(0); }
-        }
-        .logo-chip:hover {
-          background: rgba(255,255,255,0.1) !important;
-          border-color: var(--accent) !important;
-          transform: translateY(-2px);
-        }
-      `}</style>
 
       <RowLabel>Accreditations</RowLabel>
       <SliderRow

@@ -126,12 +126,6 @@ export default function AboutPage() {
                     <div className="icon">
                       <img src={v.icon} alt={v.title} />
                     </div>
-                    <style>{`
-                      .icon img {
-                        width: 10%;
-                        height: auto;
-                      }
-                    `}</style>
                     <div className="title">{v.title}</div>
                     <div className="desc">{v.desc}</div>
                   </div>

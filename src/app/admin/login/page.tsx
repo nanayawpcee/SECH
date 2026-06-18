@@ -25,44 +25,42 @@ export default function AdminLoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
 
-
-// 3. Update the handleSubmit function to look exactly like this:
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!identifier.trim() || !password.trim()) {
-    setError("Please enter your username/email and password.");
-    triggerShake();
-    return;
-  }
-  
-  setSubmitting(true);
-  setError("");
-
-  try {
-    // ✅ 1. Call the login function from AuthContext. 
-    // This securely talks to your API route AND updates your global React state/session storage instantly.
-    const loginError = await login(identifier.trim(), password.trim());
-
-    if (loginError) {
-      setSubmitting(false);
-      setError(loginError);
+  // 3. Update the handleSubmit function to look exactly like this:
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!identifier.trim() || !password.trim()) {
+      setError("Please enter your username/email and password.");
       triggerShake();
       return;
     }
 
-    // ✅ 2. Clear submitting state on success
-    setSubmitting(false);
+    setSubmitting(true);
+    setError("");
 
-    // ✅ 3. Force a hard window location rewrite to /admin/dashboard 
-    // to completely flush Next.js routing state and force it to re-read your fresh session storage.
-    window.location.replace("/admin");
+    try {
+      // ✅ 1. Call the login function from AuthContext.
+      // This securely talks to your API route AND updates your global React state/session storage instantly.
+      const loginError = await login(identifier.trim(), password.trim());
 
-  } catch (err) {
-    setSubmitting(false);
-    setError("A network error occurred.");
-    triggerShake();
-  }
-};
+      if (loginError) {
+        setSubmitting(false);
+        setError(loginError);
+        triggerShake();
+        return;
+      }
+
+      // ✅ 2. Clear submitting state on success
+      setSubmitting(false);
+
+      // ✅ 3. Force a hard window location rewrite to /admin/dashboard
+      // to completely flush Next.js routing state and force it to re-read your fresh session storage.
+      window.location.replace("/admin");
+    } catch (err) {
+      setSubmitting(false);
+      setError("A network error occurred.");
+      triggerShake();
+    }
+  };
 
   const triggerShake = () => {
     setShake(true);
@@ -242,15 +240,6 @@ const handleSubmit = async (e: React.FormEvent) => {
               transition: "var(--transition)",
             }}
           >
-            {shake && (
-              <style>{`
-                @keyframes shake {
-                  0%, 100% { transform: translateX(0); }
-                  20%, 60% { transform: translateX(-6px); }
-                  40%, 80% { transform: translateX(6px); }
-                }
-              `}</style>
-            )}
 
             <h2
               style={{

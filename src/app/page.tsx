@@ -31,7 +31,7 @@ async function getPosts() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: GET_POSTS_QUERY }),
-      next: { revalidate: 60 } // Optional: caches data and checks for updates every 60 seconds
+      next: { revalidate: 60 }, // Optional: caches data and checks for updates every 60 seconds
     });
     const { data } = await res.json();
     return data?.posts?.nodes || [];
