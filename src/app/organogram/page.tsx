@@ -3,6 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { OrgChart } from "@/components/ui/OrgChart";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
+import { ORG_CHART, countNodes, findPostHolder } from "@/lib/org-chart";
 
 export const metadata: Metadata = {
   title: "Organogram",
@@ -10,13 +11,59 @@ export const metadata: Metadata = {
     "The organisational structure of St. Elizabeth Catholic Hospital — Goaso Diocesan Health Service.",
 };
 
+/** Leadership tier, in the order it appears on the diocesan chart. */
+const LEADERSHIP = [
+  {
+    label: "Bishop of Goaso Diocese",
+    desc: "Supreme spiritual and administrative authority over all diocesan health institutions.",
+  },
+  {
+    label: "Diocesan Health Service Board",
+    desc: "Governance board setting policy and strategic direction for diocesan health services.",
+  },
+  {
+    label: "Director of Health Service",
+    desc: "Directs the diocesan health service and oversees all member institutions.",
+  },
+  {
+    label: "Hospital Manager",
+    roleKey: "Hospital Manager",
+    desc: "Heads the hospital day to day, with the four departmental leads reporting in.",
+  },
+  {
+    label: "Medical Director",
+    roleKey: "AG. Medical Director",
+    desc: "Leads clinical services, specialist care, diagnostics and public health programmes.",
+  },
+  {
+    label: "Administrator",
+    desc: "Runs HR, finance, estates, logistics, ICT, procurement and quality assurance.",
+  },
+  {
+    label: "Nurse Manager",
+    roleKey: "Nurse Manager",
+    desc: "Oversees nurse specialists, nurses, midwives and ward assistants.",
+  },
+  {
+    label: "Chaplain",
+    roleKey: "Chaplain",
+    desc: "Provides counselling and pastoral care to patients, staff and families.",
+  },
+  {
+    label: "Internal Auditor",
+    desc: "Reports independently of hospital management, directly to the Director of Health Service.",
+  },
+];
+
 export default function OrganogramPage() {
   return (
     <>
       <PageHero
         tag="Our Structure"
         title="Organisational Chart"
-        subtitle="The governance and operational structure of St. Elizabeth Catholic Hospital under the Goaso Diocesan Health Service."
+        subtitle={`The governance and operational structure of St. Elizabeth Catholic Hospital under the Goaso Diocesan Health Service — ${countNodes(
+          ORG_CHART,
+        )} posts across six reporting lines.`}
       />
 
       {/* Intro strip */}
@@ -31,90 +78,63 @@ export default function OrganogramPage() {
                 marginBottom: "3rem",
               }}
             >
-              {[
-                {
-                  icon: "⛪",
-                  label: "Bishop of Goaso Diocese",
-                  desc: "Supreme spiritual and administrative authority over all diocesan health institutions.",
-                },
-                {
-                  icon: "🏛️",
-                  label: "Health Service Board",
-                  desc: "Governance board that sets policy and strategic direction for diocesan health services.",
-                },
-                {
-                  icon: "🩺",
-                  label: "Medical Director",
-                  desc: "Leads all clinical operations, specialist services, and public health programmes.",
-                },
-                {
-                  icon: "📋",
-                  label: "Administrator",
-                  desc: "Manages HR, finance, logistics, transport, facilities, and all support departments.",
-                },
-                {
-                  icon: "👩‍⚕️",
-                  label: "Nurse Manager",
-                  desc: "Oversees nursing staff, midwives, nurse specialists, and ward assistants.",
-                },
-                {
-                  icon: "✝️",
-                  label: "Chaplain",
-                  desc: "Provides pastoral care and spiritual support to patients, staff, and their families.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  style={{
-                    background: "var(--off-white)",
-                    border: "1.5px solid #E2EBE7",
-                    borderRadius: 8,
-                    padding: "1.25rem",
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 10 }}>
-                    {item.icon}
-                  </div>
+              {LEADERSHIP.map((item) => {
+                const holder = findPostHolder(item.roleKey);
+                return (
                   <div
+                    key={item.label}
                     style={{
-                      fontWeight: 700,
-                      color: "var(--text-dark)",
-                      fontSize: "0.88rem",
-                      marginBottom: 5,
-                      fontFamily: "Georgia,serif",
+                      background: "var(--off-white)",
+                      border: "1.5px solid #E2EBE7",
+                      borderRadius: 8,
+                      padding: "1.25rem",
                     }}
                   >
-                    {item.label}
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        color: "var(--text-dark)",
+                        fontSize: "0.88rem",
+                        marginBottom: holder ? 2 : 5,
+                        fontFamily: "Georgia,serif",
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    {holder && (
+                      <div
+                        style={{
+                          color: "var(--primary-light)",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          marginBottom: 5,
+                        }}
+                      >
+                        {holder.name}
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        color: "var(--text-light)",
+                        fontSize: "0.8rem",
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      {item.desc}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      color: "var(--text-light)",
-                      fontSize: "0.8rem",
-                      lineHeight: 1.65,
-                    }}
-                  >
-                    {item.desc}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </AnimateIn>
         </div>
       </section>
 
       {/* Org chart */}
-      <section style={{ background: "#fff", padding: "0 2rem 5rem" }}>
+      <section className="organogram-section" style={{ background: "#fff" }}>
         <div className="container" style={{ maxWidth: "100%" }}>
           <AnimateIn>
-            <div
-              style={{
-                background: "var(--off-white)",
-                border: "1.5px solid #D6E8DF",
-                borderRadius: 12,
-                padding: "2rem",
-                overflowX: "auto",
-              }}
-            >
+            <div className="organogram-shell">
               <OrgChart />
             </div>
           </AnimateIn>

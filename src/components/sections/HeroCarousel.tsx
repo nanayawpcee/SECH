@@ -76,13 +76,23 @@ export function HeroCarousel() {
   }, [current, animating]);
 
   return (
-    <section className="hero-section" style={{ background: slide.bg }} aria-label="Hero carousel">
+    <section
+      className="hero-section"
+      style={{ background: slide.bg }}
+      aria-label="Hero carousel"
+    >
       {/* Pattern canvas */}
       <canvas ref={canvasRef} className="hero-canvas" />
 
       {/* Decorative rings */}
-      <div className="hero-ring large" style={{ borderColor: `${slide.accent}22` }} />
-      <div className="hero-ring medium" style={{ borderColor: `${slide.accent}33` }} />
+      <div
+        className="hero-ring large"
+        style={{ borderColor: `${slide.accent}22` }}
+      />
+      <div
+        className="hero-ring medium"
+        style={{ borderColor: `${slide.accent}33` }}
+      />
       <div className="hero-ring small" />
 
       {/* Content */}
@@ -120,17 +130,33 @@ export function HeroCarousel() {
         </div>
 
         {/* Heading */}
-        <h1 key={`h-${current}`} className="hero-heading">{slide.heading}</h1>
+        <h1 key={`h-${current}`} className="hero-heading">
+          {slide.heading}
+        </h1>
 
         {/* Sub */}
-        <p key={`s-${current}`} className="hero-sub">{slide.sub}</p>
+        <p key={`s-${current}`} className="hero-sub">
+          {slide.sub}
+        </p>
 
         {/* CTAs */}
         <div className="hero-ctas">
           {slide.cta === "Book Appointment" ? (
-            <button onClick={() => openModal()} className="hero-cta" style={{ background: slide.accent }}>{slide.cta}</button>
+            <button
+              onClick={() => openModal()}
+              className="hero-cta"
+              style={{ background: slide.accent }}
+            >
+              {slide.cta}
+            </button>
           ) : (
-            <Link href={slide.ctaHref} className="hero-cta" style={{ background: slide.accent }}>{slide.cta}</Link>
+            <Link
+              href={slide.ctaHref}
+              className="hero-cta"
+              style={{ background: slide.accent }}
+            >
+              {slide.cta}
+            </Link>
           )}
           <a
             href="tel:+233322298428"
@@ -171,7 +197,16 @@ export function HeroCarousel() {
         }}
       >
         {HERO_SLIDES.map((_, i) => (
-          <button key={i} onClick={() => goTo(i)} aria-label={`Go to slide ${i + 1}`} className={`hero-dot ${i === current ? 'active' : ''}`} style={{ background: i === current ? slide.accent : 'rgba(255,255,255,0.32)' }} />
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`hero-dot ${i === current ? "active" : ""}`}
+            style={{
+              background:
+                i === current ? slide.accent : "rgba(255,255,255,0.32)",
+            }}
+          />
         ))}
       </div>
 

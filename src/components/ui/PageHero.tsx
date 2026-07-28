@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 
 interface Props {
@@ -25,12 +26,23 @@ export function PageHero({
         minHeight: "40vh",
         display: "flex",
         alignItems: "center",
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        overflow: "hidden",
       }}
     >
+      {/* Rendered via next/image rather than a CSS background so the hero —
+          the largest asset on these pages — gets responsive AVIF/WebP sizing.
+          Decorative: the heading carries the meaning, so alt is empty. */}
+      {backgroundImage && (
+        <Image
+          src={backgroundImage}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center", zIndex: 0 }}
+        />
+      )}
+
       {/* Dark overlay */}
       {backgroundImage && (
         <div

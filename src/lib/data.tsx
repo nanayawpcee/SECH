@@ -32,7 +32,7 @@ export const SERVICES = [
     slug: "nutrition",
     icon: "/icons/nutrition.png",
     title: "Nutrition & Food Rehabilitation",
-    image: "/images/nutrition.png",
+    image: "/images/nutrition.jpg",
     shortDesc:
       "Personalised dietary advice and meal planning for optimal health.",
     fullDesc:
@@ -144,7 +144,7 @@ export const SERVICES = [
     slug: "cwc",
     icon: "/icons/cwc.png",
     title: "Child Welfare Clinic (CWC)",
-    image: "/images/cwc.png",
+    image: "/images/cwc.jpg",
     shortDesc:
       "Comprehensive child health services from immunisation to growth monitoring.",
     fullDesc:
@@ -233,7 +233,7 @@ export const SERVICES = [
   {
     slug: "outpatient",
     icon: "/icons/outpatient.png",
-    image: "/images/opd.png",
+    image: "/images/opd.jpg",
     title: "Out-Patient Services",
     shortDesc:
       "General consultations and specialist clinics without admission.",
@@ -324,7 +324,7 @@ export const NEWS = [
     date: "May 2026",
     tag: "Event",
     title: "Annual Community Health Outreach Drive",
-    image: "/images/aeriel.jpeg",
+    image: "/images/aeriel.jpg",
     excerpt:
       "Free screenings and health education for over 2,000 residents across the Tano North District.",
     body: "St. Elizabeth Catholic Hospital held its annual Community Health Outreach Drive in May 2026, reaching over 2,000 residents across five communities in the Tano North District. Services included free blood pressure screening, blood glucose testing, eye examinations, and health education talks on malaria prevention, maternal health, and nutrition.",
@@ -422,7 +422,7 @@ export const PHOTOS = [
       "Our in-patient wards are equipped with modern beds, monitoring systems, and round-the-clock nursing care.",
     color: "#0A4F3C",
     icon: "🏥",
-    image: "/images/aeriel.jpeg",
+    image: "/images/aeriel.jpg",
     pattern: "cross",
     accent: "#E8B84B",
   },

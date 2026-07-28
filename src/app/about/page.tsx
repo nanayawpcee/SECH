@@ -17,19 +17,19 @@ const MILESTONES = [
     year: "EARLY 1955",
     title: "Humble Beginnings",
     desc: "The hospital’s origins trace back to early 1955, when a temporary camp was established on the current hospital grounds. This shelter initially served as an isolation facility to care for local victims of a smallpox outbreak.",
-    image: "/images/milestone/gen_photo.png",
+    image: "/images/milestone/gen_photo.jpg",
   },
   {
     year: "LATE 1955",
     title: "A Community Challenge",
     desc: "Later that year, local Mass Education Officer Mr. Dwamena suggested transforming the site into a permanent clinic. The Chief and Elders petitioned the Catholic Bishop of Kumasi, Rt. Rev. Van de Bronk. The Bishop issued a challenge: the hospital and its resident doctor would go to whichever community—Hwidiem or Agroyesum—could first provide decent accommodation for the physician. Under the leadership of Nana Akwasi Nyantakyi, the Hwidiem community rallied together, donating cocoa and maize to fund and secure the site and housing.",
-    image: "/images/milestone/gen_photo.png",
+    image: "/images/milestone/gen_photo.jpg",
   },
   {
     year: "1956",
     title: "The First Doctor & Official Opening",
     desc: "On November 28, 1955, Dr. J. A. Vervoorn, a young Dutch physician, arrived in Hwidiem. The smallpox shed was quickly converted into a dispensary, and construction began on a four-room block (the site of the current female ward). The clinic was officially opened on December 3, 1956, and began expanding under the management of dedicated Dutch medical organizations (Memisa).",
-    image: "/images/milestone/gen_photo.png",
+    image: "/images/milestone/gen_photo.jpg",
   },
   {
     year: "1970s-1980s",
@@ -42,7 +42,7 @@ const MILESTONES = [
     year: "2000s",
     title: "Modern Era & Looking Ahead",
     desc: "Through the decades, the hospital has transformed from a single-room dispensary into a robust medical institution. This growth has been sustained by the dedication of its staff, the Government of Ghana, local benefactors, and international partner agencies. Today, the hospital remains committed to continuous growth and serving the community with faith and excellence.",
-    image: "/images/milestone/2000s.png",
+    image: "/images/milestone/2000s.jpg",
   },
   {
     year: "2023",

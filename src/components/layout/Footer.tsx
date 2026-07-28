@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { SITE } from "@/lib/data";
 
 const FOOTER_LINKS = {
@@ -52,9 +53,11 @@ export function Footer() {
                   flexShrink: 0,
                 }}
               >
-                <img
-                  src="/images/logo.svg"
+                <Image
+                  src="/images/logo.png"
                   alt="St. Elizabeth Catholic Hospital Logo"
+                  width={36}
+                  height={36}
                   style={{
                     width: "100%",
                     height: "100%",

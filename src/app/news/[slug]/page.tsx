@@ -1,12 +1,37 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
+import sanitizeHtml from "sanitize-html";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 
 interface Props {
   params: { slug: string };
+}
+
+// WP content is rendered raw via dangerouslySetInnerHTML below — strip
+// scripts/event handlers/js: URIs before it ever reaches the client.
+// img/figure/figcaption are dropped rather than allowed-then-hidden, since
+// the featured image is already shown separately above the article body.
+function sanitizeArticleContent(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: [
+      "p", "br", "hr",
+      "strong", "b", "em", "i", "u", "s", "sub", "sup",
+      "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li",
+      "blockquote", "a", "span",
+    ],
+    allowedAttributes: {
+      a: ["href", "title", "target", "rel"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    transformTags: {
+      a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer" }),
+    },
+  });
 }
 
 async function getPost(slug: string) {
@@ -120,9 +145,12 @@ export default async function ArticlePage({ params }: Props) {
               }}
             >
               {article.featuredImage?.node?.sourceUrl && (
-                <img
+                <Image
                   src={article.featuredImage.node.sourceUrl}
-                  alt={article.title}
+                  alt={article.featuredImage.node.altText || article.title}
+                  width={400}
+                  height={300}
+                  sizes="20vw"
                   style={{ width: "20%", height: "auto", borderRadius: "8px" }}
                 />
               )}
@@ -158,15 +186,13 @@ export default async function ArticlePage({ params }: Props) {
               </div>
             </div>
 
-            {/* Added Tailwind arbitrary classes to completely filter out media injections from WP */}
             <div
-              className="[&_img]:hidden [&_figure]:hidden [&_figcaption]:hidden"
               style={{
                 color: "var(--text-mid)",
                 lineHeight: 1.85,
                 fontSize: "1.05rem",
               }}
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content) }}
             />
 
             <div

@@ -1,23 +1,26 @@
 "use client";
 
+import Image from "next/image";
+
 const ACCREDITATIONS = [
-  { name: "Ministry of Health",            logo: "/partnerlogos/moh.png" },
-  { name: "CHAG",                           logo: "/partnerlogos/chag.png" },
-  { name: "Ghana Health Service",           logo: "/partnerlogos/ghs.png" },
-  { name: "NHIS",                           logo: "/partnerlogos/nhis.png" },
-  { name: "Catholic Health Service Trust",  logo: "/partnerlogos/chst.png" },
+  { name: "Ministry of Health", logo: "/partnerlogos/moh.png" },
+  { name: "CHAG", logo: "/partnerlogos/chag.png" },
+  { name: "Ghana Health Service", logo: "/partnerlogos/ghs.png" },
+  { name: "NHIS", logo: "/partnerlogos/nhis.png" },
+  { name: "Catholic Health Service Trust", logo: "/partnerlogos/chst.png" },
 ];
 
 const CORPORATE_PARTNERS = [
-  { name: "Newmont",                                   logo: "/partnerlogos/newmont.png" },
-  { name: "Nationwide Insurance",                      logo: "/partnerlogos/nwi.jpg" },
-  { name: "NEDCO/VRA",                                 logo: "/partnerlogos/nedco.jpg" },
-  { name: "Cornelia Connelly of the Holy Child Jesus", logo: "/partnerlogos/cornelia.jpg" },
-  { name: "Church of Pentecost",                       logo: "/partnerlogos/cop.png" },
+  { name: "Newmont", logo: "/partnerlogos/newmont.png" },
+  { name: "Nationwide Insurance", logo: "/partnerlogos/nwi.jpg" },
+  { name: "NEDCO/VRA", logo: "/partnerlogos/nedco.jpg" },
+  {
+    name: "Cornelia Connelly of the Holy Child Jesus",
+    logo: "/partnerlogos/cornelia.jpg",
+  },
+  { name: "Church of Pentecost", logo: "/partnerlogos/cop.png" },
 ];
 
-// ---------------------------------------------------------------------------
-// Helpers (monogram fallback — used when logo image is missing)
 // ---------------------------------------------------------------------------
 
 function getInitials(name: string) {
@@ -27,8 +30,13 @@ function getInitials(name: string) {
 }
 
 const CHIP_ACCENTS = [
-  "#c9a84c", "#4c9ac9", "#84c94c",
-  "#c94c84", "#4cc9a8", "#c97a4c", "#a84cc9",
+  "#c9a84c",
+  "#4c9ac9",
+  "#84c94c",
+  "#c94c84",
+  "#4cc9a8",
+  "#c97a4c",
+  "#a84cc9",
 ];
 function chipColor(name: string) {
   let h = 0;
@@ -70,9 +78,11 @@ function LogoChip({
         flexShrink: 0,
       }}
     >
-      {/* Logo image — falls back to monogram if src fails */}
-      <img
-        src={`/images/${logo}`}
+      {/* Logo image — falls back to monogram if src fails.
+          These render at ~32px but the source files run to 200KB+, so they go
+          through next/image rather than being served raw. */}
+      <Image
+        src={`/images${logo}`}
         alt={name}
         width={size}
         height={size}
@@ -196,7 +206,12 @@ function RowLabel({ children }: { children: React.ReactNode }) {
         }}
       >
         <div
-          style={{ width: 24, height: 1, background: "var(--accent)", opacity: 0.6 }}
+          style={{
+            width: 24,
+            height: 1,
+            background: "var(--accent)",
+            opacity: 0.6,
+          }}
         />
         <span
           style={{
@@ -210,7 +225,12 @@ function RowLabel({ children }: { children: React.ReactNode }) {
           {children}
         </span>
         <div
-          style={{ width: 24, height: 1, background: "var(--accent)", opacity: 0.6 }}
+          style={{
+            width: 24,
+            height: 1,
+            background: "var(--accent)",
+            opacity: 0.6,
+          }}
         />
       </div>
     </div>
@@ -240,7 +260,7 @@ export function Partners() {
         items={ACCREDITATIONS}
         variant="accreditation"
         direction="left"
-        duration={28}
+        duration={10}
       />
 
       <div style={{ marginTop: "0.5rem" }}>
@@ -250,7 +270,7 @@ export function Partners() {
         items={CORPORATE_PARTNERS}
         variant="corporate"
         direction="right"
-        duration={38}
+        duration={10}
       />
     </div>
   );

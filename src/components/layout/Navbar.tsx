@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
 import { SITE } from "@/lib/data";
@@ -72,9 +73,12 @@ export function Navbar() {
                 flexShrink: 0,
               }}
             >
-              <img
-                src="/images/logo.svg"
+              <Image
+                src="/images/logo.png"
                 alt="St. Elizabeth Catholic Hospital Logo"
+                width={65}
+                height={65}
+                priority
                 style={{
                   width: "100%",
                   height: "100%",

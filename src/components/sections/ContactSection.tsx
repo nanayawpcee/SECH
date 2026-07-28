@@ -88,7 +88,9 @@ export function ContactSection() {
                 <div>
                   <div className="contact-info-label">{item.label}</div>
                   {item.href ? (
-                    <a href={item.href} className="contact-link">{item.value}</a>
+                    <a href={item.href} className="contact-link">
+                      {item.value}
+                    </a>
                   ) : (
                     <div className="contact-link">{item.value}</div>
                   )}
@@ -104,8 +106,27 @@ export function ContactSection() {
                 <div className="contact-success">
                   <div className="emoji">✅</div>
                   <h3>Message Sent!</h3>
-                  <p>Thank you for reaching out. We'll respond to <strong style={{ color: '#fff' }}>{form.email || 'you'}</strong> as soon as possible.</p>
-                  <button onClick={() => { setSubmitted(false); setForm({ firstName: '', lastName: '', email: '', message: '' }); }} className="btn-accent">Send Another</button>
+                  <p>
+                    Thank you for reaching out. We'll respond to{" "}
+                    <strong style={{ color: "#fff" }}>
+                      {form.email || "you"}
+                    </strong>{" "}
+                    as soon as possible.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({
+                        firstName: "",
+                        lastName: "",
+                        email: "",
+                        message: "",
+                      });
+                    }}
+                    className="btn-accent"
+                  >
+                    Send Another
+                  </button>
                 </div>
               ) : (
                 <>
@@ -138,12 +159,33 @@ export function ContactSection() {
                     ))}
                   </div>
                   <div className="form-group">
-                    <input className="form-input form-input--inverted" type="email" placeholder="Email Address" value={form.email} onChange={(e)=>setForm((p)=>({...p,email:e.target.value}))} />
+                    <input
+                      className="form-input form-input--inverted"
+                      type="email"
+                      placeholder="Email Address"
+                      value={form.email}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, email: e.target.value }))
+                      }
+                    />
                   </div>
                   <div className="form-group">
-                    <textarea className="form-input form-input--inverted form-input--textarea" rows={4} placeholder="Your message…" value={form.message} onChange={(e)=>setForm((p)=>({...p,message:e.target.value}))} />
+                    <textarea
+                      className="form-input form-input--inverted form-input--textarea"
+                      rows={4}
+                      placeholder="Your message…"
+                      value={form.message}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, message: e.target.value }))
+                      }
+                    />
                   </div>
-                  <button onClick={handleSubmit} disabled={sending} className="btn-accent inverted" style={{ opacity: sending ? 0.8 : 1 }}>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={sending}
+                    className="btn-accent inverted"
+                    style={{ opacity: sending ? 0.8 : 1 }}
+                  >
                     {sending ? "Sending…" : "Send Message →"}
                   </button>
                 </>
