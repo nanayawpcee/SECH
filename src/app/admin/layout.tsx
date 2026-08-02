@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutGrid,
@@ -64,6 +65,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { admin, loading, logout } = useAuth();
   const {
+    theme,
     sidebarCollapsed,
     toggleSidebar,
     posts,
@@ -74,6 +76,19 @@ function AdminShell({ children }: { children: React.ReactNode }) {
     cancelLeave,
     poppingToast,
   } = useAdminData();
+
+  // Must sit above the early returns below — a hook cannot be called
+  // conditionally. Set on <html> so fixed overlays (modals, toasts) are
+  // themed too, and the login page stays light.
+  useEffect(() => {
+    const el = document.documentElement;
+    if (pathname === "/admin/login") {
+      el.removeAttribute("data-admin-theme");
+      return;
+    }
+    el.setAttribute("data-admin-theme", theme);
+    return () => el.removeAttribute("data-admin-theme");
+  }, [theme, pathname]);
 
   const isLoginPage = pathname === "/admin/login";
   if (isLoginPage) return <>{children}</>;
@@ -133,8 +148,8 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       {/* ── Sidebar ── */}
       <aside
         style={{
-          background: "#fff",
-          borderRight: "0.5px solid #e5e7eb",
+          background: "#063328",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
           display: "flex",
           flexDirection: "column",
           position: "sticky",
@@ -147,7 +162,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         <div
           style={{
             padding: sidebarCollapsed ? "16px 0" : "16px",
-            borderBottom: "0.5px solid #e5e7eb",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
             display: "flex",
             alignItems: "center",
             justifyContent: sidebarCollapsed ? "center" : "flex-start",
@@ -157,12 +172,32 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         >
           {!sidebarCollapsed && (
             <>
-              <img src="/images/logo.png" alt="Logo" style={{ width: 32, height: 32, flexShrink: 0 }} />
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  // Matches the logo's own cream field so the circle reads as
+                  // part of the mark rather than a crop.
+                  background: "#fcf2e4",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src="/images/logo.png"
+                  alt="Logo"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
               <div style={{ minWidth: 0, overflow: "hidden", whiteSpace: "nowrap" }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#111", lineHeight: 1.2 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                   SECH Admin
                 </div>
-                <div style={{ fontSize: 10.5, color: "#aaa" }}>Hospital Portal</div>
+                <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.45)" }}>Hospital Portal</div>
               </div>
             </>
           )}
@@ -175,13 +210,13 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               height: 22,
               borderRadius: 6,
               border: "none",
-              background: "#F3F4F6",
+              background: "rgba(255,255,255,0.1)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
-              color: "#666",
+              color: "rgba(255,255,255,0.8)",
             }}
           >
             {sidebarCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
@@ -197,7 +232,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                   style={{
                     padding: "10px 14px 3px",
                     fontSize: 10,
-                    color: "#bbb",
+                    color: "rgba(255,255,255,0.34)",
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 700,
@@ -230,22 +265,22 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                       justifyContent: sidebarCollapsed ? "center" : "flex-start",
                       borderRadius: 8,
                       fontSize: 13,
-                      color: active ? "#0A4F3C" : "#555",
-                      background: active ? "#F0F7F4" : "transparent",
+                      color: active ? "#E8B84B" : "rgba(255,255,255,0.72)",
+                      background: active ? "rgba(232,184,75,0.12)" : "transparent",
                       fontWeight: active ? 600 : 400,
                       textDecoration: "none",
                       transition: "all 0.15s",
                     }}
                     onMouseEnter={(e) => {
                       if (!active) {
-                        (e.currentTarget as HTMLElement).style.background = "#F9FAFB";
-                        (e.currentTarget as HTMLElement).style.color = "#111";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)";
+                        (e.currentTarget as HTMLElement).style.color = "#fff";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!active) {
                         (e.currentTarget as HTMLElement).style.background = "transparent";
-                        (e.currentTarget as HTMLElement).style.color = "#555";
+                        (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.72)";
                       }
                     }}
                   >
@@ -258,8 +293,8 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                         {badge > 0 && (
                           <span
                             style={{
-                              background: "#FEE2E2",
-                              color: "#DC2626",
+                              background: "rgba(232,184,75,0.18)",
+                              color: "#E8B84B",
                               fontSize: 10,
                               fontWeight: 700,
                               padding: "1px 7px",
@@ -280,7 +315,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Divider */}
-        <div style={{ height: "0.5px", background: "#f3f4f6", margin: "0 14px", flexShrink: 0 }} />
+        <div style={{ height: "1px", background: "rgba(255,255,255,0.07)", margin: "0 14px", flexShrink: 0 }} />
 
         {/* Back to site link */}
         <Link
@@ -292,13 +327,13 @@ function AdminShell({ children }: { children: React.ReactNode }) {
             gap: 9,
             padding: "10px 14px",
             fontSize: 12,
-            color: "#888",
+            color: "rgba(255,255,255,0.5)",
             textDecoration: "none",
             transition: "color 0.15s",
             flexShrink: 0,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#0A4F3C")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#E8B84B")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
           title={sidebarCollapsed ? "Back to website" : undefined}
         >
           <span style={{ fontSize: 14 }}>←</span>
@@ -306,7 +341,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         {/* User card + logout */}
-        <div style={{ padding: "12px 14px", borderTop: "0.5px solid #e5e7eb", flexShrink: 0 }}>
+        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
           <div
             style={{
               display: "flex",
@@ -340,7 +375,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
-                    color: "#111",
+                    color: "#fff",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -351,7 +386,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                 <div
                   style={{
                     fontSize: 10,
-                    color: "#aaa",
+                    color: "rgba(255,255,255,0.45)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -368,11 +403,11 @@ function AdminShell({ children }: { children: React.ReactNode }) {
             style={{
               width: "100%",
               padding: "7px",
-              border: "0.5px solid #e5e7eb",
+              border: "none",
               borderRadius: 6,
-              background: "#fff",
+              background: "rgba(220,38,38,0.14)",
               fontSize: 12,
-              color: "#DC2626",
+              color: "#F87171",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -382,12 +417,10 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               transition: "all 0.15s",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#FEF2F2";
-              (e.currentTarget as HTMLElement).style.borderColor = "#FCA5A5";
+              (e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.24)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#fff";
-              (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb";
+              (e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.14)";
             }}
           >
             <LogOut size={13} />

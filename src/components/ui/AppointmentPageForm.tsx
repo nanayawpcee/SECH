@@ -1,5 +1,6 @@
 "use client";
 
+import { submitAppointment } from "@/lib/submit-booking";
 import { useState } from "react";
 import { DEPARTMENTS } from "@/lib/data";
 
@@ -50,6 +51,8 @@ export function AppointmentPageForm() {
   const [data, setData]     = useState<FormData>(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [reference, setReference] = useState<string | null>(null);
 
   const set = (field: keyof FormData, value: string | boolean) =>
     setData(p => ({ ...p, [field]: value }));
@@ -69,8 +72,15 @@ export function AppointmentPageForm() {
 
   const submit = async () => {
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1600));
+    setSubmitError(null);
+    const result = await submitAppointment(data);
     setSubmitting(false);
+    if (!result.ok) {
+      // Keep the patient on the review step with their details intact.
+      setSubmitError(result.error ?? "Something went wrong.");
+      return;
+    }
+    setReference(result.reference ?? null);
     setStep("success");
   };
 
@@ -284,7 +294,7 @@ export function AppointmentPageForm() {
 
       {/* Nav buttons */}
       {step !== "success" && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #E2EBE7" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #E2EBE7" }}>
           <button
             onClick={back}
             disabled={step === "personal"}
@@ -292,6 +302,23 @@ export function AppointmentPageForm() {
           >
             ← Back
           </button>
+{submitError && (
+            <div
+              role="alert"
+              style={{
+                flexBasis: "100%",
+                background: "#FEE2E2",
+                border: "1px solid #FCA5A5",
+                color: "#B91C1C",
+                borderRadius: 8,
+                padding: "10px 14px",
+                fontSize: "0.85rem",
+                lineHeight: 1.5,
+              }}
+            >
+              {submitError}
+            </div>
+          )}
           {step !== "review" ? (
             <button className="btn-accent" onClick={next}>Continue →</button>
           ) : (

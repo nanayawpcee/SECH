@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAdminData } from "@/context/AdminDataContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import type { Booking } from "@/app/admin/data";
 
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
@@ -156,7 +157,8 @@ function Modal({
 }
 
 export default function BookingsPage() {
-  const { bookings, confirmBooking, cancelBooking, addToast } = useAdminData();
+  const { bookings, bookingsLoading, bookingsError, refreshBookings, confirmBooking, cancelBooking, addToast } =
+    useAdminData();
   const [statusFilter, setStatusFilter] = useState("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -218,6 +220,7 @@ export default function BookingsPage() {
           >
             Export CSV
           </button>
+          <ThemeToggle />
           <NotificationBell />
         </div>
       </div>
@@ -295,10 +298,30 @@ export default function BookingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {bookingsLoading ? (
                   <tr>
                     <td colSpan={9} style={{ textAlign: "center", padding: 40, color: "#bbb", fontSize: 13 }}>
-                      No bookings match your filters
+                      Loading bookings from WordPress…
+                    </td>
+                  </tr>
+                ) : bookingsError ? (
+                  <tr>
+                    <td colSpan={9} style={{ textAlign: "center", padding: 40, fontSize: 13 }}>
+                      <div style={{ color: "#DC2626", marginBottom: 10 }}>{bookingsError}</div>
+                      <button
+                        onClick={() => refreshBookings()}
+                        style={{ padding: "6px 14px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 12, color: "#555" }}
+                      >
+                        Try again
+                      </button>
+                    </td>
+                  </tr>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} style={{ textAlign: "center", padding: 40, color: "#bbb", fontSize: 13 }}>
+                      {bookings.length === 0
+                        ? "No bookings yet — they will appear here as patients submit the appointment form."
+                        : "No bookings match your filters"}
                     </td>
                   </tr>
                 ) : (
@@ -332,7 +355,7 @@ export default function BookingsPage() {
                           </button>
                           {b.status === "pending" && (
                             <button
-                              onClick={() => confirmBooking(b.id)}
+                              onClick={() => confirmBooking(b.databaseId)}
                               style={{ padding: "4px 8px", border: "0.5px solid #86EFAC", borderRadius: 5, fontSize: 12, background: "#DCFCE7", cursor: "pointer", color: "#16a34a", fontWeight: 600 }}
                             >
                               ✓
@@ -340,7 +363,7 @@ export default function BookingsPage() {
                           )}
                           {b.status !== "cancelled" && (
                             <button
-                              onClick={() => cancelBooking(b.id)}
+                              onClick={() => cancelBooking(b.databaseId)}
                               style={{ padding: "4px 8px", border: "0.5px solid #FCA5A5", borderRadius: 5, fontSize: 12, background: "#fff", cursor: "pointer", color: "#DC2626" }}
                             >
                               ✕
@@ -367,7 +390,7 @@ export default function BookingsPage() {
           booking={selected}
           onClose={() => setSelectedId(null)}
           onConfirm={() => {
-            confirmBooking(selected.id);
+            confirmBooking(selected.databaseId);
             setSelectedId(null);
           }}
         />

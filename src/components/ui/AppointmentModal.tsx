@@ -1,5 +1,6 @@
 "use client";
 
+import { submitAppointment } from "@/lib/submit-booking";
 import { useState, useEffect, useRef } from "react";
 import { DEPARTMENTS } from "@/lib/data";
 
@@ -71,6 +72,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
   const [data, setData]     = useState<FormData>({ ...INITIAL, department: prefillDept ?? "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [reference, setReference] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape
@@ -99,9 +102,15 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
 
   const submit = async () => {
     setSubmitting(true);
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 1800));
+    setSubmitError(null);
+    const result = await submitAppointment(data);
     setSubmitting(false);
+    if (!result.ok) {
+      // Keep the patient on the review step with their details intact.
+      setSubmitError(result.error ?? "Something went wrong.");
+      return;
+    }
+    setReference(result.reference ?? null);
     setStep("success");
   };
 
@@ -362,7 +371,24 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
 
         {/* Footer actions */}
         {step !== "success" && (
-          <div style={{ padding: "1.1rem 1.75rem", borderTop: "1px solid #E2EBE7", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--off-white)", borderRadius: "0 0 12px 12px" }}>
+          <div style={{ padding: "1.1rem 1.75rem", borderTop: "1px solid #E2EBE7", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", background: "var(--off-white)", borderRadius: "0 0 12px 12px" }}>
+            {submitError && (
+              <div
+                role="alert"
+                style={{
+                  flexBasis: "100%",
+                  background: "#FEE2E2",
+                  border: "1px solid #FCA5A5",
+                  color: "#B91C1C",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  fontSize: "0.85rem",
+                  lineHeight: 1.5,
+                }}
+              >
+                {submitError}
+              </div>
+            )}
             <button
               onClick={step === "personal" ? onClose : back}
               style={{ background: "none", border: "1.5px solid #C0D8CC", borderRadius: "var(--radius-sm)", padding: "10px 22px", color: "var(--text-mid)", fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", transition: "all 0.2s" }}

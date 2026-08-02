@@ -1275,3 +1275,117 @@ iframe {
   }
   .org__scroll { overflow-x: visible; }
 }
+
+/* ─── Admin dark mode ─────────────────────────────────────────
+   The admin pages style themselves with inline styles carrying literal hex
+   colours, which normal rules cannot override. These use !important, which
+   does beat inline styles, and target the structural surfaces by their
+   light-mode colour so no component has to change.
+   Longer term the right fix is to move those inline colours onto CSS
+   variables; this keeps the change contained until then.              */
+
+[data-admin-theme="dark"] {
+  --ad-bg: #0F1714;
+  --ad-surface: #16211D;
+  --ad-surface-2: #1D2B26;
+  --ad-border: #2A3B35;
+  --ad-text: #E6EDEA;
+  --ad-text-dim: #93A29B;
+  --ad-accent: #E8B84B;
+}
+
+[data-admin-theme="dark"],
+[data-admin-theme="dark"] * {
+  scrollbar-color: var(--ad-border) transparent;
+}
+
+/* Page + panel surfaces */
+[data-admin-theme="dark"] [style*="background: rgb(247, 249, 247)"],
+[data-admin-theme="dark"] [style*="background:#F7F9F7"] {
+  background: var(--ad-bg) !important;
+}
+[data-admin-theme="dark"] [style*="background: rgb(255, 255, 255)"],
+[data-admin-theme="dark"] [style*="background:#fff"] {
+  background: var(--ad-surface) !important;
+}
+[data-admin-theme="dark"] [style*="background: rgb(249, 250, 251)"],
+[data-admin-theme="dark"] [style*="background: rgb(240, 247, 244)"] {
+  background: var(--ad-surface-2) !important;
+}
+
+/* Borders */
+[data-admin-theme="dark"] [style*="border"] {
+  border-color: var(--ad-border) !important;
+}
+
+/* Text — the admin uses a small set of greys plus near-black */
+[data-admin-theme="dark"] [style*="color: rgb(17, 17, 17)"],
+[data-admin-theme="dark"] [style*="color: rgb(13, 31, 26)"],
+[data-admin-theme="dark"] [style*="color: rgb(85, 85, 85)"],
+[data-admin-theme="dark"] [style*="color: rgb(102, 102, 102)"] {
+  color: var(--ad-text) !important;
+}
+[data-admin-theme="dark"] [style*="color: rgb(170, 170, 170)"],
+[data-admin-theme="dark"] [style*="color: rgb(187, 187, 187)"],
+[data-admin-theme="dark"] [style*="color: rgb(119, 119, 119)"],
+[data-admin-theme="dark"] [style*="color: rgb(147, 162, 155)"] {
+  color: var(--ad-text-dim) !important;
+}
+
+/* Form controls */
+[data-admin-theme="dark"] input,
+[data-admin-theme="dark"] textarea,
+[data-admin-theme="dark"] select {
+  background: var(--ad-surface-2) !important;
+  color: var(--ad-text) !important;
+  border-color: var(--ad-border) !important;
+}
+[data-admin-theme="dark"] input::placeholder,
+[data-admin-theme="dark"] textarea::placeholder {
+  color: #6C7C76 !important;
+}
+
+/* Status pills keep their own colours — only lift their contrast slightly. */
+[data-admin-theme="dark"] [style*="border-radius: 20px"] {
+  filter: brightness(0.92) saturate(1.1);
+}
+
+/* The brand green reads too dark on a dark surface. */
+[data-admin-theme="dark"] [style*="background: rgb(10, 79, 60)"] {
+  background: #127054 !important;
+}
+
+/* Topbar icon buttons: give them a visible affordance in both themes. */
+.admin-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #D8E2DD;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #21463A;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.admin-icon-btn:hover { background: #EEF4F1; border-color: #B9CEC5; }
+.admin-icon-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+[data-admin-theme="dark"] .admin-icon-btn {
+  background: var(--ad-surface-2) !important;
+  border-color: var(--ad-border) !important;
+  color: var(--ad-text) !important;
+}
+[data-admin-theme="dark"] .admin-icon-btn:hover { background: #26382F !important; }
+
+/* The global `div { max-width: 100% !important }` rule resolves against this
+   panel's 34px button wrapper, squeezing the dropdown to a sliver. Opt out. */
+.admin-notif-panel { max-width: none !important; }
+
+/* Sidebar collapse button — its light grey isn't part of the surface set. */
+[data-admin-theme="dark"] [style*="background: rgb(243, 244, 246)"] {
+  background: var(--ad-surface-2) !important;
+  color: var(--ad-text) !important;
+}

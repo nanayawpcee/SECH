@@ -2,6 +2,14 @@ node_modules
 .vercel
 .next/
 .DS_Store
+claude/
+wordpress-plugin/
+
+# Local environment files — these hold the WordPress booking key and must
+# never be committed.
+.env
+.env.local
+.env*.local
 
 # High-resolution image masters. Kept locally so images can be re-exported at
 # other sizes; the optimized derivatives in public/images are what ship.

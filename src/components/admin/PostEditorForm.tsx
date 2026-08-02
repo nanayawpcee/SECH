@@ -14,15 +14,15 @@ const slugify = (t: string) =>
     .replace(/(^-|-$)/g, "");
 
 interface PostEditorFormProps {
-  /** null creates a new post (published for real via the WordPress GraphQL
-   *  API); a Post edits an existing one in local admin state — there's no
-   *  WordPress update-by-id mutation wired up yet, so edits stay local. */
+  /** null creates a new post; a Post edits an existing one. Both write to
+   *  WordPress. The featured image is attached via the portal plugin's
+   *  setPostFeaturedImage, since WPGraphQL's post inputs don't expose it. */
   initialPost: Post | null;
 }
 
 export function PostEditorForm({ initialPost }: PostEditorFormProps) {
   const router = useRouter();
-  const { addPost, updatePost, addToast, setEditorDirty, requestLeave } = useAdminData();
+  const { refreshPosts, updatePost, addToast, setEditorDirty, requestLeave } = useAdminData();
   const isEdit = !!initialPost;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,8 +33,12 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
   const [status, setStatus] = useState<Post["status"]>(initialPost?.status ?? "draft");
   const [author, setAuthor] = useState(initialPost?.author ?? "Admin User");
 
-  const [featuredImageId, setImgId] = useState<number | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [featuredImageId, setImgId] = useState<number | null>(
+    (initialPost as any)?.featuredImageId ?? null,
+  );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    (initialPost as any)?.featuredImageUrl ?? null,
+  );
   const [uploadingImage, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -87,19 +91,28 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
     if (requestLeave("/admin/posts")) goToList();
   };
 
-  const saveEdit = (nextStatus: Post["status"]) => {
+  const saveEdit = async (nextStatus: Post["status"]) => {
     if (!initialPost) return;
-    updatePost(initialPost.id, {
-      title: title.trim(),
-      excerpt: excerpt.trim(),
-      body: body.trim(),
-      type,
-      author: author.trim() || "Admin User",
-      status: nextStatus,
-    });
-    setEditorDirty(false);
-    addToast(nextStatus === "published" ? "Post published" : "Saved as draft");
-    goToList();
+    setSaving(true);
+    try {
+      await updatePost(initialPost.id, {
+        title: title.trim(),
+        excerpt: excerpt.trim(),
+        body: body.trim(),
+        type,
+        status: nextStatus,
+        // null clears the thumbnail; undefined would leave it untouched.
+        featuredImageId: featuredImageId ?? null,
+      } as any);
+      setEditorDirty(false);
+      addToast(nextStatus === "published" ? "Post published" : "Saved as draft");
+      goToList();
+    } catch {
+      // updatePost already reported the failure; stay on the form so the
+      // author's work isn't lost.
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveNew = async (publish: boolean) => {
@@ -107,7 +120,7 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
     setSaving(true);
 
     try {
-      const response = await fetch("/api/auth/posts", {
+      const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,28 +137,16 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
       setSaving(false);
 
       if (!response.ok) {
-        addToast(`Error: ${result.error || "Could not execute mutation"}`, "danger");
+        addToast(result.error || "Could not save the post.", "danger");
         return;
       }
 
-      addPost({
-        id: Date.now(),
-        title: title.trim(),
-        excerpt: excerpt.trim(),
-        body: body.trim(),
-        type,
-        author: author.trim() || "Admin User",
-        date: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-        status: targetStatus,
-        slug: slugify(title),
-      });
       setEditorDirty(false);
-      addToast(
-        publish || targetStatus === "published"
-          ? "Post published via WPGraphQL mutation!"
-          : "Draft updated in WordPress database",
-      );
-      setTimeout(goToList, 1200);
+      addToast(targetStatus === "published" ? "Post published" : "Saved as draft");
+      // Re-read from WordPress so the list shows what was actually stored,
+      // rather than a locally-guessed copy.
+      await refreshPosts();
+      goToList();
     } catch {
       setSaving(false);
       addToast("A network issue occurred running the GraphQL operation.", "danger");
@@ -163,15 +164,13 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
 
   return (
     <>
-      {!isEdit && (
-        <input
+      <input
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
           accept="image/*"
           style={{ display: "none" }}
         />
-      )}
 
       {/* Topbar */}
       <div
@@ -457,7 +456,7 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
               </Field>
             </div>
 
-            {!isEdit && (
+            {(
               <div
                 style={{
                   background: "#fff",

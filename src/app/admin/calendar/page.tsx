@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useAdminData } from "@/context/AdminDataContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
-import type { Booking } from "@/app/admin/data";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import type { AdminBooking } from "@/lib/wp-bookings";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -11,18 +12,20 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-/* June 2026 starts on Monday (index 1) */
-const JUNE_START_DOW = 1;
-const JUNE_DAYS = 30;
-
-function groupByDay(bookings: Booking[]) {
-  const map: Record<number, Booking[]> = {};
+/**
+ * Group by day-of-month using the raw YYYY-MM-DD, restricted to the month on
+ * screen. Parsing the localised display string would break as soon as the
+ * format changed.
+ */
+function groupByDay(bookings: AdminBooking[], year: number, month: number) {
+  const prefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
+  const map: Record<number, AdminBooking[]> = {};
   bookings.forEach((b) => {
-    const d = parseInt(b.date.split(" ")[1]?.replace(",", "") ?? "", 10);
-    if (!isNaN(d)) {
-      map[d] = map[d] ?? [];
-      map[d].push(b);
-    }
+    if (!b.preferredDateISO?.startsWith(prefix)) return;
+    const day = Number(b.preferredDateISO.slice(8, 10));
+    if (!Number.isFinite(day) || day < 1) return;
+    map[day] = map[day] ?? [];
+    map[day].push(b);
   });
   return map;
 }
@@ -34,17 +37,31 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 export default function CalendarPage() {
-  const { bookings } = useAdminData();
-  const [year] = useState(2026);
-  const [month] = useState(5); // June = index 5
+  const { bookings, bookingsLoading, bookingsError } = useAdminData();
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  const byDay = groupByDay(bookings);
+  const byDay = groupByDay(bookings, year, month);
   const selectedBookings = selectedDay ? (byDay[selectedDay] ?? []) : [];
 
+  const startDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const step = (delta: number) => {
+    const d = new Date(year, month + delta, 1);
+    setYear(d.getFullYear());
+    setMonth(d.getMonth());
+    setSelectedDay(null);
+  };
+
+  const isCurrentMonth =
+    year === today.getFullYear() && month === today.getMonth();
+
   const cells: (number | null)[] = [
-    ...Array(JUNE_START_DOW).fill(null),
-    ...Array.from({ length: JUNE_DAYS }, (_, i) => i + 1),
+    ...Array(startDow).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
@@ -56,12 +73,13 @@ export default function CalendarPage() {
           Calendar — {MONTHS[month]} {year}
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
+          <button onClick={() => step(-1)} style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
             ‹ Prev
           </button>
-          <button style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
+          <button onClick={() => step(1)} style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
             Next ›
           </button>
+          <ThemeToggle />
           <NotificationBell />
         </div>
       </div>
@@ -93,7 +111,7 @@ export default function CalendarPage() {
                   {cells.slice(week * 7, week * 7 + 7).map((day, col) => {
                     const dayBookings = day ? (byDay[day] ?? []) : [];
                     const isSelected = day === selectedDay;
-                    const isToday = day === 5; // pretend today is June 5
+                    const isToday = isCurrentMonth && day === today.getDate();
 
                     return (
                       <div
@@ -192,7 +210,7 @@ export default function CalendarPage() {
             <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden" }}>
               <div style={{ padding: "12px 14px", borderBottom: "0.5px solid #e5e7eb", background: selectedDay ? "#0A4F3C" : "#F9FAFB" }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: selectedDay ? "#fff" : "#aaa" }}>
-                  {selectedDay ? `June ${selectedDay}, 2026` : "Select a day"}
+                  {selectedDay ? `${MONTHS[month]} ${selectedDay}, ${year}` : "Select a day"}
                 </div>
                 {selectedDay && (
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
@@ -221,7 +239,7 @@ export default function CalendarPage() {
 
             {/* Monthly summary */}
             <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", marginTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>June Summary</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>{MONTHS[month]} Summary</div>
               {[
                 { label: "Total bookings", value: bookings.length },
                 { label: "Confirmed", value: bookings.filter((b) => b.status === "confirmed").length },

@@ -22,24 +22,14 @@ export function NotificationBell() {
   return (
     <div ref={wrapRef} style={{ position: "relative" }}>
       <button
+        type="button"
+        className="admin-icon-btn"
         onClick={toggleToastPanel}
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 8,
-          border: "0.5px solid #e5e7eb",
-          background: "#fff",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-        }}
-        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#F6F8F7")}
-        onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "#fff")}
+        aria-label="Notifications"
+        aria-expanded={toastPanelOpen}
         title="Notifications"
       >
-        <Bell size={16} color="#4B6B5F" strokeWidth={1.75} />
+        <Bell size={17} strokeWidth={2} />
         {toasts.length > 0 && (
           <div
             style={{
@@ -58,6 +48,7 @@ export function NotificationBell() {
 
       {toastPanelOpen && (
         <div
+          className="admin-notif-panel"
           style={{
             position: "absolute",
             top: 42,

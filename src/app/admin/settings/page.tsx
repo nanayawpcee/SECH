@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAdminData, type NotifSettings } from "@/context/AdminDataContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import { ASSIGNABLE_ROLES, type AdminUser } from "@/lib/wp-users";
+import { HOSPITAL_FIELDS } from "@/lib/wp-settings";
 
 const TABS = ["Hospital Info", "Booking Settings", "Notifications", "Admins", "Security"];
-
-const ADMIN_USERS = [
-  { name: "Admin User", email: "admin@sech-gh.org", role: "Super Admin", active: true },
-  { name: "Dr. Kwame Asante", email: "kwame@sech-gh.org", role: "Editor", active: true },
-  { name: "Sr. Mary-Rose Adjei", email: "mradjei@sech-gh.org", role: "Viewer", active: false },
-];
 
 const NOTIF_DEFS: { key: keyof NotifSettings; label: string; desc: string }[] = [
   { key: "email", label: "Email notifications", desc: "Receive booking updates via email" },
@@ -19,6 +16,16 @@ const NOTIF_DEFS: { key: keyof NotifSettings; label: string; desc: string }[] = 
   { key: "cancellation", label: "Cancellation alert", desc: "Notify when a booking is cancelled" },
   { key: "daily", label: "Daily summary digest", desc: "Morning email with the day's appointments" },
 ];
+
+const secondaryBtn: React.CSSProperties = {
+  padding: "6px 14px",
+  border: "0.5px solid #d1d5db",
+  borderRadius: 6,
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: 12,
+  color: "#555",
+};
 
 const fieldStyle: React.CSSProperties = {
   width: "100%",
@@ -33,16 +40,127 @@ const fieldStyle: React.CSSProperties = {
 };
 
 export default function SettingsPage() {
-  const { depts, addDept, removeDept, notifs, toggleNotif, addToast } = useAdminData();
+  const {
+    settings,
+    settingsLoading,
+    settingsError,
+    settingsDirty,
+    patchSettings,
+    saveSettings,
+    savingSettings,
+    addDept,
+    removeDept,
+    toggleNotif,
+    addToast,
+  } = useAdminData();
+  const depts = settings.departments;
+  const notifs = settings.notifications;
   const [tab, setTab] = useState("Hospital Info");
-  const [saving, setSaving] = useState(false);
   const [newDept, setNewDept] = useState("");
 
-  const save = async () => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    setSaving(false);
-    addToast("Settings saved successfully");
+  /* ── Admin users (WordPress-backed) ── */
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [invite, setInvite] = useState({ name: "", email: "", role: "editor" });
+
+  const loadUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const res = await fetch("/api/users");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load admin users.");
+      setUsers(data.users as AdminUser[]);
+      setUsersError(null);
+    } catch (err: any) {
+      setUsersError(err?.message ?? "Could not load admin users.");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  // Only fetch once the tab is actually opened.
+  useEffect(() => {
+    if (tab === "Admins" && users.length === 0 && !usersError) loadUsers();
+  }, [tab, users.length, usersError, loadUsers]);
+
+  const sendInvite = async () => {
+    setInviting(true);
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invite),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not send the invitation.");
+      setInvite({ name: "", email: "", role: "editor" });
+      addToast(`Invitation sent to ${data.user.email}`);
+      await loadUsers();
+    } catch (err: any) {
+      addToast(err?.message ?? "Could not send the invitation.", "danger");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const changeRole = async (id: number, role: string) => {
+    const previous = users;
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, roleSlug: role } : u)));
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not change the role.");
+      setUsers((prev) => prev.map((u) => (u.id === id ? { ...data.user, isSelf: u.isSelf } : u)));
+      addToast("Role updated");
+    } catch (err: any) {
+      setUsers(previous);
+      addToast(err?.message ?? "Could not change the role.", "danger");
+    }
+  };
+
+  const removeUser = async (user: AdminUser) => {
+    try {
+      const res = await fetch(`/api/users/${user.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not remove the account.");
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      addToast(`${user.name} removed; their posts were reassigned to you`, "danger");
+    } catch (err: any) {
+      addToast(err?.message ?? "Could not remove the account.", "danger");
+    }
+  };
+
+  /* ── Password change ── */
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [changingPw, setChangingPw] = useState(false);
+
+  const changePassword = async () => {
+    setChangingPw(true);
+    try {
+      const res = await fetch("/api/account/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: pw.current,
+          newPassword: pw.next,
+          confirmPassword: pw.confirm,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not update the password.");
+      setPw({ current: "", next: "", confirm: "" });
+      addToast("Password updated");
+    } catch (err: any) {
+      addToast(err?.message ?? "Could not update the password.", "danger");
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   const submitNewDept = () => {
@@ -58,8 +176,8 @@ export default function SettingsPage() {
         <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>Settings</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button
-            onClick={save}
-            disabled={saving}
+            onClick={saveSettings}
+            disabled={savingSettings || settingsLoading}
             style={{
               padding: "7px 18px",
               background: "#0A4F3C",
@@ -69,11 +187,12 @@ export default function SettingsPage() {
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
-              opacity: saving ? 0.8 : 1,
+              opacity: savingSettings || settingsLoading ? 0.7 : 1,
             }}
           >
-            {saving ? "Saving…" : "Save changes"}
+            {savingSettings ? "Saving…" : settingsDirty ? "Save changes •" : "Save changes"}
           </button>
+          <ThemeToggle />
           <NotificationBell />
         </div>
       </div>
@@ -114,21 +233,17 @@ export default function SettingsPage() {
               <div style={{ padding: 24 }}>
                 <h3 style={{ fontSize: 15, fontWeight: 600, color: "#111", marginBottom: 20 }}>Hospital Information</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
-                  {[
-                    { label: "Hospital name", defaultValue: "St. Elizabeth Catholic Hospital" },
-                    { label: "Short name", defaultValue: "SECH" },
-                    { label: "Phone", defaultValue: "+233 322 298 428" },
-                    { label: "Email", defaultValue: "info@sech-gh.org" },
-                    { label: "Website", defaultValue: "https://sech-gh.org" },
-                    { label: "Address", defaultValue: "Hwidiem, Asutifi North District" },
-                    { label: "Region", defaultValue: "Brong-Ahafo Region" },
-                    { label: "Country", defaultValue: "Ghana" },
-                  ].map((f) => (
-                    <div key={f.label}>
+                  {HOSPITAL_FIELDS.map((f) => (
+                    <div key={f.key}>
                       <label style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
                         {f.label}
                       </label>
-                      <input defaultValue={f.defaultValue} style={fieldStyle} />
+                      <input
+                        value={(settings[f.key] as string) ?? ""}
+                        onChange={(e) => patchSettings({ [f.key]: e.target.value })}
+                        disabled={settingsLoading}
+                        style={fieldStyle}
+                      />
                     </div>
                   ))}
                 </div>
@@ -137,10 +252,15 @@ export default function SettingsPage() {
                     About / Description
                   </label>
                   <textarea
-                    defaultValue="A CHAG member institution providing compassionate Catholic healthcare to Ghana's Brong-Ahafo Region since the 1970s."
+                    value={settings.about ?? ""}
+                    onChange={(e) => patchSettings({ about: e.target.value })}
+                    disabled={settingsLoading}
                     style={{ ...fieldStyle, minHeight: 80, resize: "vertical" }}
                   />
                 </div>
+                {settingsError && (
+                  <div style={{ marginTop: 12, color: "#DC2626", fontSize: 12.5 }}>{settingsError}</div>
+                )}
               </div>
             )}
 
@@ -152,16 +272,21 @@ export default function SettingsPage() {
                 <div style={{ marginBottom: 24 }}>
                   <h4 style={{ fontSize: 13, fontWeight: 600, color: "#555", marginBottom: 12 }}>Appointment Time Slots</h4>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px 16px" }}>
-                    {[
-                      { label: "OPD Open", defaultValue: "07:30" },
-                      { label: "OPD Close", defaultValue: "17:00" },
-                      { label: "Slot length", defaultValue: "30" },
-                    ].map((f) => (
-                      <div key={f.label}>
+                    {([
+                      { label: "OPD Open", key: "opdOpen" as const },
+                      { label: "OPD Close", key: "opdClose" as const },
+                      { label: "Slot length (mins)", key: "slotLength" as const },
+                    ]).map((f) => (
+                      <div key={f.key}>
                         <label style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
                           {f.label}
                         </label>
-                        <input defaultValue={f.defaultValue} style={fieldStyle} />
+                        <input
+                          value={settings[f.key] ?? ""}
+                          onChange={(e) => patchSettings({ [f.key]: e.target.value })}
+                          disabled={settingsLoading}
+                          style={fieldStyle}
+                        />
                       </div>
                     ))}
                   </div>
@@ -170,7 +295,7 @@ export default function SettingsPage() {
                 <div>
                   <h4 style={{ fontSize: 13, fontWeight: 600, color: "#555", marginBottom: 12 }}>Active Departments</h4>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                    {depts.map((d) => (
+                    {depts.map((d: string) => (
                       <div
                         key={d}
                         style={{
@@ -273,77 +398,159 @@ export default function SettingsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {ADMIN_USERS.map((u) => (
-                      <tr key={u.email} style={{ borderBottom: "0.5px solid #f3f4f6" }}>
-                        <td style={{ padding: 10 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                            <div
-                              style={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: "50%",
-                                background: "#0A4F3C",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: "#E8B84B",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {u.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
-                            </div>
-                            <span style={{ fontWeight: 500 }}>{u.name}</span>
-                          </div>
+                    {usersLoading ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: 28, textAlign: "center", color: "#bbb", fontSize: 13 }}>
+                          Loading accounts from WordPress…
                         </td>
-                        <td style={{ padding: 10, color: "#666" }}>{u.email}</td>
-                        <td style={{ padding: 10 }}>
-                          <span
-                            style={{
-                              padding: "2px 8px",
-                              borderRadius: 20,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              background: u.role === "Super Admin" ? "#FEF3C7" : "#EFF6FF",
-                              color: u.role === "Super Admin" ? "#d97706" : "#1565C0",
-                            }}
-                          >
-                            {u.role}
-                          </span>
-                        </td>
-                        <td style={{ padding: 10 }}>
-                          <span
-                            style={{
-                              padding: "2px 8px",
-                              borderRadius: 20,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              background: u.active ? "#DCFCE7" : "#F3F4F6",
-                              color: u.active ? "#16a34a" : "#999",
-                            }}
-                          >
-                            {u.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td style={{ padding: 10 }}>
-                          <button
-                            onClick={() => addToast("Admin edit not wired up in this prototype", "warn")}
-                            style={{ padding: "4px 10px", border: "0.5px solid #d1d5db", borderRadius: 5, fontSize: 12, background: "#fff", cursor: "pointer", color: "#555" }}
-                          >
-                            Edit
+                      </tr>
+                    ) : usersError ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: 28, textAlign: "center", fontSize: 13 }}>
+                          <div style={{ color: "#DC2626", marginBottom: 10 }}>{usersError}</div>
+                          <button onClick={loadUsers} style={secondaryBtn}>
+                            Try again
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      users.map((u) => (
+                        <tr key={u.id} style={{ borderBottom: "0.5px solid #f3f4f6" }}>
+                          <td style={{ padding: 10 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                              <div
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: "50%",
+                                  background: "#0A4F3C",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  color: "#E8B84B",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {u.initials}
+                              </div>
+                              <span style={{ fontWeight: 500 }}>{u.name}</span>
+                              {u.isSelf && (
+                                <span style={{ fontSize: 11, color: "#93A29B" }}>(you)</span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ padding: 10, color: "#666" }}>{u.email}</td>
+                          <td style={{ padding: 10 }}>
+                            <select
+                              value={u.roleSlug}
+                              onChange={(e) => changeRole(u.id, e.target.value)}
+                              style={{
+                                fontSize: 12,
+                                border: "0.5px solid #d1d5db",
+                                borderRadius: 6,
+                                padding: "4px 8px",
+                                background: "#fff",
+                                color: "#555",
+                              }}
+                            >
+                              {ASSIGNABLE_ROLES.map((r) => (
+                                <option key={r.slug} value={r.slug}>
+                                  {r.label}
+                                </option>
+                              ))}
+                              {/* Keep any role WordPress reports that we don't offer. */}
+                              {!ASSIGNABLE_ROLES.some((r) => r.slug === u.roleSlug) && (
+                                <option value={u.roleSlug}>{u.role}</option>
+                              )}
+                            </select>
+                          </td>
+                          <td style={{ padding: 10, color: "#777", fontSize: 12 }}>{u.role}</td>
+                          <td style={{ padding: 10 }}>
+                            <button
+                              onClick={() => removeUser(u)}
+                              disabled={u.isSelf}
+                              title={u.isSelf ? "You cannot remove your own account" : undefined}
+                              style={{
+                                padding: "4px 10px",
+                                border: "0.5px solid #FCA5A5",
+                                borderRadius: 5,
+                                fontSize: 12,
+                                background: "#fff",
+                                cursor: u.isSelf ? "not-allowed" : "pointer",
+                                color: "#DC2626",
+                                opacity: u.isSelf ? 0.4 : 1,
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
-                <button
-                  onClick={() => addToast("Invite flow not wired up in this prototype", "warn")}
-                  style={{ marginTop: 16, padding: "8px 16px", background: "#0A4F3C", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+
+                {/* Invite */}
+                <div
+                  style={{
+                    marginTop: 22,
+                    paddingTop: 18,
+                    borderTop: "0.5px solid #f3f4f6",
+                  }}
                 >
-                  + Invite Admin
-                </button>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: "#555", marginBottom: 4 }}>
+                    Invite a colleague
+                  </h4>
+                  <p style={{ fontSize: 12, color: "#aaa", marginBottom: 12 }}>
+                    WordPress emails them a link to choose their own password — you never
+                    handle it.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <input
+                      value={invite.name}
+                      onChange={(e) => setInvite((p) => ({ ...p, name: e.target.value }))}
+                      placeholder="Full name"
+                      style={{ ...fieldStyle, flex: "1 1 160px", width: "auto" }}
+                    />
+                    <input
+                      value={invite.email}
+                      onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))}
+                      placeholder="Email address"
+                      type="email"
+                      style={{ ...fieldStyle, flex: "1 1 200px", width: "auto" }}
+                    />
+                    <select
+                      value={invite.role}
+                      onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))}
+                      style={{ ...fieldStyle, width: "auto" }}
+                    >
+                      {ASSIGNABLE_ROLES.map((r) => (
+                        <option key={r.slug} value={r.slug}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={sendInvite}
+                      disabled={inviting || !invite.name.trim() || !invite.email.trim()}
+                      style={{
+                        padding: "8px 16px",
+                        background: "#0A4F3C",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: inviting ? "wait" : "pointer",
+                        opacity: !invite.name.trim() || !invite.email.trim() ? 0.5 : 1,
+                      }}
+                    >
+                      {inviting ? "Sending…" : "Send invite"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -352,19 +559,47 @@ export default function SettingsPage() {
               <div style={{ padding: 24 }}>
                 <h3 style={{ fontSize: 15, fontWeight: 600, color: "#111", marginBottom: 20 }}>Security Settings</h3>
                 <div style={{ maxWidth: 440 }}>
-                  {["Current password", "New password", "Confirm new password"].map((label) => (
-                    <div key={label} style={{ marginBottom: 14 }}>
+                  {(
+                    [
+                      { label: "Current password", key: "current" as const, autoComplete: "current-password" },
+                      { label: "New password", key: "next" as const, autoComplete: "new-password" },
+                      { label: "Confirm new password", key: "confirm" as const, autoComplete: "new-password" },
+                    ]
+                  ).map((f) => (
+                    <div key={f.key} style={{ marginBottom: 14 }}>
                       <label style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
-                        {label}
+                        {f.label}
                       </label>
-                      <input type="password" style={fieldStyle} placeholder="••••••••" />
+                      <input
+                        type="password"
+                        value={pw[f.key]}
+                        autoComplete={f.autoComplete}
+                        onChange={(e) => setPw((p) => ({ ...p, [f.key]: e.target.value }))}
+                        style={fieldStyle}
+                        placeholder="••••••••"
+                      />
                     </div>
                   ))}
+                  <p style={{ fontSize: 12, color: "#aaa", margin: "0 0 12px" }}>
+                    Use at least 12 characters. Your current password is verified before
+                    anything changes.
+                  </p>
                   <button
-                    onClick={() => addToast("Password update not wired up in this prototype", "warn")}
-                    style={{ padding: "8px 18px", background: "#0A4F3C", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                    onClick={changePassword}
+                    disabled={changingPw || !pw.current || !pw.next || !pw.confirm}
+                    style={{
+                      padding: "8px 18px",
+                      background: "#0A4F3C",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: changingPw ? "wait" : "pointer",
+                      opacity: !pw.current || !pw.next || !pw.confirm ? 0.5 : 1,
+                    }}
                   >
-                    Update password
+                    {changingPw ? "Updating…" : "Update password"}
                   </button>
                 </div>
                 <div style={{ marginTop: 28, paddingTop: 20, borderTop: "0.5px solid #e5e7eb" }}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAdminData } from "@/context/AdminDataContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
 
 const TABS = [
   { key: "all", label: "All Posts" },
@@ -13,7 +14,8 @@ const TABS = [
 ];
 
 export default function PostsPage() {
-  const { posts, togglePostStatus, deletePost } = useAdminData();
+  const { posts, postsLoading, postsError, refreshPosts, togglePostStatus, deletePost } =
+    useAdminData();
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -76,6 +78,7 @@ export default function PostsPage() {
           >
             + New Post
           </Link>
+          <ThemeToggle />
           <NotificationBell />
         </div>
       </div>
@@ -125,7 +128,33 @@ export default function PostsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {postsLoading ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: 32, color: "#bbb", fontSize: 13 }}>
+                    Loading posts from WordPress…
+                  </td>
+                </tr>
+              ) : postsError ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: 32, fontSize: 13 }}>
+                    <div style={{ color: "#DC2626", marginBottom: 10 }}>{postsError}</div>
+                    <button
+                      onClick={() => refreshPosts()}
+                      style={{
+                        padding: "6px 14px",
+                        border: "0.5px solid #d1d5db",
+                        borderRadius: 6,
+                        background: "#fff",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        color: "#555",
+                      }}
+                    >
+                      Try again
+                    </button>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ textAlign: "center", padding: 32, color: "#bbb", fontSize: 13 }}>
                     No posts found

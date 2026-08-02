@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAdminData } from "@/context/AdminDataContext";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
 
 const WEEK_BARS = [9, 12, 14, 13];
 
@@ -64,6 +65,7 @@ export default function AdminPage() {
           >
             + New Post
           </Link>
+          <ThemeToggle />
           <NotificationBell />
         </div>
       </div>

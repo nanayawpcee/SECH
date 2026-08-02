@@ -4,11 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
-import { SAMPLE_POSTS, SAMPLE_BOOKINGS, type Post, type Booking } from "@/app/admin/data";
+import type { Post } from "@/app/admin/data";
+import type { AdminBooking } from "@/lib/wp-bookings";
+import { EMPTY_SETTINGS, type HospitalSettings } from "@/lib/wp-settings";
 
 export type ToastKind = "success" | "warn" | "danger";
 
@@ -21,19 +24,6 @@ export interface Toast {
 export function toastDotColor(kind: ToastKind): string {
   return kind === "danger" ? "#DC2626" : kind === "warn" ? "#d97706" : "#16a34a";
 }
-
-const DEFAULT_DEPARTMENTS = [
-  "General Medicine",
-  "Paediatrics",
-  "Obstetrics & Gynaecology",
-  "Surgery",
-  "Eye Center (Ophthalmology)",
-  "Dental",
-  "Psychiatry & Counselling",
-  "Ante-Natal Clinic",
-  "Physiotherapy",
-  "Nutrition & Dietetics",
-];
 
 export interface NotifSettings {
   email: boolean;
@@ -48,21 +38,36 @@ interface AdminDataCtx {
   toggleSidebar: () => void;
 
   posts: Post[];
-  addPost: (post: Post) => void;
-  updatePost: (id: number, patch: Partial<Post>) => void;
-  deletePost: (id: number) => void;
-  togglePostStatus: (id: number) => void;
+  postsLoading: boolean;
+  postsError: string | null;
+  refreshPosts: () => Promise<void>;
+  updatePost: (id: number, patch: Partial<Post>) => Promise<void>;
+  deletePost: (id: number) => Promise<void>;
+  togglePostStatus: (id: number) => Promise<void>;
 
-  bookings: Booking[];
-  confirmBooking: (id: string) => void;
-  cancelBooking: (id: string) => void;
+  bookings: AdminBooking[];
+  bookingsLoading: boolean;
+  bookingsError: string | null;
+  refreshBookings: () => Promise<void>;
+  confirmBooking: (databaseId: number) => Promise<void>;
+  cancelBooking: (databaseId: number) => Promise<void>;
 
-  depts: string[];
+  /** Hospital profile + booking config, persisted in WordPress. */
+  settings: HospitalSettings;
+  settingsLoading: boolean;
+  settingsError: string | null;
+  settingsDirty: boolean;
+  /** Edits locally; nothing is written until saveSettings() runs. */
+  patchSettings: (patch: Partial<HospitalSettings>) => void;
+  saveSettings: () => Promise<void>;
+  savingSettings: boolean;
+
   addDept: (d: string) => void;
   removeDept: (d: string) => void;
-
-  notifs: NotifSettings;
   toggleNotif: (key: keyof NotifSettings) => void;
+
+  theme: "light" | "dark";
+  toggleTheme: () => void;
 
   toasts: Toast[];
   poppingToast: Toast | null;
@@ -92,16 +97,18 @@ export function useAdminData() {
 
 export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [posts, setPosts] = useState<Post[]>(SAMPLE_POSTS);
-  const [bookings, setBookings] = useState<Booking[]>(SAMPLE_BOOKINGS);
-  const [depts, setDepts] = useState<string[]>(DEFAULT_DEPARTMENTS);
-  const [notifs, setNotifs] = useState<NotifSettings>({
-    email: true,
-    sms: false,
-    newBooking: true,
-    cancellation: true,
-    daily: false,
-  });
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState<string | null>(null);
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<HospitalSettings>(EMPTY_SETTINGS);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [poppingToast, setPoppingToast] = useState<Toast | null>(null);
   const [toastPanelOpen, setToastPanelOpen] = useState(false);
@@ -119,71 +126,220 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     toastTimer.current = setTimeout(() => setPoppingToast(null), 2800);
   }, []);
 
-  const addPost = useCallback((post: Post) => {
-    setPosts((prev) => [post, ...prev]);
+  const refreshPosts = useCallback(async () => {
+    setPostsLoading(true);
+    try {
+      const res = await fetch("/api/posts");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load posts.");
+      setPosts(data.posts as Post[]);
+      setPostsError(null);
+    } catch (err: any) {
+      setPostsError(err?.message ?? "Could not load posts.");
+    } finally {
+      setPostsLoading(false);
+    }
   }, []);
-  const updatePost = useCallback((id: number, patch: Partial<Post>) => {
-    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-  }, []);
-  const deletePost = useCallback(
-    (id: number) => {
-      setPosts((prev) => prev.filter((p) => p.id !== id));
-      addToast("Post deleted", "danger");
+
+  useEffect(() => {
+    refreshPosts();
+  }, [refreshPosts]);
+
+  const updatePost = useCallback(
+    async (id: number, patch: Partial<Post>) => {
+      const previous = posts;
+      // Optimistic: the table updates immediately, and rolls back if WP refuses.
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+      try {
+        const res = await fetch(`/api/posts/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not save the post.");
+        setPosts((prev) => prev.map((p) => (p.id === id ? (data.post as Post) : p)));
+      } catch (err: any) {
+        setPosts(previous);
+        addToast(err?.message ?? "Could not save the post.", "danger");
+        throw err;
+      }
     },
-    [addToast],
+    [posts, addToast],
   );
-  const togglePostStatus = useCallback(
-    (id: number) => {
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === id
-            ? { ...p, status: p.status === "published" ? "draft" : "published" }
-            : p,
-        ),
-      );
-      addToast("Post status updated");
+
+  const deletePost = useCallback(
+    async (id: number) => {
+      const previous = posts;
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      try {
+        const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not delete the post.");
+        addToast("Post moved to trash", "danger");
+      } catch (err: any) {
+        setPosts(previous);
+        addToast(err?.message ?? "Could not delete the post.", "danger");
+      }
     },
-    [addToast],
+    [posts, addToast],
+  );
+
+  const togglePostStatus = useCallback(
+    async (id: number) => {
+      const post = posts.find((p) => p.id === id);
+      if (!post) return;
+      const next: Post["status"] = post.status === "published" ? "draft" : "published";
+      try {
+        await updatePost(id, { status: next });
+        addToast(next === "published" ? "Post published" : "Moved to drafts");
+      } catch {
+        // updatePost has already surfaced the failure and rolled back.
+      }
+    },
+    [posts, updatePost, addToast],
+  );
+
+  const refreshBookings = useCallback(async () => {
+    setBookingsLoading(true);
+    try {
+      const res = await fetch("/api/bookings");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load bookings.");
+      setBookings(data.bookings as AdminBooking[]);
+      setBookingsError(null);
+    } catch (err: any) {
+      setBookingsError(err?.message ?? "Could not load bookings.");
+    } finally {
+      setBookingsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshBookings();
+  }, [refreshBookings]);
+
+  const setBookingStatus = useCallback(
+    async (databaseId: number, status: AdminBooking["status"], message: string) => {
+      const previous = bookings;
+      setBookings((prev) =>
+        prev.map((b) => (b.databaseId === databaseId ? { ...b, status } : b)),
+      );
+      try {
+        const res = await fetch(`/api/bookings/${databaseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not update the booking.");
+        addToast(message, status === "cancelled" ? "danger" : "success");
+      } catch (err: any) {
+        setBookings(previous);
+        addToast(err?.message ?? "Could not update the booking.", "danger");
+      }
+    },
+    [bookings, addToast],
   );
 
   const confirmBooking = useCallback(
-    (id: string) => {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "confirmed" as const } : b)),
-      );
-      addToast("Booking confirmed");
-    },
-    [addToast],
+    (databaseId: number) => setBookingStatus(databaseId, "confirmed", "Booking confirmed"),
+    [setBookingStatus],
   );
   const cancelBooking = useCallback(
-    (id: string) => {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" as const } : b)),
-      );
-      addToast("Booking cancelled", "danger");
-    },
-    [addToast],
+    (databaseId: number) => setBookingStatus(databaseId, "cancelled", "Booking cancelled"),
+    [setBookingStatus],
   );
+
+  /* ── Hospital settings ── */
+  const refreshSettings = useCallback(async () => {
+    setSettingsLoading(true);
+    try {
+      const res = await fetch("/api/settings");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load settings.");
+      setSettings(data.settings as HospitalSettings);
+      setSettingsError(null);
+      setSettingsDirty(false);
+    } catch (err: any) {
+      setSettingsError(err?.message ?? "Could not load settings.");
+    } finally {
+      setSettingsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshSettings();
+  }, [refreshSettings]);
+
+  const patchSettings = useCallback((patch: Partial<HospitalSettings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }));
+    setSettingsDirty(true);
+  }, []);
+
+  const saveSettings = useCallback(async () => {
+    setSavingSettings(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not save settings.");
+      // Trust WordPress's copy over ours, so sanitisation is reflected.
+      setSettings(data.settings as HospitalSettings);
+      setSettingsDirty(false);
+      addToast("Settings saved");
+    } catch (err: any) {
+      addToast(err?.message ?? "Could not save settings.", "danger");
+    } finally {
+      setSavingSettings(false);
+    }
+  }, [settings, addToast]);
 
   const addDept = useCallback(
     (d: string) => {
       const v = d.trim();
       if (!v) return;
-      setDepts((prev) => (prev.includes(v) ? prev : [...prev, v]));
-      addToast("Department added");
+      setSettings((prev) =>
+        prev.departments.includes(v)
+          ? prev
+          : { ...prev, departments: [...prev.departments, v] },
+      );
+      setSettingsDirty(true);
     },
-    [addToast],
-  );
-  const removeDept = useCallback(
-    (d: string) => {
-      setDepts((prev) => prev.filter((x) => x !== d));
-      addToast("Department removed", "danger");
-    },
-    [addToast],
+    [],
   );
 
+  const removeDept = useCallback((d: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      departments: prev.departments.filter((x) => x !== d),
+    }));
+    setSettingsDirty(true);
+  }, []);
+
   const toggleNotif = useCallback((key: keyof NotifSettings) => {
-    setNotifs((prev) => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev) => ({
+      ...prev,
+      notifications: { ...prev.notifications, [key]: !prev.notifications[key] },
+    }));
+    setSettingsDirty(true);
+  }, []);
+
+  /* ── Theme ── */
+  useEffect(() => {
+    const stored = localStorage.getItem("sech_admin_theme");
+    if (stored === "dark" || stored === "light") setTheme(stored);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("sech_admin_theme", next);
+      return next;
+    });
   }, []);
 
   const toggleToastPanel = useCallback(() => setToastPanelOpen((v) => !v), []);
@@ -216,18 +372,30 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         sidebarCollapsed,
         toggleSidebar,
         posts,
-        addPost,
+        postsLoading,
+        postsError,
+        refreshPosts,
         updatePost,
         deletePost,
         togglePostStatus,
         bookings,
+        bookingsLoading,
+        bookingsError,
+        refreshBookings,
         confirmBooking,
         cancelBooking,
-        depts,
+        settings,
+        settingsLoading,
+        settingsError,
+        settingsDirty,
+        patchSettings,
+        saveSettings,
+        savingSettings,
         addDept,
         removeDept,
-        notifs,
         toggleNotif,
+        theme,
+        toggleTheme,
         toasts,
         poppingToast,
         toastPanelOpen,
