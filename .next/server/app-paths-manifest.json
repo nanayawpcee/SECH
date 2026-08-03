@@ -1,10 +1,8 @@
 {
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/news/page": "app/news/page.js",
+  "/about/page": "app/about/page.js",
   "/page": "app/page.js",
-  "/admin/login/page": "app/admin/login/page.js",
-  "/admin/posts/page": "app/admin/posts/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/bookings/page": "app/admin/bookings/page.js",
-  "/admin/posts/new/page": "app/admin/posts/new/page.js",
-  "/admin/settings/page": "app/admin/settings/page.js"
+  "/services/page": "app/services/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/news/[slug]/page": "app/news/[slug]/page.js"
 }
