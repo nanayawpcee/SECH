@@ -6,6 +6,7 @@ import sanitizeHtml from "sanitize-html";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
+import { WP_ENDPOINT } from "@/lib/wp-graphql";
 
 interface Props {
   params: { slug: string };
@@ -35,7 +36,7 @@ function sanitizeArticleContent(html: string): string {
 }
 
 async function getPost(slug: string) {
-  const response = await fetch("https://sech-gh.org/graphql", {
+  const response = await fetch(WP_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -71,7 +72,7 @@ async function getPost(slug: string) {
 }
 
 async function getAllPosts() {
-  const response = await fetch("https://sech-gh.org/graphql", {
+  const response = await fetch(WP_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

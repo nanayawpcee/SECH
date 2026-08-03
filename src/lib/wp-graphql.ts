@@ -11,6 +11,16 @@ import { cookies } from "next/headers";
 export const WP_ENDPOINT =
   process.env.WP_GRAPHQL_ENDPOINT ?? "https://sech-gh.org/graphql";
 
+/**
+ * Root of the WordPress install, derived from the GraphQL endpoint so both come
+ * from one env var. Used by the REST calls WPGraphQL does not cover — media
+ * uploads go through wp-json, not /graphql.
+ *
+ * Assumes the endpoint ends in /graphql, which is the WPGraphQL default and
+ * holds for subdirectory installs too (example.com/blog/graphql → example.com/blog).
+ */
+export const WP_BASE_URL = WP_ENDPOINT.replace(/\/graphql\/?$/, "");
+
 export class WpGraphQLError extends Error {
   status: number;
   constructor(message: string, status = 400) {

@@ -172,27 +172,11 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         >
           {!sidebarCollapsed && (
             <>
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: "50%",
-                  // Matches the logo's own cream field so the circle reads as
-                  // part of the mark rather than a crop.
-                  background: "#fcf2e4",
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <img
-                  src="/images/logo.png"
-                  alt="Logo"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
+              <img
+                src="/images/logo.png"
+                alt="Logo"
+                style={{ width: 34, height: 34, flexShrink: 0 }}
+              />
               <div style={{ minWidth: 0, overflow: "hidden", whiteSpace: "nowrap" }}>
                 <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                   SECH Admin

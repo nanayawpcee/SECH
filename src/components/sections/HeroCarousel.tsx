@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { HERO_SLIDES } from "@/lib/data";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
+import { div } from "framer-motion/m";
 
 function usePattern(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -105,10 +106,10 @@ export function HeroCarousel() {
             gap: 10,
             marginBottom: 22,
           }}
-        >
+         >
           <div
             style={{
-              width: 32,
+              width: 10,
               height: 2,
               background: slide.accent,
               transition: "background 0.7s",
@@ -121,12 +122,14 @@ export function HeroCarousel() {
               fontWeight: 700,
               letterSpacing: "0.24em",
               textTransform: "uppercase",
-              fontFamily: "Georgia,serif",
+              fontFamily: "Lora,serif",
               transition: "color 0.7s",
             }}
           >
             St. Elizabeth Catholic Hospital
           </span>
+          
+
         </div>
 
         {/* Heading */}

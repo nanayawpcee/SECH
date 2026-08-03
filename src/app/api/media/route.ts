@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { WP_BASE_URL } from "@/lib/wp-graphql";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     const wpFormData = new FormData();
     wpFormData.append("file", fileItem, fileItem.name);
 
-    const wpResponse = await fetch("https://sech-gh.org/wp-json/wp/v2/media", {
+    const wpResponse = await fetch(`${WP_BASE_URL}/wp-json/wp/v2/media`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${adminToken}`,

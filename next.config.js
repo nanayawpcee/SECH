@@ -1,3 +1,11 @@
+// Featured images are served by the same WordPress install that answers
+// GraphQL, so the next/image allowlist follows WP_GRAPHQL_ENDPOINT rather than
+// pinning a hostname that would break the moment the endpoint is repointed.
+// Read at build time — rebuild after changing the endpoint.
+const wpHostname = new URL(
+  process.env.WP_GRAPHQL_ENDPOINT ?? 'https://sech-gh.org/graphql',
+).hostname;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', '192.168.2.82'],
@@ -15,7 +23,7 @@ const nextConfig = {
       {
         // WordPress-hosted featured images rendered on the news pages.
         protocol: 'https',
-        hostname: 'sech-gh.org',
+        hostname: wpHostname,
         port: '',
         pathname: '/**',
       },

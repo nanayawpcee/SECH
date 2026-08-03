@@ -39,32 +39,13 @@ export function Footer() {
               href="/"
               style={{ display: "flex", alignItems: "center", gap: 12 }}
             >
-              {/* Rounded Container to encapsulate the logo background */}
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%", // Use "50%" for a perfect circle, or "8px" for a rounded square box
-                  backgroundColor: "#fcf2e4", // Matches the cream/off-white background of your logo
-                  display: "flex",
-                  alignItems: "center", // Aligns the logo to the bottom of the container
-                  justifyContent: "center", // Aligns the logo to the left of the container
-                  overflow: "hidden",
-                  flexShrink: 0,
-                }}
-              >
-                <Image
-                  src="/images/logo.png"
-                  alt="St. Elizabeth Catholic Hospital Logo"
-                  width={36}
-                  height={36}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
+              <Image
+                src="/images/logo.png"
+                alt="St. Elizabeth Catholic Hospital Logo"
+                width={36}
+                height={36}
+                style={{ width: 36, height: 36, flexShrink: 0 }}
+              />
 
               <div>
                 <div

@@ -107,27 +107,13 @@ export default function AdminLoginPage() {
               color: "inherit",
             }}
           >
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: "#fcf2e4",
-                overflow: "hidden",
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Image
-                src="/images/logo.png"
-                alt="SECH Logo"
-                width={40}
-                height={40}
-                style={{ height: "100%", width: "100%", objectFit: "cover" }}
-              />
-            </div>
+            <Image
+              src="/images/logo.png"
+              alt="SECH Logo"
+              width={40}
+              height={40}
+              style={{ width: 40, height: 40, flexShrink: 0 }}
+            />
             <div>
               <h1
                 style={{

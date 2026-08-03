@@ -6,6 +6,7 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { NewsSection } from "@/components/sections/NewsSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { PhotoCarousel } from "@/components/sections/PhotoCarousel";
+import { WP_ENDPOINT } from "@/lib/wp-graphql";
 
 const GET_POSTS_QUERY = `
   query GetPosts {
@@ -27,7 +28,7 @@ const GET_POSTS_QUERY = `
 
 async function getPosts() {
   try {
-    const res = await fetch("https://sech-gh.org/graphql", {
+    const res = await fetch(WP_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: GET_POSTS_QUERY }),

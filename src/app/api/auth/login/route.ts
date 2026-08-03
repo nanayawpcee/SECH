@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { WP_ENDPOINT } from "@/lib/wp-graphql";
 
 export async function POST(request: Request) {
   try {
     const { identifier, password } = await request.json();
 
-    const wpResponse = await fetch("https://sech-gh.org/graphql", {
+    const wpResponse = await fetch(WP_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

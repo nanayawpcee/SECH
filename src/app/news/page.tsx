@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { NewsSection } from "@/components/sections/NewsSection";
+import { WP_ENDPOINT } from "@/lib/wp-graphql";
 
 export const metadata: Metadata = {
   title: "News & Announcements",
@@ -10,8 +11,7 @@ export const metadata: Metadata = {
 
 // Fetch news from WordPress GraphQL
 async function getNewsPosts() {
-  const response = await fetch("https://sech-gh.org/graphql", {
-    // ← Change to your actual WP URL
+  const response = await fetch(WP_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
