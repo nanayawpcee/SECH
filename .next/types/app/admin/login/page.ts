@@ -1,4 +1,4 @@
-// File: /Users/NanaYawPcee/Development/Projects/WebDevs/deploy-vercel/src/app/admin/login/page.tsx
+// File: /Users/NanaYawPcee/sech/src/app/admin/login/page.tsx
 import * as entry from '../../../../../src/app/admin/login/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

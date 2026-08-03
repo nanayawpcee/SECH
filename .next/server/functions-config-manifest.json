@@ -1,1 +1,0 @@
-{"version":1,"functions":{"/api/account/password":{},"/api/bookings/[id]":{},"/api/posts/[id]":{},"/api/users/[id]":{},"/api/users":{},"/api/posts":{},"/about":{},"/api/bookings":{},"/api/settings":{},"/contact":{},"/appointment":{},"/news/[slug]":{},"/news":{},"/organogram":{},"/services/[slug]":{},"/services":{}}}

@@ -1,4 +1,4 @@
-// File: /Users/NanaYawPcee/Development/Projects/WebDevs/deploy-vercel/src/app/api/auth/login/route.ts
+// File: /Users/NanaYawPcee/sech/src/app/api/auth/login/route.ts
 import * as entry from '../../../../../../src/app/api/auth/login/route.js'
 import type { NextRequest } from 'next/server.js'
 
