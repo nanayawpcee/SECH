@@ -12,6 +12,7 @@ import {
 import type { Post } from "@/app/admin/data";
 import type { AdminBooking } from "@/lib/wp-bookings";
 import { EMPTY_SETTINGS, type HospitalSettings } from "@/lib/wp-settings";
+import posthog from "posthog-js";
 
 export type ToastKind = "success" | "warn" | "danger";
 
@@ -176,6 +177,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Could not delete the post.");
+        if (posthog.__loaded) posthog.capture("post_deleted");
         addToast("Post moved to trash", "danger");
       } catch (err: any) {
         setPosts(previous);
@@ -233,6 +235,9 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Could not update the booking.");
+        if (posthog.__loaded) {
+          posthog.capture("booking_status_updated", { status });
+        }
         addToast(message, status === "cancelled" ? "danger" : "success");
       } catch (err: any) {
         setBookings(previous);
@@ -290,6 +295,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
       // Trust WordPress's copy over ours, so sanitisation is reflected.
       setSettings(data.settings as HospitalSettings);
       setSettingsDirty(false);
+      if (posthog.__loaded) posthog.capture("settings_saved");
       addToast("Settings saved");
     } catch (err: any) {
       addToast(err?.message ?? "Could not save settings.", "danger");
