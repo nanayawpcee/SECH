@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import posthog from "posthog-js";
 
 interface Admin {
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -44,7 +46,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem(SESSION_KEY);
-      if (stored) setAdmin(JSON.parse(stored));
+      if (stored) {
+        const restoredAdmin = JSON.parse(stored) as Admin;
+        setAdmin(restoredAdmin);
+
+        if (restoredAdmin.id && posthog.__loaded) {
+          posthog.identify(restoredAdmin.id, {
+            email: restoredAdmin.email,
+            name: restoredAdmin.name,
+            role: restoredAdmin.role,
+          });
+        }
+      }
     } catch {}
     setLoading(false);
   }, []);
@@ -65,6 +78,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /* 3. Core logout mechanism */
   const logout = useCallback(() => {
+    if (posthog.__loaded) {
+      posthog.capture("admin_logged_out");
+      posthog.reset();
+    }
     setAdmin(null);
     sessionStorage.removeItem(SESSION_KEY);
     
@@ -139,8 +156,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return data.error || "Invalid credentials. Please try again.";
       }
 
+      const adminId = data.user?.id;
+      if (typeof adminId !== "string" || !adminId) {
+        return "Your account could not be identified. Please try again.";
+      }
+
       // Convert backend profile details cleanly into your UI's context layout structure
       const adminUser: Admin = {
+        id: adminId,
         name: data.user?.name || "Admin User",
         email: data.user?.email || (identifier.includes("@") ? identifier.trim() : ""),
         role: "Super Admin", 
@@ -154,6 +177,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setAdmin(adminUser);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(adminUser));
+
+      if (posthog.__loaded) {
+        posthog.identify(adminUser.id, {
+          email: adminUser.email,
+          name: adminUser.name,
+          role: adminUser.role,
+        });
+        posthog.capture("admin_logged_in");
+      }
       
       return null; // Return null to flag successful execution chains
     } catch (err) {

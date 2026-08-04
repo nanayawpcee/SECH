@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminShellSuppressor } from "../components/layout/AdminShellSuppressor";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -36,9 +37,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <AdminShellSuppressor>{children}</AdminShellSuppressor>
-        </AuthProvider>
+        <PostHogProvider>
+          <AuthProvider>
+            <AdminShellSuppressor>{children}</AdminShellSuppressor>
+          </AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

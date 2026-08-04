@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminData } from "@/context/AdminDataContext";
 import type { Post } from "@/app/admin/data";
+import posthog from "posthog-js";
 
 const POST_TYPES: Post["type"][] = ["news", "blog", "event", "announcement"];
 
@@ -76,6 +77,7 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Failed uploading file to WordPress");
       setImgId(result.id);
+      if (posthog.__loaded) posthog.capture("media_uploaded");
       addToast("Image successfully uploaded to WordPress!");
     } catch (err: any) {
       addToast(`Upload Error: ${err.message || "Could not save media file"}`, "danger");
@@ -105,6 +107,9 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
         featuredImageId: featuredImageId ?? null,
       } as any);
       setEditorDirty(false);
+      if (posthog.__loaded) {
+        posthog.capture("post_saved", { content_type: type, status: nextStatus, operation: "updated" });
+      }
       addToast(nextStatus === "published" ? "Post published" : "Saved as draft");
       goToList();
     } catch {
@@ -142,6 +147,9 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
       }
 
       setEditorDirty(false);
+      if (posthog.__loaded) {
+        posthog.capture("post_saved", { content_type: type, status: targetStatus, operation: "created" });
+      }
       addToast(targetStatus === "published" ? "Post published" : "Saved as draft");
       // Re-read from WordPress so the list shows what was actually stored,
       // rather than a locally-guessed copy.

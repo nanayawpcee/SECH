@@ -6,6 +6,7 @@ import { NotificationBell } from "@/components/admin/NotificationBell";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { ASSIGNABLE_ROLES, type AdminUser } from "@/lib/wp-users";
 import { HOSPITAL_FIELDS } from "@/lib/wp-settings";
+import posthog from "posthog-js";
 
 const TABS = ["Hospital Info", "Booking Settings", "Notifications", "Admins", "Security"];
 
@@ -96,6 +97,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not send the invitation.");
       setInvite({ name: "", email: "", role: "editor" });
+      if (posthog.__loaded) posthog.capture("admin_invited", { role: invite.role });
       addToast(`Invitation sent to ${data.user.email}`);
       await loadUsers();
     } catch (err: any) {
@@ -117,6 +119,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not change the role.");
       setUsers((prev) => prev.map((u) => (u.id === id ? { ...data.user, isSelf: u.isSelf } : u)));
+      if (posthog.__loaded) posthog.capture("admin_role_updated", { role });
       addToast("Role updated");
     } catch (err: any) {
       setUsers(previous);
@@ -130,6 +133,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not remove the account.");
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      if (posthog.__loaded) posthog.capture("admin_removed");
       addToast(`${user.name} removed; their posts were reassigned to you`, "danger");
     } catch (err: any) {
       addToast(err?.message ?? "Could not remove the account.", "danger");
@@ -155,6 +159,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not update the password.");
       setPw({ current: "", next: "", confirm: "" });
+      if (posthog.__loaded) posthog.capture("password_changed");
       addToast("Password updated");
     } catch (err: any) {
       addToast(err?.message ?? "Could not update the password.", "danger");
