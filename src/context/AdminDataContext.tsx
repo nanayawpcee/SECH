@@ -13,6 +13,11 @@ import type { Post } from "@/app/admin/data";
 import type { AdminBooking } from "@/lib/wp-bookings";
 import { EMPTY_SETTINGS, type HospitalSettings } from "@/lib/wp-settings";
 
+/** Viewport width at which the admin console is treated as a laptop rather than
+ *  a tablet. 1024px is the conventional divide — iPad portrait (768) and most
+ *  tablets fall below it, laptops at or above. */
+const LAPTOP_MIN_WIDTH = 1024;
+
 export type ToastKind = "success" | "warn" | "danger";
 
 export interface Toast {
@@ -117,6 +122,20 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed((v) => !v), []);
+
+  /* ── Responsive sidebar ──
+   * Tablets and below get the icon rail; laptops and up get the full sidebar.
+   * Driven by matchMedia rather than a resize handler so it only fires when the
+   * viewport actually crosses the breakpoint — a manual toggle therefore sticks
+   * for as long as the user stays in that size class, instead of being undone
+   * by every stray resize event. */
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${LAPTOP_MIN_WIDTH - 0.02}px)`);
+    setSidebarCollapsed(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setSidebarCollapsed(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const addToast = useCallback((msg: string, kind: ToastKind = "success") => {
     const toast: Toast = { id: Date.now() + Math.random(), msg, kind };

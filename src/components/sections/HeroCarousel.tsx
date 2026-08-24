@@ -107,14 +107,6 @@ export function HeroCarousel() {
             marginBottom: 22,
           }}
          >
-          <div
-            style={{
-              width: 10,
-              height: 2,
-              background: slide.accent,
-              transition: "background 0.7s",
-            }}
-          />
           <span
             style={{
               color: slide.accent,

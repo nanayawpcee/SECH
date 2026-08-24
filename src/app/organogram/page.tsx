@@ -96,7 +96,7 @@ export default function OrganogramPage() {
                         color: "var(--text-dark)",
                         fontSize: "0.88rem",
                         marginBottom: holder ? 2 : 5,
-                        fontFamily: "Georgia,serif",
+                        fontFamily: "var(--font-serif)",
                       }}
                     >
                       {item.label}
@@ -159,7 +159,7 @@ export default function OrganogramPage() {
               <div>
                 <h3
                   style={{
-                    fontFamily: "Georgia,serif",
+                    fontFamily: "var(--font-serif)",
                     fontSize: "1.15rem",
                     fontWeight: 800,
                     color: "var(--text-dark)",

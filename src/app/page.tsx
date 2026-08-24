@@ -54,7 +54,6 @@ export default async function HomePage() {
       <ServicesGrid preview />
       <AboutSection />
       <EmergencyBanner />
-      {/* Pass the server-fetched data right here */}
       <NewsSection preview posts={posts} />
       <ContactSection />
     </>

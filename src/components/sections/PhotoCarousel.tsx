@@ -228,7 +228,6 @@ function Slide({
               marginBottom: 14,
             }}
           >
-            <div style={{ width: 24, height: 2, background: photo.accent }} />
             <span
               style={{
                 color: photo.accent,
@@ -243,7 +242,7 @@ function Slide({
           </div>
           <h3
             style={{
-              fontFamily: "Georgia,'Times New Roman',serif",
+              fontFamily: "var(--font-serif)",
               fontSize: "clamp(1.3rem, 2.5vw, 1.9rem)",
               fontWeight: 900,
               color: "#fff",
@@ -382,9 +381,6 @@ export function PhotoCarousel() {
                   marginBottom: 8,
                 }}
               >
-                <div
-                  style={{ width: 32, height: 2, background: "var(--primary)" }}
-                />
                 <span
                   style={{
                     fontSize: "0.7rem",
@@ -399,7 +395,7 @@ export function PhotoCarousel() {
               </div>
               <h2
                 style={{
-                  fontFamily: "Georgia,serif",
+                  fontFamily: "var(--font-serif)",
                   fontSize: "clamp(1.4rem,3vw,2rem)",
                   fontWeight: 800,
                   color: "var(--text-dark)",
@@ -702,7 +698,6 @@ export function PhotoCarousel() {
           </div>
         </div>
       </div>
-
     </section>
   );
 }

@@ -12,8 +12,9 @@
   --text-light: #6B8F82;
   --red: #D64045;
   --white: #FFFFFF;
-  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-serif: var(--font-lora);
   --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+  
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -127,15 +128,6 @@ select {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-}
-
-.section-tag::before {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 2px;
-  background: var(--primary);
-  flex-shrink: 0;
 }
 
 .section-tag span {
@@ -1167,7 +1159,7 @@ iframe {
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   transition: color 0.7s
 }
 
@@ -1176,7 +1168,7 @@ iframe {
   font-weight: 900;
   color: #fff;
   line-height: 1.08;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-serif);
   margin-bottom: 18px;
   white-space: pre-line;
   animation: slideUp 0.6s ease forwards

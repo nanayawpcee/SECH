@@ -1,7 +1,8 @@
 {
-  "/icon.png/route": "app/icon.png/route.js",
-  "/page": "app/page.js",
-  "/about/page": "app/about/page.js",
   "/services/page": "app/services/page.js",
-  "/admin/login/page": "app/admin/login/page.js"
+  "/about/page": "app/about/page.js",
+  "/news/page": "app/news/page.js",
+  "/news/[slug]/page": "app/news/[slug]/page.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/page": "app/page.js"
 }

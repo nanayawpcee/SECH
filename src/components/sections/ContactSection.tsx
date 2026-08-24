@@ -73,7 +73,7 @@ export function ContactSection() {
           <AnimateIn direction="left">
             <div className="contact-tagbar">
               <div className="bar" />
-              <span className="contact-tag">Reach Us</span>
+              <span>Reach Us</span>
             </div>
             <h2 className="contact-h2">Get in Touch</h2>
 

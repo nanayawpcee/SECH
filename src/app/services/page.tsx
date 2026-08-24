@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Explore the full range of medical and health services offered at St. Elizabeth Catholic Hospital — from in-patient care to specialist clinics.",
 };
 
-// ─── Card component ───────────────────────────────────────────────────────────
+// ─── Card component ─────────────ß──────────────────────────────────────────────
 function DepartmentCard({
   dept,
 }: {

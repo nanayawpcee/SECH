@@ -62,7 +62,7 @@ function StatItem({
           fontSize: isMobile ? "clamp(1.2rem, 5.5vw, 1.7rem)" : "clamp(2rem, 4vw, 3rem)",
           fontWeight: 900,
           color: "#063328",
-          fontFamily: "Georgia,serif",
+          fontFamily: "var(--font-serif)",
           lineHeight: 1,
           whiteSpace: "nowrap",
         }}

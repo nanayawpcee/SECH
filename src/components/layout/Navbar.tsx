@@ -77,7 +77,7 @@ export function Navbar() {
                   fontSize: "0.88rem",
                   fontWeight: 800,
                   letterSpacing: "0.05em",
-                  fontFamily: "Georgia,serif",
+                  fontFamily: "var(--font-serif)",
                   lineHeight: 1.1,
                 }}
               >

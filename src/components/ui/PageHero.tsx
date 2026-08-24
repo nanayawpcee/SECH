@@ -6,8 +6,8 @@ interface Props {
   title: string;
   subtitle?: string;
   accent?: string;
-  backgroundImage?: string;     // ← New prop
-  overlayOpacity?: number;      // Optional: control darkness (0.4 - 0.8 recommended)
+  backgroundImage?: string; // ← New prop
+  overlayOpacity?: number; // Optional: control darkness (0.4 - 0.8 recommended)
 }
 
 export function PageHero({
@@ -59,8 +59,14 @@ export function PageHero({
       <div className="container" style={{ position: "relative", zIndex: 1 }}>
         <AnimateIn>
           {tag && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 28, height: 2, background: accent }} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 16,
+              }}
+            >
               <span
                 style={{
                   color: accent,
