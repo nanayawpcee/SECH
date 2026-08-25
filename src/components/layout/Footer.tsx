@@ -4,6 +4,35 @@ import Link from "next/link";
 import Image from "next/image";
 import { SITE } from "@/lib/data";
 
+/** Rendered height of the accreditation crests, in px. */
+const LOGO_HEIGHT = 30;
+
+/**
+ * Accrediting bodies, shown as their real crests rather than initials.
+ * `width` is each file's own aspect ratio resolved at LOGO_HEIGHT, so the
+ * marks keep their proportions instead of being squared off.
+ */
+const ACCREDITATIONS = [
+  {
+    short: "CHAG",
+    name: "Christian Health Association of Ghana",
+    logo: "/images/partnerlogos/chag.png",
+    width: 25, // 460 × 543
+  },
+  {
+    short: "GHS",
+    name: "Ghana Health Service",
+    logo: "/images/partnerlogos/ghs.png",
+    width: 23, // 278 × 360
+  },
+  {
+    short: "MOH",
+    name: "Ministry of Health, Ghana",
+    logo: "/images/partnerlogos/moh.png",
+    width: 30, // 300 × 300
+  },
+];
+
 const FOOTER_LINKS = {
   Services: [
     { label: "In-Patient Care", href: "/services/inpatient" },
@@ -84,22 +113,42 @@ export function Footer() {
               Providing quality, compassionate Catholic healthcare to the
               communities of Ghana's Ahafo Region since the 1970s.
             </p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["CHAG", "GHS", "MOH"].map((badge) => (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              {ACCREDITATIONS.map((body) => (
                 <span
-                  key={badge}
+                  key={body.short}
+                  title={body.name}
                   style={{
-                    padding: "4px 10px",
-                    background: "rgba(232,184,75,0.12)",
-                    border: "1px solid rgba(232,184,75,0.25)",
-                    borderRadius: 3,
-                    color: "#E8B84B",
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "7px 11px",
+                    // The crests are full-colour marks drawn for light stock,
+                    // so they sit on a light plate rather than the near-black
+                    // footer — matching how the partner strip presents them.
+                    background: "rgba(255,255,255,0.94)",
+                    border: "1px solid rgba(255,255,255,0.16)",
+                    borderRadius: 4,
                   }}
                 >
-                  {badge}
+                  <Image
+                    src={body.logo}
+                    alt={body.name}
+                    width={body.width}
+                    height={LOGO_HEIGHT}
+                    style={{
+                      height: LOGO_HEIGHT,
+                      width: "auto",
+                      objectFit: "contain",
+                    }}
+                  />
                 </span>
               ))}
             </div>

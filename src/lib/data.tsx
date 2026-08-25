@@ -421,7 +421,7 @@ export const PHOTOS = [
     caption:
       "Our in-patient wards are equipped with modern beds, monitoring systems, and round-the-clock nursing care.",
     color: "#0A4F3C",
-    icon: "🏥",
+    icon: "/svgs/hospital.svg",
     image: "/images/aeriel.jpg",
     pattern: "cross",
     accent: "#E8B84B",
@@ -432,7 +432,7 @@ export const PHOTOS = [
     caption:
       "Advanced diagnostic equipment enables rapid, accurate results to guide clinical decisions.",
     color: "#063328",
-    icon: "🔬",
+    icon: "/svgs/lab.svg",
     image: "/images/lab.jpeg",
     pattern: "dots",
     accent: "#5DCAA5",
@@ -443,7 +443,7 @@ export const PHOTOS = [
     caption:
       "Our Eye Center offers comprehensive ophthalmic services from routine screening to cataract surgery.",
     color: "#1A2F2A",
-    icon: "👁️",
+    icon: "/svgs/eye_clinic.svg",
     image: "/images/eye.png",
     pattern: "wave",
     accent: "#E8B84B",
@@ -454,7 +454,7 @@ export const PHOTOS = [
     caption:
       "A dedicated, warm environment for mothers and newborns — from delivery through early childhood wellness.",
     color: "#0D3D2C",
-    icon: "🤰",
+    icon: "/svgs/pregnancy.svg",
     image: "/images/mat.jpeg",
     pattern: "cross",
     accent: "#F5D080",
@@ -513,20 +513,10 @@ export const DEPARTMENT_GRID_DATA = [
     },
     dotColor: "#5DCAA5",
     iconColor: "#5DCAA5",
-    icon: (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
-    ),
+    icon: "/svgs/hospital.svg",
+    // Light-toned artwork: darkened at render so it reads on the light plate.
+    // Drop this to "dark" once a darker mark replaces it.
+    iconTone: "light",
   },
   {
     key: "specialist",
@@ -555,21 +545,8 @@ export const DEPARTMENT_GRID_DATA = [
     },
     dotColor: "#E8B84B",
     iconColor: "#E8B84B",
-    icon: (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z" />
-        <path d="M8 14s-4 1-4 6h16c0-5-4-6-4-6" />
-      </svg>
-    ),
+    icon: "/svgs/consulting.svg",
+    iconTone: "light",
   },
   {
     key: "diagnostic",
@@ -591,22 +568,8 @@ export const DEPARTMENT_GRID_DATA = [
     },
     dotColor: "#5DCAA5",
     iconColor: "#5DCAA5",
-    icon: (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8M12 17v4" />
-        <path d="M7 10l3 3 4-6 3 3" />
-      </svg>
-    ),
+    icon: "/svgs/diagnostics.svg",
+    iconTone: "dark",
   },
   {
     key: "laboratory",
@@ -630,20 +593,7 @@ export const DEPARTMENT_GRID_DATA = [
     },
     dotColor: "#F5D080",
     iconColor: "#F5D080",
-    icon: (
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M9 3h6v11l3.5 6a1 1 0 0 1-.87 1.5H6.37A1 1 0 0 1 5.5 20L9 14V3z" />
-        <path d="M6 9h12" />
-      </svg>
-    ),
+    icon: "/svgs/lab.svg",
+    iconTone: "dark",
   },
 ] as const;

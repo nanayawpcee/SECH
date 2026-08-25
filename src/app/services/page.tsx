@@ -57,21 +57,43 @@ function DepartmentCard({
 
       {/* Card header */}
       <div style={{ ...dept.headerStyle, padding: "1.5rem 1.5rem 1.25rem" }}>
-        {/* Icon */}
+        {/* Icon.
+            The department marks are full-colour illustrations with baked-in
+            fills, so they sit on a light plate rather than the dark header —
+            dark-toned artwork has nothing to read against on deep green.
+            (dept.iconColor no longer tints these; it only applied to the old
+            currentColor line icons.) */}
         <div
           style={{
             width: 44,
             height: 44,
             borderRadius: "12px",
-            background: "rgba(255,255,255,0.08)",
+            background: "rgba(244,247,245,0.94)",
+            border: "1px solid rgba(255,255,255,0.18)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             marginBottom: "1rem",
-            color: dept.iconColor,
           }}
         >
-          {dept.icon}
+          <img
+            src={dept.icon}
+            alt=""
+            aria-hidden="true"
+            width={28}
+            height={28}
+            style={{
+              width: 28,
+              height: 28,
+              objectFit: "contain",
+              // Stopgap for the two light-toned marks — remove per department
+              // once its artwork is dark enough to stand on the plate unaided.
+              filter:
+                dept.iconTone === "light"
+                  ? "brightness(0.6) saturate(1.15)"
+                  : undefined,
+            }}
+          />
         </div>
 
         {/* Badge */}

@@ -119,7 +119,20 @@ function Slide({
             animation: active ? "pulse-icon 3s ease-in-out infinite" : "none",
           }}
         >
-          {photo.icon}
+          {/* Slides carry either an SVG path or an emoji, so the badge renders
+              whichever it was given rather than printing a path as text. */}
+          {photo.icon.startsWith("/") ? (
+            <img
+              src={photo.icon}
+              alt=""
+              aria-hidden="true"
+              width={100}
+              height={100}
+              style={{ width: 100, height: 100, objectFit: "contain" }}
+            />
+          ) : (
+            photo.icon
+          )}
         </div>
 
         {/* Small floating desktop hospital token */}

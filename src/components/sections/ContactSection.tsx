@@ -71,10 +71,20 @@ export function ContactSection() {
         <div className="contact-grid">
           {/* Left — contact info */}
           <AnimateIn direction="left">
-            <div className="contact-tagbar">
-              <div className="bar" />
-              <span>Reach Us</span>
-            </div>
+            <span
+              style={{
+                color: "#e1c11e",
+                fontSize: "0.8rem",
+                fontWeight: 500,
+                letterSpacing: 1.2,
+                textTransform: "uppercase",
+                fontFamily: "Lora,serif",
+                transition: "color 0.7s",
+              }}
+            >
+              Reach Us
+            </span>
+
             <h2 className="contact-h2">Get in Touch</h2>
 
             {CONTACT_INFO.map((item) => (
