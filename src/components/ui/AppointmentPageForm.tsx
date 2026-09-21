@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { submitAppointment } from "@/lib/submit-booking";
 import { useState } from "react";
 import { DEPARTMENTS } from "@/lib/data";
@@ -26,8 +27,8 @@ const TIMES = [
 
 const STEPS: { key: Step; label: string; icon: string }[] = [
   { key: "personal",    label: "Personal Info", icon: "👤" },
-  { key: "appointment", label: "Appointment",   icon: "📅" },
-  { key: "review",      label: "Review",        icon: "✅" },
+  { key: "appointment", label: "Appointment",   icon: "/svgs/appointment.svg" },
+  { key: "review",      label: "Review",        icon: "/svgs/review.svg" },
 ];
 
 function validate(step: Step, data: FormData) {
@@ -94,9 +95,9 @@ export function AppointmentPageForm() {
     <div>
       {/* Step indicator */}
       {step !== "success" && (
-        <div style={{ display: "flex", marginBottom: "2rem" }}>
+        <div className="booking-steps" style={{ display: "flex", marginBottom: "2rem" }}>
           {STEPS.map((s, i) => (
-            <div key={s.key} style={{ flex: 1, display: "flex", alignItems: "center" }}>
+            <div key={s.key} className={`booking-step${i === stepIndex ? " is-current" : ""}`}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flex: "0 0 auto" }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: "50%",
@@ -107,14 +108,18 @@ export function AppointmentPageForm() {
                   border: i === stepIndex ? "2.5px solid var(--accent)" : "2.5px solid transparent",
                   transition: "all 0.3s",
                 }}>
-                  {i < stepIndex ? "✓" : s.icon}
+                  {/* Upcoming steps sit on a pale disc, where these light-toned
+                      marks would otherwise wash out; darken them just there. */}
+                  {i < stepIndex ? "✓" : s.icon.startsWith("/")
+                    ? <Image src={s.icon} alt="" aria-hidden="true" width={20} height={20} style={{ width: 20, height: 20, objectFit: "contain", filter: i > stepIndex ? "brightness(0.55)" : undefined }} />
+                    : s.icon}
                 </div>
                 <span style={{ fontSize: "0.68rem", fontWeight: 700, color: i <= stepIndex ? "var(--primary)" : "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   {s.label}
                 </span>
               </div>
               {i < STEPS.length - 1 && (
-                <div style={{ flex: 1, height: 2, background: i < stepIndex ? "var(--primary)" : "#E2EBE7", margin: "0 6px", marginBottom: 22, transition: "background 0.3s" }} />
+                <div className="booking-step-line" style={{ flex: 1, height: 2, background: i < stepIndex ? "var(--primary)" : "#E2EBE7", margin: "0 6px", marginBottom: 22, transition: "background 0.3s" }} />
               )}
             </div>
           ))}

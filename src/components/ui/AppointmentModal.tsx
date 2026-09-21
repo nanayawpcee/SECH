@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { submitAppointment } from "@/lib/submit-booking";
 import { useState, useEffect, useRef } from "react";
 import { DEPARTMENTS } from "@/lib/data";
@@ -47,8 +48,8 @@ const TIMES = [
 
 const STEPS: { key: Step; label: string; icon: string }[] = [
   { key: "personal",    label: "Personal Info",   icon: "👤" },
-  { key: "appointment", label: "Appointment",     icon: "📅" },
-  { key: "review",      label: "Review",          icon: "✅" },
+  { key: "appointment", label: "Appointment",     icon: "/svgs/appointment.svg" },
+  { key: "review",      label: "Review",          icon: "/svgs/review.svg" },
 ];
 
 function validate(step: Step, data: FormData): Record<string, string> {
@@ -129,7 +130,9 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
         <div style={{ background: "var(--primary-dark)", padding: "1.5rem 1.75rem", borderRadius: "12px 12px 0 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 28, height: 28, background: "var(--accent)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✝</div>
+              {/* The logo is already a circle on a transparent field, so it needs
+                  no plate behind it. Decorative: the hospital name sits beside it. */}
+              <Image src="/images/logo.png" alt="" aria-hidden="true" width={28} height={28} style={{ width: 28, height: 28, flexShrink: 0 }} />
               <span style={{ color: "var(--accent)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>St. Elizabeth Catholic Hospital</span>
             </div>
             <h2 style={{ color: "#fff", fontFamily: "var(--font-serif)", fontSize: "1.35rem", fontWeight: 800, margin: 0 }}>Book an Appointment</h2>
@@ -143,9 +146,9 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
 
         {/* Step indicator */}
         {step !== "success" && (
-          <div style={{ padding: "1.25rem 1.75rem", background: "var(--off-white)", borderBottom: "1px solid #E2EBE7", display: "flex", gap: 0 }}>
+          <div className="booking-steps" style={{ padding: "1.25rem 1.75rem", background: "var(--off-white)", borderBottom: "1px solid #E2EBE7", display: "flex", gap: 0 }}>
             {STEPS.map((s, i) => (
-              <div key={s.key} style={{ flex: 1, display: "flex", alignItems: "center" }}>
+              <div key={s.key} className={`booking-step${i === stepIndex ? " is-current" : ""}`}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flex: "0 0 auto" }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: "50%",
@@ -156,12 +159,16 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                     fontWeight: 700, transition: "all 0.3s",
                     border: i === stepIndex ? "2.5px solid var(--accent)" : "2.5px solid transparent",
                   }}>
-                    {i < stepIndex ? "✓" : s.icon}
+                    {/* Upcoming steps sit on a pale disc, where these light-toned
+                        marks would otherwise wash out; darken them just there. */}
+                    {i < stepIndex ? "✓" : s.icon.startsWith("/")
+                      ? <Image src={s.icon} alt="" aria-hidden="true" width={18} height={18} style={{ width: 18, height: 18, objectFit: "contain", filter: i > stepIndex ? "brightness(0.55)" : undefined }} />
+                      : s.icon}
                   </div>
                   <span style={{ fontSize: "0.66rem", fontWeight: 700, color: i <= stepIndex ? "var(--primary)" : "var(--text-light)", letterSpacing: "0.06em", textAlign: "center", textTransform: "uppercase" }}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div style={{ flex: 1, height: 2, background: i < stepIndex ? "var(--primary)" : "#E2EBE7", margin: "0 4px", marginBottom: 20, transition: "background 0.3s" }} />
+                  <div className="booking-step-line" style={{ flex: 1, height: 2, background: i < stepIndex ? "var(--primary)" : "#E2EBE7", margin: "0 4px", marginBottom: 20, transition: "background 0.3s" }} />
                 )}
               </div>
             ))}

@@ -790,33 +790,46 @@ iframe {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 20%;
+  /* Sized by its content, not a fixed slice of the card: a 20% strip was
+     shorter than the icon row + label, so the label spilled past the card's
+     clipped bottom edge. Extra bottom padding keeps descenders clear of the
+     2rem corner curve. translateY(100%) still hides it fully off-card. */
+  height: auto;
+  min-height: 20%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.1rem 0 1.35rem;
   transform: translateY(100%);
   transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 5;
 }
 
+/* The sheet that slides up over the photo. Deep brand green with a gold
+   hairline, echoing the site header and footer, and a soft upward shadow so it
+   reads as lifting off the image rather than painted onto it. The bottom
+   corners are clipped by the card itself. */
 .team-card-overlay::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: #d4e771;
-  border-radius: 2rem 2rem 2rem 2rem;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 51, 40, 0.94) 0%,
+    var(--primary-dark) 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 2px solid var(--accent);
+  border-radius: 1.5rem 1.5rem 0 0;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.28);
   z-index: 1;
 }
 
 .team-card-display:hover .team-card-overlay {
   transform: translateY(0);
   /* Slides up into view */
-}
-
-.team-card-display:hover .team-card-overlay::before {
-  border-radius: 2rem 2rem 2rem 2rem;
 }
 
 /* Icons & Text */
@@ -851,16 +864,20 @@ iframe {
   position: relative;
 }
 
+/* Gold on hover rather than green — a green circle would sink into the
+   green sheet beneath it. */
 .team-social-icon:hover {
   transform: scale(1.15);
-  background: var(--primary);
-  color: white;
+  background: var(--accent);
+  color: var(--primary-dark);
 }
 
 .team-follow-text {
   font-weight: 700;
-  color: #1a1a1a;
-  font-size: 0.95rem;
+  color: var(--accent-light);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   opacity: 0;
   transition: opacity 0.4s ease 0.15s;
   z-index: 10;
@@ -2124,4 +2141,32 @@ iframe {
 [data-admin-theme="dark"] [style*="background: rgb(243, 244, 246)"] {
   background: var(--ad-surface-2) !important;
   color: var(--ad-text) !important;
+}
+/* ── Booking form step indicator ──────────────────────────────────────────
+   Phones show only the step you are on, centred; the trail of three needs
+   more width than a phone has, and shrinking it made the labels illegible.
+   Tablets and up keep the full three-step trail with its connectors.
+   `flex` lives here rather than inline so the media query can override it —
+   an inline style would win over this rule. */
+.booking-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 767.98 rather than 768: iPad portrait is exactly 768 and should get the
+   full trail, so the phone rule has to stop just short of it. */
+@media (max-width: 767.98px) {
+  .booking-steps {
+    justify-content: center;
+  }
+  .booking-step:not(.is-current) {
+    display: none;
+  }
+  .booking-step.is-current {
+    flex: 0 0 auto;
+  }
+  .booking-step-line {
+    display: none;
+  }
 }

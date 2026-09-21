@@ -111,7 +111,7 @@ export function Footer() {
               }}
             >
               Providing quality, compassionate Catholic healthcare to the
-              communities of Ghana's Ahafo Region since the 1970s.
+              communities of Ghana's Ahafo Region since 1956.
             </p>
             <div
               style={{

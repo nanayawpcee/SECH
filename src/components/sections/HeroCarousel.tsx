@@ -1,68 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { HERO_SLIDES } from "@/lib/data";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
-import { div } from "framer-motion/m";
-
-function usePattern(
-  canvasRef: React.RefObject<HTMLCanvasElement>,
-  type: string,
-  color: string,
-) {
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    canvas.width = canvas.offsetWidth || 1100;
-    canvas.height = canvas.offsetHeight || 560;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.lineWidth = 1.5;
-    if (type === "cross") {
-      for (let x = 0; x < canvas.width; x += 40) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 40) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-      }
-    } else if (type === "wave") {
-      for (let y = 0; y < canvas.height + 30; y += 30) {
-        ctx.beginPath();
-        for (let x = 0; x <= canvas.width; x += 2) {
-          const wy = y + Math.sin((x / 60) * Math.PI) * 12;
-          x === 0 ? ctx.moveTo(x, wy) : ctx.lineTo(x, wy);
-        }
-        ctx.stroke();
-      }
-    } else {
-      for (let x = 4; x < canvas.width; x += 28)
-        for (let y = 4; y < canvas.height; y += 28) {
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-    }
-  }, [type, color, canvasRef]);
-}
+import { PatternField } from "@/components/ui/PatternField";
 
 export function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { openModal } = useAppointmentModal();
   const slide = HERO_SLIDES[current];
-
-  usePattern(canvasRef, slide.pattern, slide.accent);
 
   const goTo = (idx: number) => {
     if (animating || idx === current) return;
@@ -72,7 +20,7 @@ export function HeroCarousel() {
   };
 
   useEffect(() => {
-    const t = setInterval(() => goTo((current + 1) % HERO_SLIDES.length), 5500);
+    const t = setInterval(() => goTo((current + 1) % HERO_SLIDES.length), 8000);
     return () => clearInterval(t);
   }, [current, animating]);
 
@@ -82,8 +30,14 @@ export function HeroCarousel() {
       style={{ background: slide.bg }}
       aria-label="Hero carousel"
     >
-      {/* Pattern canvas */}
-      <canvas ref={canvasRef} className="hero-canvas" />
+      {/* Each slide keeps its own design — cross, wave, dots — now driven by
+          the pointer instead of being painted once and left static. */}
+      <PatternField
+        pattern={slide.pattern}
+        motion="ambient"
+        color={slide.accent}
+        opacity={0.22}
+      />
 
       {/* Decorative rings */}
       <div

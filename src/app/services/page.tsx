@@ -275,6 +275,7 @@ export default function ServicesPage() {
         tag="What We Offer"
         title="Our Medical Services"
         subtitle="World-class healthcare across medicine, surgery, diagnostics, and specialist clinics — available to every patient, every day."
+        dotGrid
       />
 
       <section

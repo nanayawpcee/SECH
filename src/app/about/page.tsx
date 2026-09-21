@@ -3,13 +3,19 @@ import Image from "next/image";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
-import { TEAM } from "@/lib/data";
+import { SITE, TEAM } from "@/lib/data";
 import { StatsBar } from "@/components/sections/StatsBar";
+import { LinkedInIcon } from "@/components/ui/LinkedInIcon";
+import { Mail, Phone } from "lucide-react";
+
+/** Members without their own contact details reach the hospital's lines. */
+const HOSPITAL_EMAIL = SITE.email;
+const HOSPITAL_TEL = `tel:${SITE.phone.replace(/\s+/g, "")}`;
 
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about the history, mission, and team behind St. Elizabeth Catholic Hospital in Duayaw Nkwanta, Ghana.",
+    "Learn about the history, mission, and team behind St. Elizabeth Catholic Hospital in Hwidiem, Ahafo Region, Ghana.",
 };
 
 const MILESTONES = [
@@ -45,9 +51,9 @@ const MILESTONES = [
     image: "/images/milestone/2000s.jpg",
   },
   {
-    year: "2023",
-    title: "Digital Health Initiative",
-    desc: "SECH launched electronic health records and telemedicine pilot programmes.",
+    year: "2025",
+    title: "Accredited, Growing, Trusted",
+    desc: "The hospital sustained its SafeCare Level 4 accreditation, opened new specialty services including a wellness clinic and cervical screening centre, and established a research unit to anchor evidence-based practice. Outpatient attendance reached a record 99,274 — nearly a fifth higher than the year before — cared for by a team of 441 staff, and the hospital remains the only referral hospital for the Asutifi South District.",
     image: "/images/milestone/digital.jpg",
   },
 ];
@@ -81,7 +87,8 @@ export default function AboutPage() {
       <PageHero
         tag="Who We Are"
         title="About St. Elizabeth Catholic Hospital"
-        subtitle="Serving Ghana's Brong-Ahafo Region with faith, compassion, and clinical excellence for over five decades."
+        subtitle="Serving Ghana's Ahafo Region with faith, compassion, and clinical excellence since 1956."
+        dotGrid
       />
 
       {/* Mission & Vision Section */}
@@ -102,18 +109,18 @@ export default function AboutPage() {
               <div className="mission-box">
                 <div className="label">Mission</div>
                 <p>
-                  To provide quality, compassionate, and holistic healthcare
-                  services to all persons, especially the poor and vulnerable,
-                  guided by Catholic values and the teachings of the Church.
+                  To provide high quality healthcare in the most effective,
+                  efficient and innovative manner, specific to the needs of
+                  the communities we serve and at all times acknowledging the
+                  dignity of the patient.
                 </p>
               </div>
 
               <div className="vision-box">
                 <div className="label">Vision</div>
                 <p>
-                  To be the leading Catholic hospital in Ghana, recognised for
-                  excellence in patient care, community health, and the
-                  formation of compassionate health professionals.
+                  A health service that is best in meeting patient needs and
+                  expectations.
                 </p>
               </div>
             </AnimateIn>
@@ -240,35 +247,33 @@ export default function AboutPage() {
 
                     <div className="team-card-overlay">
                       <div className="team-social-row">
-                        {member.facebook && (
-                          <a
-                            href={member.facebook}
-                            className="team-social-icon"
-                            aria-label="Facebook"
-                          >
-                            <span className="emoji-icon">📘</span>
-                          </a>
-                        )}
-                        {member.instagram && (
-                          <a
-                            href={member.instagram}
-                            className="team-social-icon"
-                            aria-label="Instagram"
-                          >
-                            <span className="emoji-icon">📸</span>
-                          </a>
-                        )}
                         {member.linkedin && (
                           <a
                             href={member.linkedin}
                             className="team-social-icon"
-                            aria-label="LinkedIn"
+                            aria-label={`${member.name} on LinkedIn`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
-                            <span className="emoji-icon">💼</span>
+                            <LinkedInIcon size={20} />
                           </a>
                         )}
+                        <a
+                          href={`mailto:${member.email ?? HOSPITAL_EMAIL}`}
+                          className="team-social-icon"
+                          aria-label={`Email ${member.name}`}
+                        >
+                          <Mail size={20} strokeWidth={2} />
+                        </a>
+                        <a
+                          href={member.phone ? `tel:${member.phone.replace(/\s+/g, "")}` : HOSPITAL_TEL}
+                          className="team-social-icon"
+                          aria-label={`Call ${member.name}`}
+                        >
+                          <Phone size={20} strokeWidth={2} />
+                        </a>
                       </div>
-                      <span className="team-follow-text">Follow me</span>
+                      <span className="team-follow-text">Get in touch</span>
                     </div>
                   </div>
 

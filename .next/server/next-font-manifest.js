@@ -1,1 +1,1 @@
-self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/NanaYawPcee/sech/src/app/layout\":[\"static/media/110cbef534704ef8-s.p.woff2\",\"static/media/5c0c2bcbaa4149ca-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"
+self.__NEXT_FONT_MANIFEST="{\"pages\":{},\"app\":{\"/Users/NanaYawPcee/Development/Projects/WebDevs/sech/src/app/layout\":[\"static/media/110cbef534704ef8-s.p.woff2\",\"static/media/5c0c2bcbaa4149ca-s.p.woff2\"]},\"appUsingSizeAdjust\":true,\"pagesUsingSizeAdjust\":false}"

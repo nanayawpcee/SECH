@@ -66,6 +66,7 @@ export default async function NewsPage() {
         tag="Latest Updates"
         title="News & Announcements"
         subtitle="Events, health campaigns, hospital updates, and community outreach from SECH."
+        dotGrid
       />
       <NewsSection posts={posts} />
     </>

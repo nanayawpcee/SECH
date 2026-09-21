@@ -17,6 +17,7 @@ export default function ContactPage() {
         tag="Get in Touch"
         title="Contact St. Elizabeth Catholic Hospital"
         subtitle="We're here for you — reach out by phone, email, or visit us in Hwidiem, off Kumasi-Goaso Highway."
+        dotGrid
       />
 
       {/* Map embed placeholder */}

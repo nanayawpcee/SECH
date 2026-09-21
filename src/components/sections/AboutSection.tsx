@@ -47,9 +47,10 @@ export function AboutSection() {
                   }}
                 >
                   St. Elizabeth Catholic Hospital has been a beacon of healing
-                  in Ghana's Ahafo Region (previously Brong-Ahafo Region) for
-                  over five decades, guided by Catholic values of human dignity
-                  and compassion.
+                  in Ghana's Ahafo Region for nearly seven decades, guided by
+                  Catholic values of human dignity and compassion. Today it is
+                  the only referral hospital serving the Asutifi South District
+                  and beyond.
                 </p>
                 <div
                   style={{
@@ -62,7 +63,7 @@ export function AboutSection() {
                   }}
                 >
                   {[
-                    ["1970s", "Founded"],
+                    ["1956", "Founded"],
                     ["Dr. J. A. Vervoorn", "First Physician"],
                   ].map(([val, lbl]) => (
                     <div key={lbl}>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { AnimateIn } from "@/components/ui/AnimateIn";
+import { PatternField } from "@/components/ui/PatternField";
 
 interface Props {
   tag?: string;
@@ -8,6 +9,7 @@ interface Props {
   accent?: string;
   backgroundImage?: string; // ← New prop
   overlayOpacity?: number; // Optional: control darkness (0.4 - 0.8 recommended)
+  dotGrid?: boolean;
 }
 
 export function PageHero({
@@ -16,7 +18,8 @@ export function PageHero({
   subtitle,
   accent = "var(--accent)",
   backgroundImage,
-  overlayOpacity = 0.65,
+  overlayOpacity = 0.4,
+  dotGrid = false,
 }: Props) {
   return (
     <div
@@ -29,9 +32,7 @@ export function PageHero({
         overflow: "hidden",
       }}
     >
-      {/* Rendered via next/image rather than a CSS background so the hero —
-          the largest asset on these pages — gets responsive AVIF/WebP sizing.
-          Decorative: the heading carries the meaning, so alt is empty. */}
+
       {backgroundImage && (
         <Image
           src={backgroundImage}
@@ -53,6 +54,17 @@ export function PageHero({
             opacity: overlayOpacity,
             zIndex: 0,
           }}
+        />
+      )}
+
+      {/* Sits above the photo and its overlay, below the copy. */}
+      {dotGrid && (
+        <PatternField
+          pattern="dots"
+          color="#E8B84B"
+          opacity={0.15}
+          spacing={15}
+          dotRadius={1.4}
         />
       )}
 

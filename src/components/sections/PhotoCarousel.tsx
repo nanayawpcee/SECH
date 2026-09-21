@@ -422,13 +422,15 @@ export function PhotoCarousel() {
               style={{
                 color: "var(--text-light)",
                 fontSize: "0.88rem",
+                fontWeight: 700,
                 maxWidth: 380,
                 lineHeight: 1.65,
                 margin: 0,
               }}
             >
-              World-class facilities and caring professionals — everything you
-              need under one roof.
+              World-class facilities and caring professionals; The only referral
+              hospital in the district and is equipped to handle a wide range of
+              medical needs.
             </p>
           </div>
         </div>

@@ -32,7 +32,7 @@ export function ServicesGrid({ preview = false }: Props) {
                 Comprehensive Medical Services
               </h2>
               <p>
-                From emergency medicine to specialized clinics — SECH delivers
+                From emergency medicine to specialized clinics. We provide
                 expert care under one roof, every day of the year.
               </p>
             </div>

@@ -22,26 +22,7 @@ const CONTACT_INFO = [
   { icon: "⏰", label: "Hours", value: SITE.hours, href: undefined },
 ];
 
-// Grouped partner data
-const ACCREDITATIONS = [
-  "Ministry of Health",
-  "CHAG",
-  "Ghana Health Service",
-  "NHIS",
-  "Catholic Health Service Trust",
-];
-
-const CORPORATE_PARTNERS = [
-  "Newmont",
-  "Toyota Ghana",
-  "MANTRAC",
-  "UMA",
-  "Prime Insurance",
-  "NEDCO/VRA",
-  "Bridge Life Foundation",
-  "Cornelia Connelly of the Holy Child Jesus",
-  "Church of Pentecost",
-];
+// Partner and client lists live in partnerslider.tsx, which renders them.
 
 export function ContactSection() {
   const [form, setForm] = useState({
@@ -60,9 +41,6 @@ export function ContactSection() {
     setSending(false);
     setSubmitted(true);
   };
-
-  // Combines all partners for a single continuous scrolling track
-  const allPartners = [...ACCREDITATIONS, ...CORPORATE_PARTNERS];
 
   return (
     <section id="contact" className="contact-section">

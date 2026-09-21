@@ -2,7 +2,6 @@ node_modules
 .vercel
 .next/
 .DS_Store
-claude/
 wordpress-plugin/
 
 # Local environment files — these hold the WordPress booking key and must

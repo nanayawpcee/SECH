@@ -36,12 +36,12 @@ export const SERVICES = [
     shortDesc:
       "Personalised dietary advice and meal planning for optimal health.",
     fullDesc:
-      "Our nutrition department provides tailored dietary guidance and meal plans to support patients in achieving their health goals. Our registered dietitians work closely with medical teams to ensure nutritional needs are met throughout the treatment process.",
+      "Our nutrition unit promotes health and prevents disease through healthy dietary practices and nutrition education. Using diet therapy to manage illness and support rehabilitation, our dietitians work alongside clinical teams to help patients make informed food and lifestyle choices •	 with a particular focus on diabetes, hypertension, malnutrition and anaemia.",
     features: [
-      "24/7 nursing care",
-      "Consultant oversight",
-      "Private & shared wards",
-      "Family visiting hours",
+      "Diet therapy for diabetes & hypertension",
+      "Malnutrition assessment & rehabilitation",
+      "Nutrition education & counselling",
+      "Maternal & child nutrition at RCH",
     ],
   },
   {
@@ -68,7 +68,7 @@ export const SERVICES = [
     shortDesc:
       "Full ophthalmic services from routine screening to surgical interventions.",
     fullDesc:
-      "The SECH Eye Center provides comprehensive eye care including refraction, cataract surgery, glaucoma management, and diabetic retinopathy screening. We serve patients across the Brong-Ahafo Region and beyond.",
+      "The SECH Eye Center provides comprehensive eye care including refraction, cataract surgery, glaucoma management, and diabetic retinopathy screening. We serve patients across the Ahafo Region and beyond.",
     features: [
       "Cataract surgery",
       "Glaucoma screening",
@@ -291,7 +291,7 @@ export const HERO_SLIDES = [
   },
   {
     heading: "Your Health\nIs Our Mission",
-    sub: "From emergency care to specialised treatments — St. Elizabeth is with you at every step.",
+    sub: "From emergency care to specialised treatments • St. Elizabeth is with you at every step.",
     cta: "Meet Our Story",
     ctaHref: "/about",
     bg: "#0A4F3C",
@@ -310,11 +310,13 @@ export const HERO_SLIDES = [
 ];
 
 // ─── Stats ────────────────────────────────────────────────────
+// Source: SECH Annual Report 2025. Clinic opened 3 Dec 1956; bed complement
+// 100; 99,274 outpatient attendances in 2025; 441 staff at year end.
 export const STATS = [
-  { value: "50+", label: "Years of Service" },
-  { value: "200+", label: "Beds Capacity" },
-  { value: "90k+", label: "Patients Annually" },
-  { value: "150+", label: "Medical Staff" },
+  { value: "70", label: "Years of Service" },
+  { value: "100", label: "Beds" },
+  { value: "99k+", label: "Outpatient Visits a Year" },
+  { value: "441", label: "Staff Members" },
 ];
 
 // ─── News ─────────────────────────────────────────────────────
@@ -337,7 +339,7 @@ export const NEWS = [
     image: "/images/mat.jpeg",
     excerpt:
       "SECH leads regional initiative promoting exclusive breastfeeding for optimal newborn nutrition.",
-    body: "In partnership with regional health directorates, SECH launched an intensive breastfeeding awareness campaign targeting new mothers and community health workers across the Brong-Ahafo Region. The campaign emphasises the WHO-recommended six months of exclusive breastfeeding and provides practical support through peer counsellors.",
+    body: "In partnership with regional health directorates, SECH launched an intensive breastfeeding awareness campaign targeting new mothers and community health workers across the Ahafo Region. The campaign emphasises the WHO-recommended six months of exclusive breastfeeding and provides practical support through peer counsellors.",
   },
   {
     slug: "eye-center-equipment",
@@ -362,7 +364,20 @@ export const NEWS = [
 ];
 
 // ─── Team ─────────────────────────────────────────────────────
-export const TEAM = [
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  dept: string;
+  initials: string;
+  image: string;
+  /** Omit any of these and the card falls back to the hospital's own line. */
+  linkedin?: string;
+  email?: string;
+  phone?: string;
+}
+
+export const TEAM: TeamMember[] = [
   {
     name: "Sr. Georgina Lawrentia Quayson",
     role: "Hospital Manager",
@@ -370,8 +385,6 @@ export const TEAM = [
     initials: "GLQ",
     image:
       "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    facebook: "https://facebook.com/kwame",
-    instagram: "https://instagram.com/kwame",
     linkedin: "https://linkedin.com/in/kwame",
     id: 1,
   },
@@ -382,8 +395,6 @@ export const TEAM = [
     initials: "KKB",
     image:
       "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    facebook: "https://facebook.com/kwame",
-    instagram: "https://instagram.com/kwame",
     linkedin: "https://linkedin.com/in/kwame",
     id: 2,
   },
@@ -394,8 +405,6 @@ export const TEAM = [
     initials: "GB",
     image:
       "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    facebook: "https://facebook.com/kwame",
-    instagram: "https://instagram.com/kwame",
     linkedin: "https://linkedin.com/in/kwame",
     id: 3,
   },
@@ -406,8 +415,6 @@ export const TEAM = [
     initials: "MK",
     image:
       "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    facebook: "https://facebook.com/kwame",
-    instagram: "https://instagram.com/kwame",
     linkedin: "https://linkedin.com/in/kwame",
     id: 4,
   },
@@ -428,7 +435,7 @@ export const PHOTOS = [
   },
   {
     id: 2,
-    label: "State-of- State-of-the-Art Laboratory",
+    label: "State-of-the-Art Laboratory",
     caption:
       "Advanced diagnostic equipment enables rapid, accurate results to guide clinical decisions.",
     color: "#063328",
@@ -452,7 +459,7 @@ export const PHOTOS = [
     id: 4,
     label: "Maternity & Post-Natal Care",
     caption:
-      "A dedicated, warm environment for mothers and newborns — from delivery through early childhood wellness.",
+      "A dedicated, warm environment for mothers and newborns • from delivery through early childhood wellness.",
     color: "#0D3D2C",
     icon: "/svgs/pregnancy.svg",
     image: "/images/mat.jpeg",
