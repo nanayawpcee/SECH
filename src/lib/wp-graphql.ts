@@ -8,8 +8,13 @@ import { cookies } from "next/headers";
  * httpOnly cookie in exactly one place and never reaches client JavaScript.
  */
 
+/**
+ * WordPress lives on its own subdomain: the apex now serves this site from
+ * Vercel, so defaulting there would point the site at itself — it would fetch
+ * its own HTML instead of GraphQL. Set WP_GRAPHQL_ENDPOINT to override.
+ */
 export const WP_ENDPOINT =
-  process.env.WP_GRAPHQL_ENDPOINT ?? "https://sech-gh.org/graphql";
+  process.env.WP_GRAPHQL_ENDPOINT ?? "https://wp.sech-gh.org/graphql";
 
 /**
  * Root of the WordPress install, derived from the GraphQL endpoint so both come

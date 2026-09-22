@@ -2,22 +2,25 @@
 // GraphQL, so the next/image allowlist follows WP_GRAPHQL_ENDPOINT rather than
 // pinning a hostname that would break the moment the endpoint is repointed.
 // Read at build time — rebuild after changing the endpoint.
-const wpEndpoint = process.env.WP_GRAPHQL_ENDPOINT;
-const wpUrl = new URL(wpEndpoint ?? 'https://sech-gh.org/graphql');
+// The apex now serves this site from Vercel, so WordPress lives on its own
+// subdomain — that is the default, not sech-gh.org, which would point the site
+// at itself. Set WP_GRAPHQL_ENDPOINT to override.
+const wpUrl = new URL(
+  process.env.WP_GRAPHQL_ENDPOINT ?? 'https://wp.sech-gh.org/graphql',
+);
 const wpHostname = wpUrl.hostname;
 
-// Once the public domain points at Vercel, WordPress lives on a subdomain.
 // Staff who type sech-gh.org/wp-admin from habit would otherwise land on a
-// Next.js 404, so send them across. Only emitted when the endpoint is set
-// explicitly: with the fallback default the WordPress host IS the site host,
-// and redirecting there would loop.
-const wpAdminRedirects = wpEndpoint
-  ? ['/wp-admin', '/wp-admin/:path*', '/wp-login.php'].map((source) => ({
-      source,
-      destination: `${wpUrl.origin}${source}`,
-      permanent: false,
-    }))
-  : [];
+// Next.js 404, so send them across. Always emitted now that the WordPress host
+// is a different hostname from the site's; pointing WP_GRAPHQL_ENDPOINT back at
+// the site's own domain would make this loop.
+const wpAdminRedirects = ['/wp-admin', '/wp-admin/:path*', '/wp-login.php'].map(
+  (source) => ({
+    source,
+    destination: `${wpUrl.origin}${source}`,
+    permanent: false,
+  }),
+);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
