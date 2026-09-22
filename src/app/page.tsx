@@ -3,10 +3,10 @@ import { StatsBar } from "@/components/sections/StatsBar";
 import { ServicesGrid } from "@/components/sections/ServicesGrid";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
-import { NewsSection } from "@/components/sections/NewsSection";
+import { NewsSection, type WPPost } from "@/components/sections/NewsSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { PhotoCarousel } from "@/components/sections/PhotoCarousel";
-import { WP_ENDPOINT } from "@/lib/wp-graphql";
+import { wpQuery } from "@/lib/wp-graphql";
 
 const GET_POSTS_QUERY = `
   query GetPosts {
@@ -27,19 +27,10 @@ const GET_POSTS_QUERY = `
 `;
 
 async function getPosts() {
-  try {
-    const res = await fetch(WP_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: GET_POSTS_QUERY }),
-      next: { revalidate: 60 }, // Optional: caches data and checks for updates every 60 seconds
-    });
-    const { data } = await res.json();
-    return data?.posts?.nodes || [];
-  } catch (error) {
-    console.error("Error fetching homepage news:", error);
-    return [];
-  }
+  const data = await wpQuery<{ posts: { nodes: WPPost[] } }>(
+    GET_POSTS_QUERY,
+  );
+  return data?.posts?.nodes ?? [];
 }
 
 export default async function HomePage() {

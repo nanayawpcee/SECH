@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
-import { NewsSection } from "@/components/sections/NewsSection";
-import { WP_ENDPOINT } from "@/lib/wp-graphql";
+import { NewsSection, type WPPost } from "@/components/sections/NewsSection";
+import { wpQuery } from "@/lib/wp-graphql";
 
 export const metadata: Metadata = {
   title: "News & Announcements",
@@ -9,52 +9,42 @@ export const metadata: Metadata = {
     "Stay up to date with the latest news, events, and health updates from St. Elizabeth Catholic Hospital.",
 };
 
-// Fetch news from WordPress GraphQL
+// Fetch news from WordPress GraphQL. Returns [] when the CMS is unreachable,
+// so the page still builds and renders its empty state.
 async function getNewsPosts() {
-  const response = await fetch(WP_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: `
-        query GetNewsPosts {
-          posts(
-            first: 12
-            where: { 
-              status: PUBLISH,
-              orderby: { field: DATE, order: DESC }
+  const data = await wpQuery<{ posts: { nodes: WPPost[] } }>(`
+    query GetNewsPosts {
+      posts(
+        first: 12
+        where: {
+          status: PUBLISH,
+          orderby: { field: DATE, order: DESC }
+        }
+      ) {
+        nodes {
+          id
+          title
+          slug
+          date
+          excerpt
+          content
+          featuredImage {
+            node {
+              sourceUrl
+              altText
             }
-          ) {
+          }
+          categories {
             nodes {
-              id
-              title
-              slug
-              date
-              excerpt
-              content
-              featuredImage {
-                node {
-                  sourceUrl
-                  altText
-                }
-              }
-              categories {
-                nodes {
-                  name
-                }
-              }
+              name
             }
           }
         }
-      `,
-    }),
-    next: { revalidate: 60 }, // ISR: Revalidate every hour
-  });
+      }
+    }
+  `);
 
-  const { data } = await response.json();
-
-  return data?.posts?.nodes || [];
+  return data?.posts?.nodes ?? [];
 }
 
 export default async function NewsPage() {

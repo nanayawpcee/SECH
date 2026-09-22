@@ -6,7 +6,7 @@ import sanitizeHtml from "sanitize-html";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
-import { WP_ENDPOINT } from "@/lib/wp-graphql";
+import { wpQuery } from "@/lib/wp-graphql";
 
 interface Props {
   params: { slug: string };
@@ -36,66 +36,55 @@ function sanitizeArticleContent(html: string): string {
 }
 
 async function getPost(slug: string) {
-  const response = await fetch(WP_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: `
-        query GetPost($slug: String!) {
-          postBy(slug: $slug) {
-            id
-            title
-            date
-            excerpt
-            content
-            featuredImage {
-              node {
-                sourceUrl
-                altText
-              }
+  const data = await wpQuery<{ postBy: Record<string, any> | null }>(
+    `
+      query GetPost($slug: String!) {
+        postBy(slug: $slug) {
+          id
+          title
+          date
+          excerpt
+          content
+          featuredImage {
+            node {
+              sourceUrl
+              altText
             }
-            categories {
-              nodes {
-                name
-              }
+          }
+          categories {
+            nodes {
+              name
             }
           }
         }
-      `,
-      variables: { slug },
-    }),
-    next: { revalidate: 60 },
-  });
+      }
+    `,
+    { slug },
+  );
 
-  const { data } = await response.json();
-  return data?.postBy;
+  return data?.postBy ?? null;
 }
 
 async function getAllPosts() {
-  const response = await fetch(WP_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: `
-        query GetAllPosts {
-          posts(first: 20) {
-            nodes {
-              slug
-            }
-          }
+  const data = await wpQuery<{ posts: { nodes: { slug: string }[] } }>(`
+    query GetAllPosts {
+      posts(first: 20) {
+        nodes {
+          slug
         }
-      `,
-    }),
-    next: { revalidate: 60 },
-  });
+      }
+    }
+  `);
 
-  const { data } = await response.json();
-  return data?.posts?.nodes || [];
+  return data?.posts?.nodes ?? [];
 }
 
 export async function generateStaticParams() {
+  // An empty list is a valid answer: nothing is prerendered and each article is
+  // rendered on first request instead. That keeps a CMS outage from failing the
+  // build — which is what "Failed to collect page data for /news/[slug]" was.
   const posts = await getAllPosts();
-  return posts.map((post: any) => ({ slug: post.slug }));
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

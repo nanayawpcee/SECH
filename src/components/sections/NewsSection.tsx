@@ -9,7 +9,7 @@ const TAG_COLORS: Record<string, string> = {
   News: "var(--accent)",
 };
 
-interface WPPost {
+export interface WPPost {
   slug: string;
   title: string;
   excerpt: string;

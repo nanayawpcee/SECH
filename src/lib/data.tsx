@@ -313,10 +313,10 @@ export const HERO_SLIDES = [
 // Source: SECH Annual Report 2025. Clinic opened 3 Dec 1956; bed complement
 // 100; 99,274 outpatient attendances in 2025; 441 staff at year end.
 export const STATS = [
-  { value: "70", label: "Years of Service" },
-  { value: "100", label: "Beds" },
-  { value: "99k+", label: "Outpatient Visits a Year" },
-  { value: "441", label: "Staff Members" },
+  { value: "70+", label: "Years of Service" },
+  { value: "100+", label: "Beds" },
+  { value: "99k+", label: "OPD annual visits" },
+  { value: "440+", label: "Staff Members" },
 ];
 
 // ─── News ─────────────────────────────────────────────────────

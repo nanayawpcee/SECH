@@ -2,39 +2,60 @@
 
 import Image from "next/image";
 
-/** A logo is optional: chips without one render a monogram badge instead of
- *  firing a request for an image that doesn't exist. */
 interface Partner {
   name: string;
+  /** Omit and the chip shows a monogram — no request is made for a file that
+   *  doesn't exist. */
   logo?: string;
+  /** The artwork already spells the company name, so the chip shows the logo
+   *  alone rather than printing the name twice. */
+  wordmark?: boolean;
 }
 
 const ACCREDITATIONS: Partner[] = [
   { name: "Ministry of Health", logo: "/partnerlogos/moh.png" },
   { name: "CHAG", logo: "/partnerlogos/chag.png" },
   { name: "Ghana Health Service", logo: "/partnerlogos/ghs.png" },
-  { name: "NHIS", logo: "/partnerlogos/nhis.png" },
+  { name: "NHIS", logo: "/partnerlogos/nhis-wordmark.png", wordmark: true },
   { name: "Catholic Health Service Trust", logo: "/partnerlogos/chst.png" },
 ];
 
 const CORPORATE_CLIENTS: Partner[] = [
   { name: "Newmont", logo: "/partnerlogos/newmont.png" },
-  { name: "Orica", logo: "/partnerlogos/orica.png" },
-  { name: "GTS", logo: "/partnerlogos/gts.png" },
+  { name: "Orica", logo: "/partnerlogos/orica.png", wordmark: true },
+  { name: "GTS Drilling", logo: "/partnerlogos/gts.png", wordmark: true },
   { name: "Toyota Ghana", logo: "/partnerlogos/toyota.png" },
-  { name: "Geodrill", logo: "/partnerlogos/geodrill.png" },
-  { name: "SOS", logo: "/partnerlogos/sos.png" },
+  { name: "Geodrill", logo: "/partnerlogos/geodrill.png", wordmark: true },
+  // The supplied SOS file is white artwork on transparency — invisible on a
+  // white chip — so it's re-inked in brand green; the original is untouched.
+  {
+    name: "International SOS",
+    logo: "/partnerlogos/sos-dark.png",
+    wordmark: true,
+  },
   { name: "Pelvin Company", logo: "/partnerlogos/PC.png" },
-  { name: "AUMS", logo: "/partnerlogos/aums.png" },
-  { name: "Liebherr",  },
-  { name: "Mantrac",  },
-  { name: "Kal Tire", logo: "/partnerlogos/kal-tire.png" },
-  { name: "Medisite Services Ghana", logo: "/partnerlogos/msg.png" },
+  { name: "AUMS", logo: "/partnerlogos/aums.png", wordmark: true },
+  { name: "Liebherr", logo: "/partnerlogos/liebherr.svg", wordmark: true },
+  { name: "Mantrac", logo: "/partnerlogos/mantrac.svg", wordmark: true },
+  { name: "Kal Tire", logo: "/partnerlogos/kal-tire.png", wordmark: true },
+  {
+    name: "MediSite Services Ghana",
+    logo: "/partnerlogos/msg.png",
+    wordmark: true,
+  },
 ];
 
 const PARTNERS_AND_DONORS: Partner[] = [
-  { name: "NEDCO/VRA", logo: "/partnerlogos/nedco.jpg" },
-  { name: "Nationwide Insurance", logo: "/partnerlogos/nwi.jpg" },
+  {
+    name: "NEDCo / VRA",
+    logo: "/partnerlogos/nedco-wordmark.png",
+    wordmark: true,
+  },
+  {
+    name: "Nationwide Medical Insurance",
+    logo: "/partnerlogos/nwi-wordmark.png",
+    wordmark: true,
+  },
   {
     name: "Cornelia Connelly of the Holy Child Jesus",
     logo: "/partnerlogos/cornelia.jpg",
@@ -42,10 +63,18 @@ const PARTNERS_AND_DONORS: Partner[] = [
   { name: "Church of Pentecost", logo: "/partnerlogos/cop.png" },
 ];
 
+/** Marquee pace, in seconds per chip. Rows scale their duration by item count
+ *  so every row moves at the same readable speed regardless of length. */
+const SECONDS_PER_CHIP = 4;
+
+/** Box width for wordmark logos, px. Wide enough for the longest mark to be
+ *  legible at chip height without dominating the row. */
+const WORDMARK_WIDTH = 96;
+
 // ---------------------------------------------------------------------------
 
-/** Short all-caps names are acronyms (GTS, UMA, AUMS) and read better whole
- *  than truncated to two letters. */
+/** Short all-caps names are acronyms (GTS, AUMS) and read better whole than
+ *  truncated to two letters. */
 function getInitials(name: string) {
   const words = name.trim().split(/\s+/);
   if (words.length === 1) {
@@ -57,35 +86,13 @@ function getInitials(name: string) {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-const CHIP_ACCENTS = [
-  "#c9a84c",
-  "#4c9ac9",
-  "#84c94c",
-  "#c94c84",
-  "#4cc9a8",
-  "#c97a4c",
-  "#a84cc9",
-];
-function chipColor(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return CHIP_ACCENTS[h % CHIP_ACCENTS.length];
-}
-
 // ---------------------------------------------------------------------------
 // LogoChip
 // ---------------------------------------------------------------------------
 
-function Monogram({
-  name,
-  size,
-  isAccred,
-}: {
-  name: string;
-  size: number;
-  isAccred: boolean;
-}) {
-  const color = chipColor(name);
+/** One treatment for every monogram — brand green with gold initials — so the
+ *  badges read as a set instead of a scatter of unrelated colours. */
+function Monogram({ name, size }: { name: string; size: number }) {
   const text = getInitials(name);
   return (
     <div
@@ -94,17 +101,16 @@ function Monogram({
         width: size,
         height: size,
         borderRadius: 6,
-        background: `${color}22`,
-        border: `1.5px solid ${color}55`,
+        background: "var(--primary-dark)",
+        border: "1px solid rgba(232, 184, 75, 0.35)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         // Four-letter acronyms need a touch less size to sit inside the badge.
-        fontSize:
-          text.length > 2 ? "0.52rem" : isAccred ? "0.62rem" : "0.65rem",
+        fontSize: text.length > 2 ? "0.52rem" : "0.64rem",
         fontWeight: 800,
-        color,
-        letterSpacing: text.length > 2 ? "0.02em" : "0.04em",
+        color: "var(--accent)",
+        letterSpacing: text.length > 2 ? "0.02em" : "0.05em",
         flexShrink: 0,
       }}
     >
@@ -116,13 +122,9 @@ function Monogram({
 function LogoChip({
   name,
   logo,
+  wordmark,
   variant,
-}: {
-  name: string;
-  logo?: string;
-  variant: "accreditation" | "corporate";
-}) {
-  const color = chipColor(name);
+}: Partner & { variant: "accreditation" | "corporate" }) {
   const isAccred = variant === "accreditation";
   const size = isAccred ? 30 : 32;
 
@@ -134,73 +136,50 @@ function LogoChip({
         alignItems: "center",
         gap: 10,
         padding: isAccred ? "10px 20px" : "10px 22px",
-        background: "rgb(255, 255, 255)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "#fff",
+        // Border and transition are in the stylesheet so :hover can change
+        // them; an inline border would override the hover rule.
         borderRadius: 8,
         whiteSpace: "nowrap",
         cursor: "default",
-        transition: "background 0.2s, border-color 0.2s, transform 0.2s",
         flexShrink: 0,
       }}
     >
-      {/* No logo supplied → monogram, with no image request made at all.
-          With a logo, it still falls back to a monogram if the file fails.
-          These render at ~32px but the source files run to 200KB+, so they go
-          through next/image rather than being served raw. */}
       {!logo ? (
-        <Monogram name={name} size={size} isAccred={isAccred} />
+        <Monogram name={name} size={size} />
       ) : (
+        // Wordmarks get a wide box to be read in; symbols and crests stay
+        // square. The box is fixed, not "auto": the three marquee copies must
+        // be identical widths for the loop to be seamless, and an auto-width
+        // image is sized differently before and after it loads. Both go
+        // through next/image — sources run to 200KB+ but render at ~32px.
         <Image
           src={`/images${logo}`}
           alt={name}
-          width={size}
+          width={wordmark ? WORDMARK_WIDTH : size}
           height={size}
           style={{
-            width: size,
             height: size,
+            width: wordmark ? WORDMARK_WIDTH : size,
             objectFit: "contain",
             flexShrink: 0,
-            opacity: 0.85,
-          }}
-          onError={(e) => {
-            // Swap the broken image for an inline monogram badge
-            const img = e.currentTarget;
-            const parent = img.parentElement;
-            if (!parent) return;
-            img.style.display = "none";
-            const badge = document.createElement("div");
-            badge.textContent = getInitials(name);
-            Object.assign(badge.style, {
-              width: `${size}px`,
-              height: `${size}px`,
-              borderRadius: "6px",
-              background: `${color}22`,
-              border: `1.5px solid ${color}55`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: isAccred ? "0.62rem" : "0.65rem",
-              fontWeight: "800",
-              color: color,
-              letterSpacing: "0.04em",
-              flexShrink: "0",
-            });
-            parent.insertBefore(badge, img);
           }}
         />
       )}
 
-      {/* Partner name */}
-      <span
-        style={{
-          fontSize: isAccred ? "0.78rem" : "0.8rem",
-          fontWeight: 600,
-          color: "rgba(0,0,0,0.75)",
-          letterSpacing: "0.01em",
-        }}
-      >
-        {name}
-      </span>
+      {/* The name is dropped when the artwork already carries it. */}
+      {!wordmark && (
+        <span
+          style={{
+            fontSize: isAccred ? "0.78rem" : "0.8rem",
+            fontWeight: 600,
+            color: "rgba(0,0,0,0.75)",
+            letterSpacing: "0.01em",
+          }}
+        >
+          {name}
+        </span>
+      )}
     </div>
   );
 }
@@ -213,26 +192,33 @@ function SliderRow({
   items,
   variant,
   direction,
-  duration,
 }: {
   items: Partner[];
   variant: "accreditation" | "corporate";
   direction: "left" | "right";
-  duration: number;
 }) {
-  const animation =
-    direction === "left"
-      ? `scrollLeft ${duration}s linear infinite`
-      : `scrollRight ${duration}s linear infinite`;
+  const duration = items.length * SECONDS_PER_CHIP;
+  // The animation itself lives in CSS and only the duration is passed in as a
+  // custom property. Setting the `animation` shorthand inline would out-rank
+  // the stylesheet's pause-on-hover rule, since inline styles beat class rules.
+  const trackStyle = {
+    "--marquee-duration": `${duration}s`,
+  } as React.CSSProperties;
+
+  // Three identical groups, each padded by exactly one gap, so that a third of
+  // the track is *exactly* one repeat. Tripling the chips in a single flex
+  // row left the loop a third of a gap short, and it visibly jumped every
+  // cycle.
+  const group = (key: string) => (
+    <div key={key} className="marquee-set" aria-hidden={key !== "a"}>
+      {items.map((p) => (
+        <LogoChip key={`${key}-${p.name}`} {...p} variant={variant} />
+      ))}
+    </div>
+  );
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        overflow: "hidden",
-      }}
-    >
+    <div className="marquee">
       {/* Side fade masks */}
       <div
         style={{
@@ -245,17 +231,12 @@ function SliderRow({
         }}
       />
       <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          width: "max-content",
-          animation,
-        }}
+        className={`marquee-track marquee-track--${direction}`}
+        style={trackStyle}
       >
-        {/* Triple the items so the loop is seamless at any viewport width */}
-        {[...items, ...items, ...items].map((p, i) => (
-          <LogoChip key={i} name={p.name} logo={p.logo} variant={variant} />
-        ))}
+        {group("a")}
+        {group("b")}
+        {group("c")}
       </div>
     </div>
   );
@@ -323,14 +304,11 @@ export function Partners() {
         gap: "1.25rem",
       }}
     >
-      {/* Keyframes */}
-
       <RowLabel>Accreditations</RowLabel>
       <SliderRow
         items={ACCREDITATIONS}
         variant="accreditation"
         direction="left"
-        duration={10}
       />
 
       <div style={{ marginTop: "0.5rem" }}>
@@ -340,7 +318,6 @@ export function Partners() {
         items={CORPORATE_CLIENTS}
         variant="corporate"
         direction="right"
-        duration={18}
       />
 
       <div style={{ marginTop: "0.5rem" }}>
@@ -350,7 +327,6 @@ export function Partners() {
         items={PARTNERS_AND_DONORS}
         variant="corporate"
         direction="left"
-        duration={10}
       />
     </div>
   );

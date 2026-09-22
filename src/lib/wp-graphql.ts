@@ -21,6 +21,70 @@ export const WP_ENDPOINT =
  */
 export const WP_BASE_URL = WP_ENDPOINT.replace(/\/graphql\/?$/, "");
 
+/**
+ * Public-page read that never throws.
+ *
+ * The news pages are prerendered, so a WordPress that is down, misconfigured,
+ * or answering /graphql with an HTML error page would otherwise fail the whole
+ * deployment — `.json()` on `<!DOCTYPE …` throws, and Next turns that into
+ * "Failed to collect page data". Returns null instead: the page renders its
+ * empty state, the deploy succeeds, and the next revalidation picks the posts
+ * up once the CMS is healthy again.
+ *
+ * Admin routes keep using `wpGraphQL` below, which throws — there a failure
+ * must surface to the signed-in user, not be swallowed.
+ */
+export async function wpQuery<T>(
+  query: string,
+  variables: Record<string, unknown> = {},
+  revalidate = 60,
+): Promise<T | null> {
+  try {
+    const response = await fetch(WP_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate },
+    });
+
+    if (!response.ok) {
+      console.error(
+        `[wp] ${WP_ENDPOINT} returned ${response.status}. A 404 usually means WordPress is not routing /graphql: check that index.php is in place (all WP routing goes through it), that WPGraphQL is active, and that permalinks have been re-saved.`,
+      );
+      return null;
+    }
+
+    // A misrouted /graphql serves Apache's or Next's HTML error page. Parsing
+    // that as JSON is what turns a CMS outage into a failed build, so check
+    // before parsing rather than catching the SyntaxError after.
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("json")) {
+      console.error(
+        `[wp] ${WP_ENDPOINT} answered with "${contentType}" instead of JSON — the endpoint is not serving WPGraphQL.`,
+      );
+      return null;
+    }
+
+    const payload = (await response.json()) as {
+      data?: T;
+      errors?: Array<{ message?: string }>;
+    };
+
+    if (payload.errors?.length) {
+      console.error(
+        `[wp] GraphQL errors: ${payload.errors
+          .map((e) => e?.message ?? "unknown")
+          .join("; ")}`,
+      );
+    }
+
+    return payload.data ?? null;
+  } catch (error) {
+    console.error(`[wp] Could not reach ${WP_ENDPOINT}:`, error);
+    return null;
+  }
+}
+
 export class WpGraphQLError extends Error {
   status: number;
   constructor(message: string, status = 400) {

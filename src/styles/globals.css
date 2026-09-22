@@ -1514,10 +1514,74 @@ iframe {
 }
 
 /* End of component-level styles */
+/* ── Partner marquee ──────────────────────────────────────────────────── */
+.marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* The site-wide `div { max-width: 100% !important }` overflow guard (above)
+   would cap this strip at the viewport, so the animation slid a third of a
+   clipped track and snapped back each cycle — most chips never came into
+   view. A marquee is *meant* to be wider than its container; the !important
+   here is what it takes to out-rank that guard. */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  max-width: none !important;
+}
+.marquee-track--left {
+  animation: scrollLeft var(--marquee-duration, 20s) linear infinite;
+}
+.marquee-track--right {
+  animation: scrollRight var(--marquee-duration, 20s) linear infinite;
+}
+
+/* Each group is one full set plus a trailing gap, so three groups translate
+   by exactly one group with no seam. */
+.marquee-set {
+  display: flex;
+  gap: 1rem;
+  padding-right: 1rem;
+  flex-shrink: 0;
+  max-width: none !important;
+}
+
+/* Let people stop it to read — hover or keyboard focus. */
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+/* The chip stays a solid white card on hover — previously it faded to 10%
+   white, which left dark text on dark green and made the name vanish. */
+.logo-chip {
+  border: 1px solid transparent;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
 .logo-chip:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: var(--accent) !important;
+  border-color: var(--accent);
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  /* One copy is enough when nothing scrolls. */
+  .marquee-set[aria-hidden="true"] {
+    display: none;
+  }
+  .marquee-set {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-right: 0;
+  }
 }
 
 /* PhotoCarousel keyframes and mobile overrides */
