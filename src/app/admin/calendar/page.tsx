@@ -68,7 +68,7 @@ export default function CalendarPage() {
   return (
     <>
       {/* Topbar */}
-      <div style={{ background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 5, background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>
           Calendar — {MONTHS[month]} {year}
         </div>
@@ -190,7 +190,9 @@ export default function CalendarPage() {
           </div>
 
           {/* Side panel */}
-          <div style={{ position: "sticky", top: 20 }}>
+          {/* Offset past the sticky topbar (~54px) so the panel parks below
+              it rather than sliding underneath. */}
+          <div style={{ position: "sticky", top: 74 }}>
             {/* Legend */}
             <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Legend</div>

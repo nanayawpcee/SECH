@@ -202,7 +202,7 @@ export default function BookingsPage() {
   return (
     <>
       {/* Topbar */}
-      <div style={{ background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 5, background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>All Bookings</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>

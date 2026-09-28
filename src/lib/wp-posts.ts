@@ -8,6 +8,7 @@ export interface WpPostNode {
   content: string | null;
   slug: string | null;
   date: string | null;
+  commentStatus?: string | null;
   status: string | null;
   author?: { node?: { name?: string | null } | null } | null;
   featuredImageDatabaseId?: number | null;
@@ -17,6 +18,7 @@ export interface WpPostNode {
 
 export const POST_FIELDS = `
   databaseId
+  commentStatus
   title
   excerpt
   content
@@ -59,6 +61,8 @@ function deriveStatus(status: string | null): Post["status"] {
 export type AdminPost = Post & {
   featuredImageId: number | null;
   featuredImageUrl: string | null;
+  /** False when the post's comments are closed in WordPress. */
+  commentsOpen: boolean;
 };
 
 export function mapWpPost(node: WpPostNode): AdminPost {
@@ -79,6 +83,7 @@ export function mapWpPost(node: WpPostNode): AdminPost {
     slug: node.slug ?? "",
     featuredImageId: node.featuredImageDatabaseId ?? null,
     featuredImageUrl: node.featuredImage?.node?.sourceUrl ?? null,
+    commentsOpen: node.commentStatus !== "closed",
   };
 }
 

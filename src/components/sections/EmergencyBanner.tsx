@@ -32,7 +32,7 @@ export function EmergencyBanner() {
           <div>
             <div className="emergency-title">24 / 7 Emergency Services</div>
             <div className="emergency-sub">
-              Our emergency team is always ready. Don't wait — call us
+              Our emergency team is always ready. Don't wait ・ call us
               immediately.
             </div>
           </div>

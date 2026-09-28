@@ -37,6 +37,7 @@ const UPDATE_POST = `
     $excerpt: String
     $status: PostStatusEnum
     $categoryName: String
+    $commentStatus: String
   ) {
     updatePost(
       input: {
@@ -46,6 +47,7 @@ const UPDATE_POST = `
         excerpt: $excerpt
         status: $status
         categories: { append: false, nodes: [{ name: $categoryName }] }
+        commentStatus: $commentStatus
       }
     ) {
       post { ${POST_FIELDS} }
@@ -78,6 +80,14 @@ export async function PATCH(request: Request, { params }: Params) {
                 ? "FUTURE"
                 : "DRAFT",
         categoryName: patch.type,
+        // undefined leaves the post's current setting untouched — this is a
+        // partial update, so an absent toggle must not silently close comments.
+        commentStatus:
+          patch.commentsOpen === undefined
+            ? undefined
+            : patch.commentsOpen
+              ? "open"
+              : "closed",
       },
       { authenticated: true },
     );

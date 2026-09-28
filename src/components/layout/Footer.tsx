@@ -7,11 +7,7 @@ import { SITE } from "@/lib/data";
 /** Rendered height of the accreditation crests, in px. */
 const LOGO_HEIGHT = 30;
 
-/**
- * Accrediting bodies, shown as their real crests rather than initials.
- * `width` is each file's own aspect ratio resolved at LOGO_HEIGHT, so the
- * marks keep their proportions instead of being squared off.
- */
+
 const ACCREDITATIONS = [
   {
     short: "CHAG",
@@ -92,8 +88,8 @@ export function Footer() {
                 <div
                   style={{
                     color: "#E8B84B",
-                    fontSize: "0.6rem",
-                    letterSpacing: "0.2em",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
                     textTransform: "uppercase",
                   }}
                 >
@@ -213,7 +209,7 @@ export function Footer() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                color: "rgba(255,255,255,0.35)",
+                color: "rgba(255, 255, 255, 0.51)",
                 fontSize: "0.78rem",
                 transition: "color 0.2s",
               }}
@@ -240,11 +236,11 @@ export function Footer() {
             gap: 8,
           }}
         >
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.74rem" }}>
+          <span style={{ color: "rgba(255, 255, 255, 0.51)", fontSize: "0.74rem" }}>
             © {new Date().getFullYear()} St. Elizabeth Catholic Hospital, Ghana.
             All rights reserved.
           </span>
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.74rem" }}>
+          <span style={{ color: "rgba(255, 255, 255, 0.51)", fontSize: "0.74rem" }}>
             A CHAG Member Institution
           </span>
         </div>

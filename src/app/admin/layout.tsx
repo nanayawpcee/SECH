@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutGrid,
   Newspaper,
   FilePlus2,
+  MessageSquare,
   ClipboardList,
   CalendarDays,
   Settings as SettingsIcon,
@@ -37,6 +38,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/posts", icon: Newspaper, label: "News & Blogs", badgeKey: "drafts" },
       { href: "/admin/posts/new", icon: FilePlus2, label: "New Post", neverActive: true },
+      { href: "/admin/comments", icon: MessageSquare, label: "Comments" },
     ],
   },
   {
@@ -76,6 +78,15 @@ function AdminShell({ children }: { children: React.ReactNode }) {
     cancelLeave,
     poppingToast,
   } = useAdminData();
+
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // The content column scrolls, not the window, so Next's own scroll
+  // restoration (which targets the window) never fires. Without this you would
+  // arrive at Settings already scrolled to wherever the comment list was.
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   // Must sit above the early returns below — a hook cannot be called
   // conditionally. Set on <html> so fixed overlays (modals, toasts) are
@@ -140,7 +151,12 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       style={{
         display: "grid",
         gridTemplateColumns: `${sidebarWidth}px 1fr`,
-        minHeight: "100vh",
+        // A fixed-height shell with its own scrolling content column, so the
+        // sidebar and each page's topbar stay put while a long list scrolls.
+        // Previously this was `minHeight`, which let the shell grow with the
+        // content: the whole document scrolled and the chrome scrolled away.
+        height: "100vh",
+        overflow: "hidden",
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         transition: "grid-template-columns 0.18s ease",
       }}
@@ -414,7 +430,20 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Main content ── */}
-      <div style={{ background: "#F7F9F7", overflowY: "auto", minHeight: "100vh" }}>{children}</div>
+      {/* The scroll container. `minHeight: 0` is load-bearing: a grid item
+          defaults to min-height:auto, which refuses to shrink below its
+          content and would stop the overflow ever engaging. */}
+      <div
+        ref={contentRef}
+        style={{
+          background: "#F7F9F7",
+          overflowY: "auto",
+          minHeight: 0,
+          height: "100%",
+        }}
+      >
+        {children}
+      </div>
 
       {/* ── Unsaved changes guard ── */}
       {guardTarget && (

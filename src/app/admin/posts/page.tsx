@@ -29,6 +29,11 @@ export default function PostsPage() {
       {/* Topbar */}
       <div
         style={{
+          // Sticks to the top of the admin scroll container so the page title
+          // and its actions stay reachable while a long list scrolls beneath.
+          position: "sticky",
+          top: 0,
+          zIndex: 5,
           background: "#fff",
           borderBottom: "0.5px solid #e5e7eb",
           padding: "12px 20px",

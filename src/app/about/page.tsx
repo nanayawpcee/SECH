@@ -7,6 +7,14 @@ import { SITE, TEAM } from "@/lib/data";
 import { StatsBar } from "@/components/sections/StatsBar";
 import { LinkedInIcon } from "@/components/ui/LinkedInIcon";
 import { Mail, Phone } from "lucide-react";
+import { UnderConstruction } from "@/components/sections/UnderConstruction";
+
+/**
+ * While true, the page shows a holding notice instead of its content. The
+ * timeline and team photographs no longer match the hospital today; set this
+ * back to false once they have been replaced. Nothing below needs to change.
+ */
+const UNDER_CONSTRUCTION = true;
 
 /** Members without their own contact details reach the hospital's lines. */
 const HOSPITAL_EMAIL = SITE.email;
@@ -28,7 +36,7 @@ const MILESTONES = [
   {
     year: "LATE 1955",
     title: "A Community Challenge",
-    desc: "Later that year, local Mass Education Officer Mr. Dwamena suggested transforming the site into a permanent clinic. The Chief and Elders petitioned the Catholic Bishop of Kumasi, Rt. Rev. Van de Bronk. The Bishop issued a challenge: the hospital and its resident doctor would go to whichever community—Hwidiem or Agroyesum—could first provide decent accommodation for the physician. Under the leadership of Nana Akwasi Nyantakyi, the Hwidiem community rallied together, donating cocoa and maize to fund and secure the site and housing.",
+    desc: "Later that year, local Mass Education Officer Mr. Dwamena suggested transforming the site into a permanent clinic. The Chief and Elders petitioned the Catholic Bishop of Kumasi, Rt. Rev. Van de Bronk. The Bishop issued a challenge: the hospital and its resident doctor would go to whichever community; Hwidiem or Agroyesum, could first provide decent accommodation for the physician. Under the leadership of Nana Akwasi Nyantakyi, the Hwidiem community rallied together, donating cocoa and maize to fund and secure the site and housing.",
     image: "/images/milestone/gen_photo.jpg",
   },
   {
@@ -53,7 +61,7 @@ const MILESTONES = [
   {
     year: "2025",
     title: "Accredited, Growing, Trusted",
-    desc: "The hospital sustained its SafeCare Level 4 accreditation, opened new specialty services including a wellness clinic and cervical screening centre, and established a research unit to anchor evidence-based practice. Outpatient attendance reached a record 99,274 — nearly a fifth higher than the year before — cared for by a team of 441 staff, and the hospital remains the only referral hospital for the Asutifi South District.",
+    desc: "The hospital sustained its SafeCare Level 4 accreditation, opened new specialty services including a wellness clinic and cervical screening centre, and established a research unit to anchor evidence-based practice. Outpatient attendance reached a record 99,274 ・ nearly a fifth higher than the year before ・ cared for by a team of 441 staff, and the hospital remains the only referral hospital for the Asutifi South District.",
     image: "/images/milestone/digital.jpg",
   },
 ];
@@ -67,7 +75,7 @@ const VALUES = [
   {
     icon: "./icons/compassion.png",
     title: "Compassion",
-    desc: "We treat every patient with empathy, kindness, and genuine care — regardless of background.",
+    desc: "We treat every patient with empathy, kindness, and genuine care ・ regardless of background.",
   },
   {
     icon: "./icons/excellence.png",
@@ -82,6 +90,24 @@ const VALUES = [
 ];
 
 export default function AboutPage() {
+  if (UNDER_CONSTRUCTION) {
+    return (
+      <>
+        <PageHero
+          tag="Who We Are"
+          title="About St. Elizabeth Catholic Hospital"
+          subtitle="Serving Ghana's Ahafo Region with faith, compassion, and clinical excellence since 1956."
+          dotGrid
+        />
+        <UnderConstruction
+          subject="our history and team"
+          message="We are updating the photographs on this page so our story and the people behind it are shown as they are today. The new page will be back shortly — in the meantime, everything else on the site is up to date."
+        />
+        <EmergencyBanner />
+      </>
+    );
+  }
+
   return (
     <>
       <PageHero

@@ -4,11 +4,18 @@ import { POST_FIELDS, mapWpPost, SET_FEATURED_IMAGE, type WpPostNode } from "@/l
 
 export const dynamic = "force-dynamic";
 
+// `stati` must be spelled out. With no status (or `status: null`) WPGraphQL
+// falls back to published posts only, so drafts — including everything saved
+// from the editor as a draft — silently never reached the admin table. WordPress
+// still drops any status the signed-in user is not allowed to read.
 const LIST_POSTS = `
   query AdminPosts($first: Int!) {
     posts(
       first: $first
-      where: { status: null, orderby: { field: DATE, order: DESC } }
+      where: {
+        stati: [PUBLISH, DRAFT, FUTURE, PENDING, PRIVATE]
+        orderby: { field: DATE, order: DESC }
+      }
     ) {
       nodes { ${POST_FIELDS} }
     }
@@ -37,6 +44,7 @@ const CREATE_POST = `
     $excerpt: String
     $status: PostStatusEnum!
     $categoryName: String!
+    $commentStatus: String
   ) {
     createPost(
       input: {
@@ -45,6 +53,7 @@ const CREATE_POST = `
         excerpt: $excerpt
         status: $status
         categories: { nodes: [{ name: $categoryName }] }
+        commentStatus: $commentStatus
       }
     ) {
       post { databaseId slug status }
@@ -54,7 +63,8 @@ const CREATE_POST = `
 
 export async function POST(request: Request) {
   try {
-    const { title, content, excerpt, status, type, featuredImageId } = await request.json();
+    const { title, content, excerpt, status, type, featuredImageId, commentsOpen } =
+      await request.json();
 
     if (!title || !String(title).trim()) {
       return NextResponse.json({ error: "A title is required." }, { status: 400 });
@@ -70,6 +80,8 @@ export async function POST(request: Request) {
         excerpt: excerpt ?? "",
         status: status === "published" ? "PUBLISH" : "DRAFT",
         categoryName: type || "news",
+        // Default to open when the caller says nothing, matching WordPress.
+        commentStatus: commentsOpen === false ? "closed" : "open",
       },
       { authenticated: true },
     );

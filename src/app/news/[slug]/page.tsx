@@ -6,6 +6,7 @@ import sanitizeHtml from "sanitize-html";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
+import { CommentSection } from "@/components/ui/CommentSection";
 import { wpQuery } from "@/lib/wp-graphql";
 
 interface Props {
@@ -41,6 +42,7 @@ async function getPost(slug: string) {
       query GetPost($slug: String!) {
         postBy(slug: $slug) {
           id
+          commentStatus
           title
           date
           excerpt
@@ -203,6 +205,10 @@ export default async function ArticlePage({ params }: Props) {
                 ← Back to All News
               </Link>
             </div>
+
+            {article.commentStatus !== "closed" && (
+              <CommentSection slug={params.slug} />
+            )}
           </AnimateIn>
 
           {/* Sidebar */}

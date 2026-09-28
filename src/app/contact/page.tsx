@@ -47,7 +47,26 @@ export default function ContactPage() {
                 }}
               />
               <div style={{ textAlign: "center", position: "relative" }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📍</div>
+                {/* Flex-centred rather than an inline image: an inline <img>
+                    sits on the text baseline, which left a descender-sized gap
+                    under the pin. Sized in px, not %, so it does not rescale
+                    with the width of the address text beside it. */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 12,
+                  }}
+                >
+                  <img
+                    src="/svgs/location.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={56}
+                    height={56}
+                    style={{ width: 56, height: 56, objectFit: "contain" }}
+                  />
+                </div>
                 <div
                   style={{
                     color: "#fff",

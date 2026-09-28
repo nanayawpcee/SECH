@@ -31,6 +31,9 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
   const [body, setBody] = useState(initialPost?.body ?? "");
   const [type, setType] = useState<Post["type"]>(initialPost?.type ?? "news");
   const [status, setStatus] = useState<Post["status"]>(initialPost?.status ?? "draft");
+  const [commentsOpen, setCommentsOpen] = useState<boolean>(
+    (initialPost as { commentsOpen?: boolean } | undefined)?.commentsOpen ?? true,
+  );
   const [author, setAuthor] = useState(initialPost?.author ?? "Admin User");
 
   const [featuredImageId, setImgId] = useState<number | null>(
@@ -101,6 +104,7 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
         body: body.trim(),
         type,
         status: nextStatus,
+        commentsOpen,
         // null clears the thumbnail; undefined would leave it untouched.
         featuredImageId: featuredImageId ?? null,
       } as any);
@@ -129,6 +133,7 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
           content: body.trim(),
           status: targetStatus,
           type,
+          commentsOpen,
           featuredImageId,
         }),
       });
@@ -175,6 +180,11 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
       {/* Topbar */}
       <div
         style={{
+          // Sticks to the top of the admin scroll container so the page title
+          // and its actions stay reachable while a long list scrolls beneath.
+          position: "sticky",
+          top: 0,
+          zIndex: 5,
           background: "#fff",
           borderBottom: "0.5px solid #e5e7eb",
           padding: "12px 20px",
@@ -403,6 +413,33 @@ export function PostEditorForm({ initialPost }: PostEditorFormProps) {
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                 </select>
+              </Field>
+              <Field label="Comments">
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    cursor: "pointer",
+                    padding: "2px 0",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={commentsOpen}
+                    onChange={(e) => {
+                      setCommentsOpen(e.target.checked);
+                      markDirty();
+                    }}
+                    style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: "0.82rem", lineHeight: 1.45 }}>
+                    Allow readers to comment
+                    <span style={{ display: "block", opacity: 0.65, fontSize: "0.76rem" }}>
+                      Comments are held for approval before they appear.
+                    </span>
+                  </span>
+                </label>
               </Field>
               <Field label="Author">
                 <input
