@@ -175,7 +175,7 @@ export function AboutSection() {
             >
               Located in Hwidiem, St. Elizabeth Catholic Hospital serves as a
               regional centre of excellence for the Asutifi South District and
-              surrounding communities ・ offering a wide range of clinical
+              surrounding communities. Offering a wide range of clinical
               services under one roof, 24 hours a day.
             </p>
             <p
@@ -187,7 +187,7 @@ export function AboutSection() {
             >
               Our multidisciplinary team of physicians, nurses, and allied
               health professionals bring skill, empathy, and faith to every
-              patient encounter ・ from routine outpatient visits to complex
+              patient encounter・From routine outpatient visits to complex
               surgical procedures.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
