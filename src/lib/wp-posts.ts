@@ -10,7 +10,7 @@ export interface WpPostNode {
   date: string | null;
   commentStatus?: string | null;
   status: string | null;
-  author?: { node?: { name?: string | null } | null } | null;
+  author?: { node?: { name?: string | null; databaseId?: number | null } | null } | null;
   featuredImageDatabaseId?: number | null;
   featuredImage?: { node?: { sourceUrl?: string | null } | null } | null;
   categories?: { nodes?: Array<{ name?: string | null; slug?: string | null }> } | null;
@@ -25,7 +25,7 @@ export const POST_FIELDS = `
   slug
   date
   status
-  author { node { name } }
+  author { node { name databaseId } }
   featuredImageDatabaseId
   featuredImage { node { sourceUrl } }
   categories { nodes { name slug } }
@@ -33,8 +33,28 @@ export const POST_FIELDS = `
 
 const KNOWN_TYPES: Post["type"][] = ["news", "blog", "event", "announcement"];
 
-function stripHtml(value: string | null | undefined): string {
-  return (value ?? "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: " ", quot: '"', apos: "'", lt: "<", gt: ">",
+  hellip: "…", ndash: "–", mdash: "—",
+  lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”",
+};
+
+/**
+ * WordPress sends titles and excerpts "texturized" — apostrophes arrive as
+ * &#8217; and so on. The admin renders these as React text, which escapes
+ * rather than interprets them, so they must be decoded to show as characters.
+ * &amp; is decoded last so "&amp;lt;" becomes the text "&lt;", never "<".
+ */
+export function decodeEntities(value: string): string {
+  return value
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
+    .replace(/&amp;/g, "&");
+}
+
+export function stripHtml(value: string | null | undefined): string {
+  return decodeEntities((value ?? "").replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
 }
 
 /**
@@ -54,6 +74,7 @@ function deriveType(node: WpPostNode): Post["type"] {
 function deriveStatus(status: string | null): Post["status"] {
   if (status === "publish") return "published";
   if (status === "future") return "scheduled";
+  if (status === "pending") return "pending";
   return "draft";
 }
 
@@ -63,6 +84,8 @@ export type AdminPost = Post & {
   featuredImageUrl: string | null;
   /** False when the post's comments are closed in WordPress. */
   commentsOpen: boolean;
+  /** WordPress user id of the author — ownership checks for staff writers. */
+  authorId: number | null;
 };
 
 export function mapWpPost(node: WpPostNode): AdminPost {
@@ -84,14 +107,26 @@ export function mapWpPost(node: WpPostNode): AdminPost {
     featuredImageId: node.featuredImageDatabaseId ?? null,
     featuredImageUrl: node.featuredImage?.node?.sourceUrl ?? null,
     commentsOpen: node.commentStatus !== "closed",
+    authorId: node.author?.node?.databaseId ?? null,
   };
 }
 
 /** Our status vocabulary -> WPGraphQL's PostStatusEnum. */
-export function toWpStatus(status: Post["status"]): "PUBLISH" | "DRAFT" | "FUTURE" {
+export function toWpStatus(status: Post["status"]): "PUBLISH" | "DRAFT" | "FUTURE" | "PENDING" {
   if (status === "published") return "PUBLISH";
   if (status === "scheduled") return "FUTURE";
+  if (status === "pending") return "PENDING";
   return "DRAFT";
+}
+
+/**
+ * The status a person is actually allowed to set. Anyone without publishing
+ * rights who asks to publish is submitting for review instead — the server
+ * decides this, so a staff writer cannot publish by editing the request.
+ */
+export function allowedStatus(requested: Post["status"], canPublish: boolean): Post["status"] {
+  if (canPublish) return requested;
+  return requested === "published" || requested === "scheduled" ? "pending" : requested;
 }
 
 export const SET_FEATURED_IMAGE = `

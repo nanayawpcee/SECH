@@ -1,13 +1,16 @@
+import "@/styles/news.css";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
-import { PageHero } from "@/components/ui/PageHero";
-import { AnimateIn } from "@/components/ui/AnimateIn";
+import { ArrowLeft, CalendarDays, ChevronRight, Clock, Stethoscope } from "lucide-react";
 import { BookButton } from "@/components/ui/BookButton";
 import { CommentSection } from "@/components/ui/CommentSection";
-import { wpQuery } from "@/lib/wp-graphql";
+import { ArticleShare } from "@/components/news/ArticleShare";
+import { CategoryChip, NewsCard } from "@/components/news/NewsCard";
+import { getNewsArticle, getNewsItems } from "@/lib/news-data";
+import { formatNewsDate } from "@/lib/news";
 
 interface Props {
   params: { slug: string };
@@ -36,213 +39,108 @@ function sanitizeArticleContent(html: string): string {
   });
 }
 
-async function getPost(slug: string) {
-  const data = await wpQuery<{ postBy: Record<string, any> | null }>(
-    `
-      query GetPost($slug: String!) {
-        postBy(slug: $slug) {
-          id
-          commentStatus
-          title
-          date
-          excerpt
-          content
-          featuredImage {
-            node {
-              sourceUrl
-              altText
-            }
-          }
-          categories {
-            nodes {
-              name
-            }
-          }
-        }
-      }
-    `,
-    { slug },
-  );
-
-  return data?.postBy ?? null;
-}
-
-async function getAllPosts() {
-  const data = await wpQuery<{ posts: { nodes: { slug: string }[] } }>(`
-    query GetAllPosts {
-      posts(first: 20) {
-        nodes {
-          slug
-        }
-      }
-    }
-  `);
-
-  return data?.posts?.nodes ?? [];
-}
-
 export async function generateStaticParams() {
   // An empty list is a valid answer: nothing is prerendered and each article is
   // rendered on first request instead. That keeps a CMS outage from failing the
   // build — which is what "Failed to collect page data for /news/[slug]" was.
-  const posts = await getAllPosts();
+  const posts = await getNewsItems(20);
   return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPost(params.slug);
-  if (!post) return { title: "Article Not Found" };
+  const article = await getNewsArticle(params.slug);
+  if (!article) return { title: "Article Not Found" };
 
+  // What WhatsApp, Facebook and X show when a link to this story is shared.
+  const images = article.image
+    ? [{ url: article.image.src, width: article.image.width, height: article.image.height, alt: article.image.alt }]
+    : undefined;
   return {
-    title: post.title,
-    description: post.excerpt?.replace(/<[^>]+>/g, "") || "",
+    title: article.title,
+    description: article.excerpt,
+    // A page's openGraph replaces the root one rather than merging, so the
+    // site-wide fields are repeated here.
+    openGraph: {
+      type: "article",
+      url: `/news/${article.slug}`,
+      siteName: "SECH Ghana",
+      locale: "en_GH",
+      title: article.title,
+      description: article.excerpt,
+      publishedTime: article.date,
+      images,
+    },
+    twitter: { card: images ? "summary_large_image" : "summary", title: article.title, description: article.excerpt },
   };
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const article = await getPost(params.slug);
+  const [article, recent] = await Promise.all([getNewsArticle(params.slug), getNewsItems(4)]);
   if (!article) notFound();
 
-  const category = article.categories?.nodes[0]?.name || "News";
+  const more = recent.filter((p) => p.slug !== article.slug).slice(0, 3);
+  // A tall poster would fill the whole screen at full width; keep it framed.
+  const portrait = article.image ? article.image.height > article.image.width : false;
 
   return (
     <>
-      <PageHero
-        tag={category}
-        title={article.title}
-        subtitle={article.excerpt?.replace(/<[^>]+>/g, "") || ""}
-        backgroundImage={article.featuredImage?.node?.sourceUrl}
-      />
+      <header className="nw-article-hero">
+        <div className="nw-container nw-article-hero-inner">
+          <nav className="nw-crumbs" aria-label="Breadcrumb">
+            <Link href="/news">News &amp; Announcements</Link>
+            <ChevronRight size={14} aria-hidden="true" />
+            <span>{article.category}</span>
+          </nav>
+          <CategoryChip category={article.category} onImage />
+          <h1 className="nw-article-title">{article.title}</h1>
+          {article.excerpt && <p className="nw-article-standfirst">{article.excerpt}</p>}
+          <div className="nw-article-meta">
+            <span><CalendarDays size={16} aria-hidden="true" /><time dateTime={article.date}>{formatNewsDate(article.date)}</time></span>
+            <span><Clock size={16} aria-hidden="true" />{article.readMinutes} min read</span>
+          </div>
+        </div>
+      </header>
 
-      <section style={{ padding: "5rem 2rem", background: "#fff" }}>
-        <div
-          className="container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 300px",
-            gap: "4rem",
-            alignItems: "start",
-          }}
-        >
-          {/* Main Content */}
-          <AnimateIn>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: "2rem",
-                paddingBottom: "1.5rem",
-                borderBottom: "1px solid #E2EBE7",
-              }}
-            >
-              {article.featuredImage?.node?.sourceUrl && (
-                <Image
-                  src={article.featuredImage.node.sourceUrl}
-                  alt={article.featuredImage.node.altText || article.title}
-                  width={400}
-                  height={300}
-                  sizes="20vw"
-                  style={{ width: "20%", height: "auto", borderRadius: "8px" }}
-                />
-              )}
-              <div>
-                <span
-                  style={{
-                    padding: "4px 12px",
-                    background: "var(--primary)",
-                    color: "#fff",
-                    borderRadius: 3,
-                    fontSize: "0.68rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {category}
-                </span>
-                <span
-                  style={{
-                    color: "var(--text-light)",
-                    fontSize: "0.84rem",
-                    display: "block",
-                    marginTop: "8px",
-                  }}
-                >
-                  {new Date(article.date).toLocaleDateString("en-GB", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-            </div>
+      <div className="nw-container nw-article-wrap">
+        {article.image && (
+          <figure className="nw-article-figure" data-portrait={portrait || undefined}>
+            <Image
+              src={article.image.src}
+              alt={article.image.alt}
+              width={article.image.width}
+              height={article.image.height}
+              sizes="(max-width: 1180px) 100vw, 1100px"
+              priority
+            />
+          </figure>
+        )}
 
+        <div className="nw-article-grid">
+          <div className="nw-article-main">
             <div
-              style={{
-                color: "var(--text-mid)",
-                lineHeight: 1.85,
-                fontSize: "1.05rem",
-              }}
+              className="nw-prose"
               dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content) }}
             />
 
-            <div
-              style={{
-                marginTop: "2.5rem",
-                paddingTop: "1.5rem",
-                borderTop: "1px solid #E2EBE7",
-              }}
-            >
-              <Link
-                href="/news"
-                style={{
-                  color: "var(--primary)",
-                  fontWeight: 700,
-                  fontSize: "0.88rem",
-                }}
-              >
-                ← Back to All News
+            <div className="nw-article-end">
+              <ArticleShare title={article.title} />
+              <Link href="/news" className="nw-btn nw-btn--ghost">
+                <ArrowLeft size={16} aria-hidden="true" /> All stories
               </Link>
             </div>
 
-            {article.commentStatus !== "closed" && (
-              <CommentSection slug={params.slug} />
-            )}
-          </AnimateIn>
+            {article.commentsOpen && <CommentSection slug={params.slug} />}
+          </div>
 
-          {/* Sidebar */}
-          <AnimateIn delay={140} direction="right">
-            <div style={{ position: "sticky", top: 90 }}>
-              <div
-                style={{
-                  background: "var(--primary)",
-                  borderRadius: "var(--radius-lg)",
-                  padding: "1.5rem",
-                  marginBottom: "1.5rem",
-                }}
-              >
-                <h3
-                  style={{
-                    color: "#fff",
-                    fontFamily: "var(--font-serif)",
-                    fontSize: "1rem",
-                    fontWeight: 800,
-                    margin: "0 0 10px",
-                  }}
-                >
-                  Need Medical Care?
-                </h3>
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.7)",
-                    fontSize: "0.82rem",
-                    lineHeight: 1.6,
-                    margin: "0 0 1rem",
-                  }}
-                >
-                  Book an appointment at SECH — our team is ready to help.
-                </p>
+          <aside className="nw-article-aside">
+            <div className="nw-aside-sticky">
+              <div className="nw-aside-share">
+                <ArticleShare title={article.title} />
+              </div>
+              <div className="nw-care-card">
+                <span className="nw-care-icon"><Stethoscope size={20} aria-hidden="true" /></span>
+                <h2>Need medical care?</h2>
+                <p>Book an appointment at SECH. Our team is ready to help.</p>
                 <BookButton
                   style={{
                     width: "100%",
@@ -253,9 +151,27 @@ export default async function ArticlePage({ params }: Props) {
                 />
               </div>
             </div>
-          </AnimateIn>
+          </aside>
         </div>
-      </section>
+      </div>
+
+      {more.length > 0 && (
+        <section className="nw-related">
+          <div className="nw-container">
+            <div className="nw-home-head">
+              <h2 className="nw-related-title">More from SECH</h2>
+              <Link href="/news" className="nw-btn nw-btn--ghost">
+                All stories <ChevronRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="nw-grid">
+              {more.map((item) => (
+                <NewsCard key={item.slug} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

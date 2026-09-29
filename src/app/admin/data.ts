@@ -6,7 +6,8 @@ export interface Post {
   type: "news" | "blog" | "event" | "announcement";
   author: string;
   date: string;
-  status: "published" | "draft" | "scheduled";
+  /** "pending" = submitted by a staff writer, waiting for an admin to publish. */
+  status: "published" | "draft" | "scheduled" | "pending";
   slug: string;
 }
 

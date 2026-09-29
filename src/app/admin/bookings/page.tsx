@@ -1,400 +1,553 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowDownUp,
+  Ban,
+  CalendarClock,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ClipboardList,
+  Copy,
+  Download,
+  Hourglass,
+  Mail,
+  Phone,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Stethoscope,
+  X,
+  XCircle,
+} from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
-import { NotificationBell } from "@/components/admin/NotificationBell";
-import { ThemeToggle } from "@/components/admin/ThemeToggle";
-import type { Booking } from "@/app/admin/data";
+import type { AdminBooking } from "@/lib/wp-bookings";
+import {
+  Avatar,
+  Chip,
+  ConfirmDialog,
+  EmptyState,
+  PageHeader,
+  SkeletonRows,
+  StatusBadge,
+  type Tone,
+  useInitialParam,
+} from "@/components/admin/ui";
+import { addDays, formatDay, fromNow, keyOfTimestamp, relativeDay, todayKey } from "@/lib/admin-dates";
 
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  pending: { bg: "#FEF3C7", color: "#d97706" },
-  confirmed: { bg: "#DCFCE7", color: "#16a34a" },
-  cancelled: { bg: "#FEE2E2", color: "#DC2626" },
+type StatusFilter = "all" | AdminBooking["status"];
+type When = "all" | "today" | "week" | "upcoming" | "past";
+type Sort = "received" | "appointment";
+
+const TYPE_META: Record<AdminBooking["type"], { label: string; tone: Tone }> = {
+  consultation: { label: "New consult", tone: "info" },
+  followup: { label: "Follow-up", tone: "violet" },
+  test: { label: "Test / lab", tone: "teal" },
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  consultation: "New Consult",
-  followup: "Follow-Up",
-  test: "Test / Lab",
-};
-
-function Badge({ status }: { status: string }) {
-  const s = STATUS_STYLE[status] ?? { bg: "#F3F4F6", color: "#666" };
-  return (
-    <span
-      style={{
-        padding: "2px 9px",
-        borderRadius: 20,
-        fontSize: 11,
-        fontWeight: 600,
-        background: s.bg,
-        color: s.color,
-        display: "inline-block",
-      }}
-    >
-      {status}
-    </span>
-  );
-}
-
-function Modal({
-  booking,
-  onClose,
-  onConfirm,
-}: {
-  booking: Booking;
-  onClose: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(6,51,40,0.45)",
-        zIndex: 500,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          width: "100%",
-          maxWidth: 480,
-          boxShadow: "0 24px 64px rgba(0,0,0,0.22)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div style={{ background: "#0A4F3C", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ color: "#E8B84B", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 3 }}>
-              Booking Detail
-            </div>
-            <div style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>{booking.name}</div>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              fontSize: 18,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Body */}
-        <div style={{ padding: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
-            {[
-              ["Booking ID", booking.id],
-              ["Status", booking.status],
-              ["Phone", booking.phone],
-              ["Email", booking.email || "—"],
-              ["Department", booking.dept],
-              ["Type", TYPE_LABEL[booking.type]],
-              ["Date", booking.date],
-              ["Time", booking.time],
-              ["Insurance", booking.insurance],
-              ["Submitted", booking.createdAt],
-            ].map(([label, val]) => (
-              <div key={label}>
-                <div style={{ fontSize: 10, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
-                  {label}
-                </div>
-                <div style={{ fontSize: 13, color: "#111" }}>
-                  {label === "Status" ? <Badge status={val} /> : val}
-                </div>
-              </div>
-            ))}
-          </div>
-          {booking.notes && (
-            <div style={{ marginTop: 14, background: "#F7F9F7", borderRadius: 6, padding: "10px 12px" }}>
-              <div style={{ fontSize: 10, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
-                Notes
-              </div>
-              <div style={{ fontSize: 13, color: "#555", lineHeight: 1.6 }}>{booking.notes}</div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ padding: "12px 20px", borderTop: "0.5px solid #e5e7eb", display: "flex", gap: 8 }}>
-          <button
-            onClick={onClose}
-            style={{ flex: 1, padding: 9, border: "0.5px solid #d1d5db", borderRadius: 7, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}
-          >
-            Close
-          </button>
-          {booking.status === "pending" && (
-            <button
-              onClick={onConfirm}
-              style={{ flex: 1, padding: 9, background: "#0A4F3C", border: "none", borderRadius: 7, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-            >
-              ✓ Confirm Booking
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+/**
+ * One CSV cell. Quoted so commas and line breaks in a patient's notes stay in
+ * their column, and prefixed with ' when it starts like a formula — booking
+ * fields are typed by the public, and "=HYPERLINK(...)" in a name would
+ * otherwise run when the export is opened in Excel.
+ */
+function csvCell(value: string) {
+  const v = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${v.replace(/"/g, '""')}"`;
 }
 
 export default function BookingsPage() {
-  const { bookings, bookingsLoading, bookingsError, refreshBookings, confirmBooking, cancelBooking, addToast } =
-    useAdminData();
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [deptFilter, setDeptFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const {
+    bookings, bookingsLoading, bookingsError, refreshBookings,
+    confirmBooking, cancelBooking, addToast,
+  } = useAdminData();
 
-  const selected = bookings.find((b) => b.id === selectedId) ?? null;
+  const initialStatus = useInitialParam("status");
+  const initialOpen = useInitialParam("open");
 
-  const depts = ["all", ...Array.from(new Set(bookings.map((b) => b.dept)))];
+  const [status, setStatus] = useState<StatusFilter>("all");
+  const [dept, setDept] = useState("all");
+  const [type, setType] = useState<"all" | AdminBooking["type"]>("all");
+  const [when, setWhen] = useState<When>("all");
+  const [sort, setSort] = useState<Sort>("received");
+  const [query, setQuery] = useState("");
+  const [openId, setOpenId] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [toCancel, setToCancel] = useState<AdminBooking[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filtered = bookings.filter((b) => {
-    const matchStatus = statusFilter === "all" || b.status === statusFilter;
-    const matchDept = deptFilter === "all" || b.dept === deptFilter;
-    const matchSearch =
-      !search ||
-      b.name.toLowerCase().includes(search.toLowerCase()) ||
-      b.id.toLowerCase().includes(search.toLowerCase()) ||
-      b.dept.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchDept && matchSearch;
-  });
+  useEffect(() => {
+    if (initialStatus === "pending" || initialStatus === "confirmed" || initialStatus === "cancelled") setStatus(initialStatus);
+  }, [initialStatus]);
+
+  // ?open=<reference> — from the command palette — opens that booking.
+  useEffect(() => {
+    if (!initialOpen || !bookings.length) return;
+    const match = bookings.find((b) => b.id === initialOpen);
+    if (match) setOpenId(match.databaseId);
+  }, [initialOpen, bookings]);
+
+  const today = todayKey();
+  const depts = useMemo(
+    () => Array.from(new Set(bookings.map((b) => b.dept).filter(Boolean))).sort(),
+    [bookings],
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const weekEnd = addDays(today, 6);
+    const list = bookings.filter((b) => {
+      if (status !== "all" && b.status !== status) return false;
+      if (dept !== "all" && b.dept !== dept) return false;
+      if (type !== "all" && b.type !== type) return false;
+      const d = b.preferredDateISO;
+      if (when === "today" && d !== today) return false;
+      if (when === "week" && !(d >= today && d <= weekEnd)) return false;
+      if (when === "upcoming" && !(d >= today)) return false;
+      if (when === "past" && !(d && d < today)) return false;
+      if (q && !`${b.name} ${b.id} ${b.phone} ${b.email} ${b.dept}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+    return list.sort((a, b) =>
+      sort === "received"
+        ? b.createdAtISO.localeCompare(a.createdAtISO)
+        : (a.preferredDateISO + a.time).localeCompare(b.preferredDateISO + b.time),
+    );
+  }, [bookings, status, dept, type, when, query, sort, today]);
+
+  useEffect(() => {
+    setSelected((prev) => {
+      const visible = new Set(filtered.map((b) => b.databaseId));
+      const next = new Set(Array.from(prev).filter((id) => visible.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [filtered]);
 
   const counts = {
+    all: bookings.length,
     pending: bookings.filter((b) => b.status === "pending").length,
     confirmed: bookings.filter((b) => b.status === "confirmed").length,
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   };
 
+  const open = bookings.find((b) => b.databaseId === openId) ?? null;
+  const selectedList = bookings.filter((b) => selected.has(b.databaseId));
+  const allSelected = filtered.length > 0 && filtered.every((b) => selected.has(b.databaseId));
+  const filtersOn = status !== "all" || dept !== "all" || type !== "all" || when !== "all" || query !== "";
+
+  const toggle = (id: number) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const runAll = async (list: AdminBooking[], fn: (id: number) => Promise<void>) => {
+    setBusy(true);
+    for (const b of list) await fn(b.databaseId);
+    setBusy(false);
+    setSelected(new Set());
+  };
+
+  const confirmMany = (list: AdminBooking[]) => runAll(list.filter((b) => b.status === "pending"), confirmBooking);
+  const doCancel = async () => {
+    if (!toCancel) return;
+    await runAll(toCancel.filter((b) => b.status !== "cancelled"), cancelBooking);
+    setToCancel(null);
+  };
+
   const exportCSV = () => {
-    const headers = ["ID", "Name", "Phone", "Email", "Department", "Type", "Date", "Time", "Insurance", "Status"];
-    const rows = filtered.map((b) => [b.id, b.name, b.phone, b.email, b.dept, b.type, b.date, b.time, b.insurance, b.status]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const headers = ["Reference", "Patient", "Phone", "Email", "Department", "Type", "Appointment date", "Time", "Insurance", "Insurance no.", "Status", "Received", "Notes"];
+    const rows = filtered.map((b) => [
+      b.id, b.name, b.phone, b.email, b.dept, TYPE_META[b.type].label, b.preferredDateISO, b.time,
+      b.insurance, b.insuranceNumber ?? "", b.status, keyOfTimestamp(b.createdAtISO), b.notes ?? "",
+    ]);
+    // BOM so Excel opens it as UTF-8 and keeps names like "Adwoa Mensah-Bonsu" intact.
+    const csv = "﻿" + [headers, ...rows].map((r) => r.map((c) => csvCell(String(c ?? ""))).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "sech-bookings.csv";
+    a.download = `sech-bookings-${today}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast("CSV exported");
+    addToast(`Exported ${rows.length} booking${rows.length === 1 ? "" : "s"}`);
   };
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await refreshBookings();
+    setRefreshing(false);
+  };
+
+  const clearFilters = () => {
+    setStatus("all"); setDept("all"); setType("all"); setWhen("all"); setQuery("");
+  };
+
+  const closeDrawer = useCallback(() => setOpenId(null), []);
+
+  const TILES: { key: StatusFilter; label: string; icon: typeof ClipboardList; tone: Tone }[] = [
+    { key: "all", label: "All bookings", icon: ClipboardList, tone: "brand" },
+    { key: "pending", label: "Awaiting confirmation", icon: Hourglass, tone: "warn" },
+    { key: "confirmed", label: "Confirmed", icon: CheckCircle2, tone: "success" },
+    { key: "cancelled", label: "Cancelled", icon: XCircle, tone: "danger" },
+  ];
 
   return (
     <>
-      {/* Topbar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 5, background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>All Bookings</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-            <span style={{ position: "absolute", left: 9, fontSize: 14, color: "#bbb", pointerEvents: "none" }}>🔍</span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Patient, dept, ID…"
-              style={{ paddingLeft: 28, paddingRight: 10, paddingTop: 6, paddingBottom: 6, fontSize: 13, border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", color: "#111", width: 200, outline: "none" }}
-            />
-          </div>
-          <button
-            onClick={exportCSV}
-            style={{ padding: "7px 14px", border: "0.5px solid #d1d5db", borderRadius: 6, fontSize: 13, background: "#fff", color: "#555", cursor: "pointer" }}
-          >
-            Export CSV
-          </button>
-          <ThemeToggle />
-          <NotificationBell />
-        </div>
+      <PageHeader
+        title="Bookings"
+        subtitle="Appointment requests from the website, newest first"
+        actions={
+          <>
+            <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
+              <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />Refresh
+            </button>
+            <button type="button" className="ad-btn ad-btn--primary" onClick={exportCSV} disabled={!filtered.length}>
+              <Download size={15} />Export {filtersOn ? "filtered" : "all"}
+            </button>
+          </>
+        }
+      />
+
+      {/* Status tiles double as the status filter. */}
+      <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
+        {TILES.map((t) => {
+          const Icon = t.icon;
+          const active = status === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              className={`ad-card ad-card--hover ad-kpi ad-tone-${t.tone} ad-bk-tile`}
+              data-active={active}
+              aria-pressed={active}
+              onClick={() => setStatus(t.key)}
+            >
+              <div className="ad-kpi-top">
+                <span className="ad-kpi-label">{t.label}</span>
+                <span className="ad-kpi-icon"><Icon size={17} /></span>
+              </div>
+              <div className="ad-kpi-value">{counts[t.key]}</div>
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ padding: 20 }}>
-        {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
-          {[
-            { label: "Pending", value: counts.pending, bg: "#FEF3C7", color: "#d97706" },
-            { label: "Confirmed today", value: counts.confirmed, bg: "#DCFCE7", color: "#16a34a" },
-            { label: "Cancelled", value: counts.cancelled, bg: "#FEE2E2", color: "#DC2626" },
-          ].map((card) => (
-            <div key={card.label} style={{ background: card.bg, borderRadius: 8, padding: "14px 16px" }}>
-              <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 4 }}>{card.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: card.color, lineHeight: 1 }}>{card.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ padding: "12px 16px", borderBottom: "0.5px solid #e5e7eb", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            {/* Status chips */}
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" }}>Status</span>
-              {["all", "pending", "confirmed", "cancelled"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  style={{
-                    padding: "4px 12px",
-                    borderRadius: 20,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    border: "0.5px solid",
-                    background: statusFilter === s ? "#0A4F3C" : "#fff",
-                    color: statusFilter === s ? "#fff" : "#666",
-                    borderColor: statusFilter === s ? "#0A4F3C" : "#d1d5db",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {s === "all" ? `All (${bookings.length})` : s}
-                </button>
-              ))}
-            </div>
-
-            {/* Dept select */}
-            <div style={{ display: "flex", gap: 6, alignItems: "center", marginLeft: "auto" }}>
-              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" }}>Dept</span>
-              <select
-                value={deptFilter}
-                onChange={(e) => setDeptFilter(e.target.value)}
-                style={{ fontSize: 12, border: "0.5px solid #d1d5db", borderRadius: 6, padding: "5px 8px", background: "#fff", color: "#555", outline: "none" }}
-              >
-                {depts.map((d) => (
-                  <option key={d} value={d}>
-                    {d === "all" ? "All departments" : d}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <section className="ad-card">
+        <div className="ad-toolbar">
+          <div className="ad-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
+            <Search size={15} />
+            <input className="ad-input" placeholder="Name, reference, phone or email" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search bookings" />
           </div>
+          <select className="ad-select" style={{ width: 190 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
+            <option value="all">All departments</option>
+            {depts.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select className="ad-select" style={{ width: 150 }} value={type} onChange={(e) => setType(e.target.value as typeof type)} aria-label="Type">
+            <option value="all">All types</option>
+            {(Object.keys(TYPE_META) as AdminBooking["type"][]).map((t) => <option key={t} value={t}>{TYPE_META[t].label}</option>)}
+          </select>
+          <select className="ad-select" style={{ width: 160 }} value={when} onChange={(e) => setWhen(e.target.value as When)} aria-label="Appointment date">
+            <option value="all">Any date</option>
+            <option value="today">Today</option>
+            <option value="week">Next 7 days</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+          <button
+            type="button"
+            className="ad-btn ad-btn--ghost"
+            onClick={() => setSort((s) => (s === "received" ? "appointment" : "received"))}
+            title="Change sort order"
+            style={{ marginLeft: "auto" }}
+          >
+            <ArrowDownUp size={15} />
+            {sort === "received" ? "Newest request" : "Appointment date"}
+          </button>
+          {filtersOn && (
+            <button type="button" className="ad-btn ad-btn--ghost" onClick={clearFilters}><X size={15} />Clear</button>
+          )}
+        </div>
+        <hr className="ad-divider" />
 
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        {bookingsLoading && bookings.length === 0 ? (
+          <SkeletonRows rows={6} cols={6} />
+        ) : bookingsError ? (
+          <EmptyState icon={AlertTriangle} title="Couldn’t load bookings" text={bookingsError}
+            action={<button type="button" className="ad-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>} />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={ClipboardList}
+            title={bookings.length ? "No bookings match" : "No bookings yet"}
+            text={bookings.length ? "Try widening the filters." : "Requests made through the website’s booking form appear here."}
+            action={filtersOn ? <button type="button" className="ad-btn" onClick={clearFilters}><X size={15} />Clear filters</button> : undefined}
+          />
+        ) : (
+          <div className="ad-table-wrap">
+            <table className="ad-table">
               <thead>
-                <tr style={{ borderBottom: "0.5px solid #e5e7eb", background: "#F9FAFB" }}>
-                  {["ID", "Patient", "Department", "Type", "Date", "Time", "Insurance", "Status", "Actions"].map((h) => (
-                    <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 11, color: "#888", fontWeight: 600, whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
-                  ))}
+                <tr>
+                  <th style={{ width: 44 }}>
+                    <input type="checkbox" className="ad-cb" checked={allSelected}
+                      onChange={() => setSelected(allSelected ? new Set() : new Set(filtered.map((b) => b.databaseId)))}
+                      aria-label="Select all visible bookings" />
+                  </th>
+                  <th>Patient</th>
+                  <th>Department</th>
+                  <th>Type</th>
+                  <th>Appointment</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {bookingsLoading ? (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: 40, color: "#bbb", fontSize: 13 }}>
-                      Loading bookings from WordPress…
+                {filtered.map((b) => (
+                  <tr key={b.databaseId} data-clickable="true" data-selected={selected.has(b.databaseId)} onClick={() => setOpenId(b.databaseId)}>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <input type="checkbox" className="ad-cb" checked={selected.has(b.databaseId)} onChange={() => toggle(b.databaseId)} aria-label={`Select ${b.name}`} />
                     </td>
-                  </tr>
-                ) : bookingsError ? (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: 40, fontSize: 13 }}>
-                      <div style={{ color: "#DC2626", marginBottom: 10 }}>{bookingsError}</div>
-                      <button
-                        onClick={() => refreshBookings()}
-                        style={{ padding: "6px 14px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 12, color: "#555" }}
-                      >
-                        Try again
-                      </button>
-                    </td>
-                  </tr>
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: 40, color: "#bbb", fontSize: 13 }}>
-                      {bookings.length === 0
-                        ? "No bookings yet — they will appear here as patients submit the appointment form."
-                        : "No bookings match your filters"}
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((b) => (
-                    <tr
-                      key={b.id}
-                      style={{ borderBottom: "0.5px solid #f3f4f6" }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#F9FAFB")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "#fff")}
-                    >
-                      <td style={{ padding: "10px 12px", fontSize: 11, color: "#aaa", fontFamily: "monospace" }}>{b.id}</td>
-                      <td style={{ padding: "10px 12px" }}>
-                        <div style={{ fontWeight: 600, color: "#111" }}>{b.name}</div>
-                        <div style={{ fontSize: 11, color: "#aaa" }}>{b.phone}</div>
-                      </td>
-                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#555" }}>{b.dept}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#777" }}>{TYPE_LABEL[b.type]}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#555", whiteSpace: "nowrap" }}>{b.date}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#555" }}>{b.time}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#777" }}>{b.insurance}</td>
-                      <td style={{ padding: "10px 12px" }}>
-                        <Badge status={b.status} />
-                      </td>
-                      <td style={{ padding: "10px 12px" }}>
-                        <div style={{ display: "flex", gap: 4 }}>
-                          <button
-                            onClick={() => setSelectedId(b.id)}
-                            style={{ padding: "4px 8px", border: "0.5px solid #d1d5db", borderRadius: 5, fontSize: 12, background: "#fff", cursor: "pointer", color: "#555" }}
-                          >
-                            View
-                          </button>
-                          {b.status === "pending" && (
-                            <button
-                              onClick={() => confirmBooking(b.databaseId)}
-                              style={{ padding: "4px 8px", border: "0.5px solid #86EFAC", borderRadius: 5, fontSize: 12, background: "#DCFCE7", cursor: "pointer", color: "#16a34a", fontWeight: 600 }}
-                            >
-                              ✓
-                            </button>
-                          )}
-                          {b.status !== "cancelled" && (
-                            <button
-                              onClick={() => cancelBooking(b.databaseId)}
-                              style={{ padding: "4px 8px", border: "0.5px solid #FCA5A5", borderRadius: 5, fontSize: 12, background: "#fff", cursor: "pointer", color: "#DC2626" }}
-                            >
-                              ✕
-                            </button>
-                          )}
+                    <td>
+                      <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
+                        <Avatar name={b.name} />
+                        <div style={{ minWidth: 0 }}>
+                          <div className="ad-cell-main">{b.name}</div>
+                          <div className="ad-cell-sub">{b.id} · {b.phone || "No phone"}</div>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                      </div>
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>{b.dept || "—"}</td>
+                    <td><Chip tone={TYPE_META[b.type].tone}>{TYPE_META[b.type].label}</Chip></td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <div className="ad-cell-main" style={{ fontWeight: 600 }}>
+                        {b.preferredDateISO ? relativeDay(b.preferredDateISO) : "No date"}
+                      </div>
+                      <div className="ad-cell-sub">
+                        {b.time || "Any time"}
+                        {b.preferredDateISO && b.preferredDateISO < today && b.status === "pending" && (
+                          <span style={{ color: "var(--ad-danger)", fontWeight: 600 }}> · date passed</span>
+                        )}
+                      </div>
+                    </td>
+                    <td><StatusBadge status={b.status} /></td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="ad-row-actions">
+                        {b.status === "pending" && (
+                          <button type="button" className="ad-btn ad-btn--sm ad-btn--success-soft" onClick={() => confirmMany([b])} disabled={busy} aria-label={`Confirm ${b.name}`}>
+                            <Check size={14} strokeWidth={2.6} />Confirm
+                          </button>
+                        )}
+                        {b.status !== "cancelled" && (
+                          <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setToCancel([b])} disabled={busy}
+                            title="Cancel booking" aria-label={`Cancel ${b.name}'s booking`} style={{ color: "var(--ad-danger)" }}>
+                            <Ban size={15} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-
-          {/* Footer */}
-          <div style={{ padding: "10px 16px", borderTop: "0.5px solid #e5e7eb", fontSize: 12, color: "#aaa" }}>
+        )}
+        {filtered.length > 0 && (
+          <div style={{ padding: "10px 18px", fontSize: 12.5, color: "var(--ad-text-3)", borderTop: "1px solid var(--ad-border)" }}>
             Showing {filtered.length} of {bookings.length} bookings
           </div>
-        </div>
-      </div>
+        )}
+      </section>
 
-      {selected && (
-        <Modal
-          booking={selected}
-          onClose={() => setSelectedId(null)}
-          onConfirm={() => {
-            confirmBooking(selected.databaseId);
-            setSelectedId(null);
-          }}
-        />
+      {/* Bulk bar */}
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <motion.div
+            className="ad-bulkbar"
+            initial={{ opacity: 0, y: 24, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 24, x: "-50%" }}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            role="toolbar"
+            aria-label="Bulk actions"
+          >
+            <strong>{selected.size} selected</strong>
+            <span className="ad-bulkbar-sep" />
+            <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" disabled={busy || !selectedList.some((b) => b.status === "pending")} onClick={() => confirmMany(selectedList)}>
+              <Check size={14} />Confirm
+            </button>
+            <button type="button" className="ad-btn ad-btn--sm ad-btn--danger-soft" disabled={busy || !selectedList.some((b) => b.status !== "cancelled")} onClick={() => setToCancel(selectedList)}>
+              <Ban size={14} />Cancel
+            </button>
+            <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection">
+              <X size={15} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <BookingDrawer
+        booking={open}
+        onClose={closeDrawer}
+        onConfirm={(b) => confirmMany([b])}
+        onCancel={(b) => setToCancel([b])}
+        busy={busy}
+        onCopy={(text) => {
+          navigator.clipboard?.writeText(text).then(() => addToast("Reference copied"), () => {});
+        }}
+      />
+
+      <ConfirmDialog
+        open={!!toCancel}
+        icon={Ban}
+        title={toCancel && toCancel.length > 1 ? `Cancel ${toCancel.length} bookings?` : "Cancel this booking?"}
+        text={
+          toCancel && toCancel.length === 1
+            ? <>{toCancel[0].name}’s {TYPE_META[toCancel[0].type].label.toLowerCase()} appointment{toCancel[0].preferredDateISO ? ` on ${formatDay(toCancel[0].preferredDateISO, { weekday: "long", day: "numeric", month: "long" })}` : ""} will be marked as cancelled. Please let the patient know.</>
+            : <>These appointments will be marked as cancelled. Please let the patients know.</>
+        }
+        confirmLabel="Cancel booking"
+        busy={busy}
+        onConfirm={doCancel}
+        onCancel={() => setToCancel(null)}
+      />
+
+      <style>{`
+        .ad-bk-tile { text-align: left; font: inherit; cursor: pointer; width: 100%; }
+        .ad-bk-tile[data-active="true"] { border-color: var(--tone); box-shadow: 0 0 0 1px var(--tone), var(--ad-shadow-md); }
+        .ad-bk-tile:not([data-active="true"])::after { opacity: 0.35; }
+      `}</style>
+    </>
+  );
+}
+
+function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: {
+  booking: AdminBooking | null;
+  onClose: () => void;
+  onConfirm: (b: AdminBooking) => void;
+  onCancel: (b: AdminBooking) => void;
+  onCopy: (text: string) => void;
+  busy: boolean;
+}) {
+  useEffect(() => {
+    if (!booking) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [booking, onClose]);
+
+  return (
+    <>
+    <AnimatePresence>
+      {booking && (
+        <motion.div
+          className="ad-overlay ad-drawer-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 , pointerEvents: "none" }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <motion.aside
+            className="ad-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Booking for ${booking.name}`}
+            initial={{ x: "100%" }}
+            animate={{ x: "0%" }} /* same unit as initial/exit — a 0 ↔ "100%" mix never finished exiting */
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 38 }}
+          >
+            <div className="ad-drawer-head">
+              <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
+                <Avatar name={booking.name} size="lg" />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 17, fontWeight: 750, color: "var(--ad-text)" }}>{booking.name}</div>
+                  <button type="button" onClick={() => onCopy(booking.id)} className="ad-copy" title="Copy reference">
+                    {booking.id}<Copy size={12} />
+                  </button>
+                </div>
+              </div>
+              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
+            </div>
+
+            <div className="ad-drawer-body">
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                <StatusBadge status={booking.status} />
+                <Chip tone={TYPE_META[booking.type].tone}>{TYPE_META[booking.type].label}</Chip>
+              </div>
+
+              <div className="ad-appt-card">
+                <CalendarClock size={22} />
+                <div>
+                  <div style={{ fontWeight: 700, color: "var(--ad-text)", fontSize: 15 }}>
+                    {booking.preferredDateISO
+                      ? formatDay(booking.preferredDateISO, { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+                      : "No date chosen"}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--ad-text-2)" }}>
+                    {booking.time || "Any time"}{booking.preferredDateISO ? ` · ${fromNow(booking.preferredDateISO)}` : ""}
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="ad-drawer-h">Patient</h3>
+              <dl className="ad-dl">
+                <dt>Phone</dt><dd>{booking.phone || "—"}</dd>
+                <dt>Email</dt><dd>{booking.email || "—"}</dd>
+                {booking.dateOfBirth && (<><dt>Date of birth</dt><dd>{formatDay(booking.dateOfBirth, { day: "numeric", month: "long", year: "numeric" })}</dd></>)}
+                {booking.gender && (<><dt>Gender</dt><dd style={{ textTransform: "capitalize" }}>{booking.gender}</dd></>)}
+              </dl>
+
+              <h3 className="ad-drawer-h">Appointment</h3>
+              <dl className="ad-dl">
+                <dt><Stethoscope size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Department</dt><dd>{booking.dept || "—"}</dd>
+                <dt><ShieldCheck size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Insurance</dt>
+                <dd>{booking.insurance}{booking.insuranceNumber ? ` · ${booking.insuranceNumber}` : ""}</dd>
+                <dt><CalendarDays size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Received</dt><dd>{booking.createdAt || "—"}</dd>
+              </dl>
+
+              {booking.notes && (
+                <>
+                  <h3 className="ad-drawer-h">Notes from the patient</h3>
+                  {/* Visitor-supplied: rendered as text, never markup. */}
+                  <p className="ad-notes">{booking.notes}</p>
+                </>
+              )}
+
+              <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
+                {booking.phone && <a className="ad-btn" href={`tel:${booking.phone.replace(/\s+/g, "")}`}><Phone size={15} />Call</a>}
+                {booking.email && <a className="ad-btn" href={`mailto:${booking.email}?subject=${encodeURIComponent(`Your appointment at St. Elizabeth Catholic Hospital (${booking.id})`)}`}><Mail size={15} />Email</a>}
+              </div>
+            </div>
+
+            <div className="ad-drawer-foot">
+              {booking.status !== "cancelled" && (
+                <button type="button" className="ad-btn ad-btn--danger-soft" onClick={() => onCancel(booking)} disabled={busy}>
+                  <Ban size={15} />Cancel booking
+                </button>
+              )}
+              {booking.status === "pending" && (
+                <button type="button" className="ad-btn ad-btn--primary" onClick={() => onConfirm(booking)} disabled={busy}>
+                  <Check size={15} strokeWidth={2.6} />Confirm booking
+                </button>
+              )}
+              {booking.status !== "pending" && (
+                <button type="button" className="ad-btn" onClick={onClose}>Close</button>
+              )}
+            </div>
+          </motion.aside>
+        </motion.div>
       )}
+    </AnimatePresence>
+      <style>{`
+        .ad-copy { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; color: var(--ad-text-3); cursor: pointer; }
+        .ad-copy:hover { color: var(--ad-brand-ink); }
+        .ad-appt-card { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 12px; background: var(--ad-brand-soft); color: var(--ad-brand-ink); margin-bottom: 8px; }
+        .ad-drawer-h { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ad-text-3); margin: 22px 0 10px; }
+        .ad-notes { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--ad-surface-2); border: 1px solid var(--ad-border); font-size: 13.5px; line-height: 1.65; color: var(--ad-text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+      `}</style>
     </>
   );
 }

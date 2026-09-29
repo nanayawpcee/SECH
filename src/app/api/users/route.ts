@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
-import { USER_FIELDS, mapWpUser, type WpUserNode } from "@/lib/wp-users";
+import { USER_FIELDS, TEMP_PASSWORD_ROLES, isAssignableRole, isValidUsername, mapWpUser, type WpUserNode } from "@/lib/wp-users";
+import { generateTempPassword } from "@/lib/temp-password";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,8 @@ const LIST_USERS = `
 `;
 
 export async function GET() {
+  const gate = await requirePerm("team");
+  if (gate instanceof NextResponse) return gate;
   try {
     const data = await wpGraphQL<{
       viewer: { databaseId: number } | null;
@@ -59,9 +63,75 @@ const CREATE_USER = `
  * them a set-password link, so nobody has to type or transmit someone else's
  * password.
  */
+const CREATE_WITH_TEMP_PASSWORD = `
+  mutation CreateStaff(
+    $username: String!, $password: String!, $role: String!,
+    $email: String, $firstName: String, $lastName: String
+  ) {
+    createStaffAccount(input: {
+      username: $username, password: $password, role: $role,
+      email: $email, firstName: $firstName, lastName: $lastName
+    }) { account { databaseId username name email role } }
+  }
+`;
+
+/**
+ * Create a staff account with a temporary password, for staff without
+ * reliable email. The password is generated here, returned once for the
+ * administrator to hand over, and never stored or logged by the portal.
+ * WordPress flags the account so the person must choose their own at first
+ * sign-in.
+ */
+async function createWithTempPassword(body: Record<string, unknown>) {
+  const name = String(body.name ?? "").trim();
+  const username = String(body.username ?? "").trim().toLowerCase();
+  const email = String(body.email ?? "").trim();
+  const role = String(body.role ?? "contributor");
+
+  if (!name) return NextResponse.json({ error: "A name is required." }, { status: 400 });
+  if (!isValidUsername(username)) {
+    return NextResponse.json(
+      { error: "Usernames are 3–40 characters: letters, numbers, dots, dashes or underscores." },
+      { status: 400 },
+    );
+  }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return NextResponse.json({ error: "Enter a valid email address, or leave it blank." }, { status: 400 });
+  }
+  if (!TEMP_PASSWORD_ROLES.includes(role)) {
+    return NextResponse.json(
+      { error: "Administrator accounts must be created with an email invitation." },
+      { status: 400 },
+    );
+  }
+
+  const password = generateTempPassword();
+  const [firstName, ...rest] = name.split(/\s+/);
+  const data = await wpGraphQL<{
+    createStaffAccount: { account: { databaseId: number; username: string; name: string; email: string; role: string } };
+  }>(
+    CREATE_WITH_TEMP_PASSWORD,
+    { username, password, role, email: email || null, firstName, lastName: rest.join(" ") },
+    { authenticated: true },
+  );
+
+  return NextResponse.json(
+    { account: data.createStaffAccount.account, temporaryPassword: password },
+    // Never cached anywhere between here and the administrator's screen.
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
+
 export async function POST(request: Request) {
+  const gate = await requirePerm("team");
+  if (gate instanceof NextResponse) return gate;
   try {
-    const { name, email, role } = await request.json();
+    const body = await request.json();
+    if (body.mode === "temporary") return await createWithTempPassword(body);
+    const { name, email, role } = body;
+    if (role !== undefined && !isAssignableRole(role)) {
+      return NextResponse.json({ error: "That role isn’t one the portal assigns." }, { status: 400 });
+    }
 
     const trimmedEmail = String(email ?? "").trim();
     const trimmedName = String(name ?? "").trim();
@@ -86,7 +156,7 @@ export async function POST(request: Request) {
         email: trimmedEmail,
         firstName,
         lastName: rest.join(" "),
-        roles: [role || "editor"],
+        roles: [role || "contributor"],
       },
       { authenticated: true },
     );

@@ -1,9 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  Check,
+  ExternalLink,
+  ImageOff,
+  Link2,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
-import { NotificationBell } from "@/components/admin/NotificationBell";
-import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import { Avatar, ConfirmDialog, EmptyState, PageHeader, Skeleton } from "@/components/admin/ui";
 
 interface PendingComment {
   id: number;
@@ -29,40 +42,51 @@ interface PostGroup {
   items: PendingComment[];
 }
 
-/** Comments grouped under the post they were left on, newest post first. */
+type Action = "approved" | "spam" | "delete";
+
+const LINK_RE = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|ru|xyz|info|top|online|site|shop)\b/i;
+
+/** Comments grouped under the post they were left on. */
 function groupByPost(comments: PendingComment[]): PostGroup[] {
   const groups = new Map<number, PostGroup>();
   for (const c of comments) {
-    const existing = groups.get(c.postId);
-    if (existing) existing.items.push(c);
-    else
-      groups.set(c.postId, {
-        postId: c.postId,
-        title: c.postTitle,
-        slug: c.postSlug,
-        excerpt: c.postExcerpt,
-        date: c.postDate,
-        image: c.postImage,
-        items: [c],
-      });
+    const g = groups.get(c.postId);
+    if (g) g.items.push(c);
+    else groups.set(c.postId, {
+      postId: c.postId, title: c.postTitle, slug: c.postSlug, excerpt: c.postExcerpt,
+      date: c.postDate, image: c.postImage, items: [c],
+    });
   }
   return Array.from(groups.values());
+}
+
+function when(iso: string, withTime = true) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-GB", withTime
+    ? { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }
+    : { day: "numeric", month: "short", year: "numeric" });
 }
 
 /**
  * Moderation queue for public comments.
  *
- * Everything shown here is visitor-supplied, so every value is rendered as a
- * React text node — never `dangerouslySetInnerHTML`. It is already stripped to
- * plain text server-side; rendering it as text is the second layer, and the one
- * that matters most on an admin page where the reader is a logged-in user.
+ * Everything here is visitor-supplied, so every value is rendered as a React
+ * text node — never dangerouslySetInnerHTML. It is already stripped to plain
+ * text server-side; rendering it as text is the second layer, and the one that
+ * matters most on an admin page where the reader is a logged-in user.
  */
 export default function CommentsPage() {
-  const { addToast } = useAdminData();
+  const { addToast, refreshPendingComments } = useAdminData();
   const [comments, setComments] = useState<PendingComment[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [linksOnly, setLinksOnly] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [progress, setProgress] = useState<{ done: number; of: number } | null>(null);
+  const [confirm, setConfirm] = useState<{ action: Action; ids: number[] } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -75,6 +99,7 @@ export default function CommentsPage() {
         return;
       }
       setComments(Array.isArray(data.comments) ? data.comments : []);
+      setTotal(typeof data.total === "number" ? data.total : 0);
     } catch {
       setError("Could not reach the server.");
     } finally {
@@ -82,366 +107,240 @@ export default function CommentsPage() {
     }
   }, []);
 
+  useEffect(() => { load(); }, [load]);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return comments.filter((c) =>
+      (!linksOnly || LINK_RE.test(c.content)) &&
+      (!q || `${c.author} ${c.email} ${c.content} ${c.postTitle}`.toLowerCase().includes(q)),
+    );
+  }, [comments, query, linksOnly]);
+
+  const groups = useMemo(() => groupByPost(visible), [visible]);
+  const withLinks = useMemo(() => comments.filter((c) => LINK_RE.test(c.content)), [comments]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    setSelected((prev) => {
+      const ids = new Set(visible.map((c) => c.id));
+      const next = new Set(Array.from(prev).filter((id) => ids.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [visible]);
 
-  const act = async (
-    id: number,
-    action: "approved" | "spam" | "delete",
-    label: string,
-  ) => {
-    setBusyId(id);
-    // Remove it from the list straight away; put it back if the call fails.
-    const previous = comments;
-    setComments((list) => list.filter((c) => c.id !== id));
-    try {
-      const res =
-        action === "delete"
-          ? await fetch(`/api/comments/${id}`, { method: "DELETE" })
-          : await fetch(`/api/comments/${id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: action }),
-            });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setComments(previous);
-        addToast(data?.error ?? `Could not ${label} this comment.`, "danger");
-        return;
+  const toggle = (id: number) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  const toggleGroup = (g: PostGroup) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const all = g.items.every((c) => next.has(c.id));
+      g.items.forEach((c) => (all ? next.delete(c.id) : next.add(c.id)));
+      return next;
+    });
+
+  /** One request per comment, four at a time, removing each as it succeeds. */
+  const moderate = async (ids: number[], action: Action) => {
+    if (!ids.length) return;
+    setProgress({ done: 0, of: ids.length });
+    let ok = 0;
+    let failed = 0;
+    const queue = [...ids];
+    const worker = async () => {
+      while (queue.length) {
+        const id = queue.shift()!;
+        try {
+          const res = action === "delete"
+            ? await fetch(`/api/comments/${id}`, { method: "DELETE" })
+            : await fetch(`/api/comments/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: action }),
+              });
+          if (res.ok) {
+            ok++;
+            setComments((list) => list.filter((c) => c.id !== id));
+            setTotal((t) => Math.max(0, t - 1));
+          } else failed++;
+        } catch {
+          failed++;
+        }
+        setProgress((p) => (p ? { ...p, done: p.done + 1 } : p));
       }
-      addToast(label === "approve" ? "Comment approved and now public" : `Comment ${label}d`);
-    } catch {
-      setComments(previous);
-      addToast("A network issue stopped that change.", "danger");
-    } finally {
-      setBusyId(null);
-    }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    setProgress(null);
+    setSelected(new Set());
+
+    const verb = action === "approved" ? "approved and now public" : action === "spam" ? "marked as spam" : "moved to trash";
+    if (ok) addToast(`${ok} comment${ok === 1 ? "" : "s"} ${verb}`);
+    if (failed) addToast(`${failed} could not be updated — try again`, "danger");
+    refreshPendingComments();
+    // The queue page holds 50; fetch the next batch once this one is cleared.
+    if (ok && comments.length - ok <= 0 && total - ok > 0) load();
   };
 
-  const when = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "";
-    }
+  const ask = (action: Action, ids: number[]) => {
+    // Single spam/delete clicks are reversible (spam folder, trash); approving
+    // publishes, and bulk anything is worth one confirmation.
+    if (ids.length === 1 && action !== "approved") moderate(ids, action);
+    else setConfirm({ action, ids });
   };
 
-  const onlyDate = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return "";
-    }
-  };
-
-  const btn = (bg: string, color: string): React.CSSProperties => ({
-    padding: "7px 14px",
-    border: bg === "#fff" ? "0.5px solid #d1d5db" : "none",
-    borderRadius: 7,
-    background: bg,
-    color,
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: "pointer",
-  });
+  const busy = progress !== null;
+  const selectedIds = Array.from(selected);
 
   return (
     <>
-      <style>{`
-        .cmt-group {
-          display: grid;
-          /* minmax(0,1fr) rather than 1fr: a grid track sizes to its content by
-             default, so one long unbroken word in a comment would widen the
-             column and push the post off the edge. */
-          grid-template-columns: minmax(0, 1fr) 300px;
-          gap: 20px;
-          align-items: start;
+      <PageHeader
+        title="Comments"
+        subtitle={
+          loading ? "Loading the moderation queue…"
+            : total === 0 ? "Nothing waiting for review"
+            : `${total} awaiting review${total > comments.length ? ` · showing ${comments.length} at a time` : ""}`
         }
-        .cmt-group + .cmt-group {
-          border-top: 1.5px solid #e5e7eb;
-          padding-top: 28px;
-        }
-        /* Clears the sticky topbar (~60px) so the card parks below it. */
-        .cmt-post { position: sticky; top: 80px; }
-        @media (max-width: 1100px) {
-          .cmt-group { grid-template-columns: 1fr; }
-          /* Stacked, the post reads first — you need to know what was said
-             before you can judge a reply to it. */
-          .cmt-post { position: static; order: -1; }
-        }
-      `}</style>
-
-      {/* Topbar */}
-      <div
-        style={{
-          // Sticks to the top of the admin scroll container so the page title
-          // and its actions stay reachable while a long list scrolls beneath.
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
-          background: "#fff",
-          borderBottom: "0.5px solid #e5e7eb",
-          padding: "12px 20px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>Comments</div>
-          <div style={{ fontSize: 11, color: "#aaa", marginTop: 1 }}>
-            {loading
-              ? "Loading…"
-              : comments.length === 0
-                ? "Nothing waiting for review"
-                : `${comments.length} awaiting review across ${
-                    groupByPost(comments).length
-                  } post${groupByPost(comments).length === 1 ? "" : "s"}`}
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={load} style={btn("#fff", "#555")} disabled={loading}>
-            Refresh
+        actions={
+          <button type="button" className="ad-btn" onClick={() => { load(); refreshPendingComments(); }} disabled={loading || busy}>
+            <RefreshCw size={15} className={loading ? "ad-spin" : ""} />Refresh
           </button>
-          <NotificationBell />
-          <ThemeToggle />
+        }
+      />
+
+      {!loading && withLinks.length >= 5 && (
+        <div className="ad-alert ad-tone-warn" style={{ marginBottom: 16, alignItems: "center" }}>
+          <ShieldAlert size={18} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>
+            <strong>{withLinks.length} of these {comments.length} contain links</strong> — the usual signature of spam bots.
+            Nothing held here has been shown on the website.
+          </span>
+          <button type="button" className="ad-btn ad-btn--sm" disabled={busy}
+            onClick={() => { setLinksOnly(true); setSelected(new Set(withLinks.map((c) => c.id))); }}>
+            <Link2 size={14} />Select all with links
+          </button>
         </div>
-      </div>
+      )}
 
-      <div style={{ padding: 24 }}>
-        {error ? (
-          <div
-            style={{
-              background: "#FEE2E2",
-              color: "#DC2626",
-              padding: "12px 16px",
-              borderRadius: 8,
-              fontSize: 13,
-            }}
-          >
-            {error}
+      <section className="ad-card" style={{ marginBottom: 16 }}>
+        <div className="ad-toolbar">
+          <div className="ad-input-wrap" style={{ flex: "1 1 260px", maxWidth: 380 }}>
+            <Search size={15} />
+            <input className="ad-input" placeholder="Search name, email, text or post" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search comments" />
           </div>
-        ) : loading ? (
-          <div style={{ color: "#93A29B", fontSize: 13 }}>Loading comments…</div>
-        ) : comments.length === 0 ? (
-          <div
-            style={{
-              background: "#fff",
-              border: "0.5px solid #e5e7eb",
-              borderRadius: 10,
-              padding: "3rem 2rem",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 15, fontWeight: 600, color: "#111", marginBottom: 6 }}>
-              No comments waiting
-            </div>
-            <div style={{ fontSize: 13, color: "#93A29B" }}>
-              New comments from the public site appear here for approval before they
-              go live.
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gap: 28 }}>
-            {groupByPost(comments).map((group) => (
+          <button type="button" className="ad-btn" aria-pressed={linksOnly} onClick={() => setLinksOnly((v) => !v)}
+            style={linksOnly ? { borderColor: "var(--ad-warn)", color: "var(--ad-warn)", background: "var(--ad-warn-soft)" } : undefined}>
+            <Link2 size={15} />Contains a link{linksOnly ? "" : ` (${withLinks.length})`}
+          </button>
+          {visible.length > 0 && (
+            <label className="ad-check" style={{ marginLeft: "auto" }}>
+              <input type="checkbox" className="ad-cb"
+                checked={visible.every((c) => selected.has(c.id))}
+                onChange={(e) => setSelected(e.target.checked ? new Set(visible.map((c) => c.id)) : new Set())} />
+              Select all {visible.length} shown
+            </label>
+          )}
+        </div>
+      </section>
+
+      {error ? (
+        <section className="ad-card">
+          <EmptyState icon={AlertTriangle} title="Couldn’t load comments" text={error}
+            action={<button type="button" className="ad-btn" onClick={load}><RefreshCw size={15} />Try again</button>} />
+        </section>
+      ) : loading && comments.length === 0 ? (
+        <div style={{ display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={130} r={12} />)}</div>
+      ) : visible.length === 0 ? (
+        <section className="ad-card">
+          <EmptyState
+            icon={MessageSquare}
+            title={comments.length ? "No comments match" : "All caught up"}
+            text={comments.length ? "Try a different search or filter." : "New comments from the website appear here for approval before they go live."}
+          />
+        </section>
+      ) : (
+        <div style={{ display: "grid", gap: 28 }}>
+          {groups.map((group) => {
+            const allInGroup = group.items.every((c) => selected.has(c.id));
+            return (
               <section key={group.postId} className="cmt-group">
-                {/* Comments on the left. They come first in the DOM so the
-                    stylesheet can lift the post above them on a narrow screen
-                    without the queue itself losing its reading order. */}
-                <div style={{ display: "grid", gap: 12, minWidth: 0 }}>
-                  {group.items.map((c) => (
-              <div
-                key={c.id}
-                style={{
-                  background: "#fff",
-                  border: "0.5px solid #e5e7eb",
-                  borderRadius: 10,
-                  padding: 18,
-                  opacity: busyId === c.id ? 0.5 : 1,
-                  transition: "opacity 0.15s",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 16,
-                    flexWrap: "wrap",
-                    marginBottom: 10,
-                  }}
-                >
-                  <div>
-                    {/* Text nodes — visitor-supplied, never markup. */}
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#111" }}>
-                      {c.author}
-                    </div>
-                    <div style={{ fontSize: 11.5, color: "#93A29B", marginTop: 2 }}>
-                      {c.email}
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 11.5, color: "#93A29B", textAlign: "right" }}>
-                    <div>{when(c.date)}</div>
-                  </div>
+                {/* Comments on the left — first in the DOM so the stylesheet can
+                    lift the post above them on narrow screens. */}
+                <div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+                  <AnimatePresence initial={false}>
+                    {group.items.map((c) => {
+                      const hasLink = LINK_RE.test(c.content);
+                      const isSel = selected.has(c.id);
+                      return (
+                        <motion.article
+                          key={c.id}
+                          layout
+                          className="ad-card cmt-card"
+                          data-selected={isSel}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -40, height: 0, marginTop: -10, transition: { duration: 0.22 } }}
+                        >
+                          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                            <input type="checkbox" className="ad-cb" style={{ marginTop: 10 }} checked={isSel} onChange={() => toggle(c.id)} aria-label={`Select comment by ${c.author}`} />
+                            <Avatar name={c.author} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
+                                {/* Text nodes — visitor-supplied, never markup. */}
+                                <span className="ad-cell-main">{c.author}</span>
+                                <span className="ad-cell-sub">{c.email}</span>
+                                <span className="ad-cell-sub" style={{ marginLeft: "auto" }}>{when(c.date)}</span>
+                              </div>
+                              {hasLink && (
+                                <div style={{ marginTop: 6 }}>
+                                  <span className="ad-badge ad-badge--plain ad-tone-warn" style={{ textTransform: "none" }}><Link2 size={12} />Contains a link</span>
+                                </div>
+                              )}
+                              <p className="cmt-text">{c.content}</p>
+                              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                <button type="button" className="ad-btn ad-btn--sm ad-btn--success-soft" disabled={busy} onClick={() => ask("approved", [c.id])}>
+                                  <Check size={14} strokeWidth={2.6} />Approve
+                                </button>
+                                <button type="button" className="ad-btn ad-btn--sm" disabled={busy} onClick={() => ask("spam", [c.id])}>
+                                  <ShieldAlert size={14} />Spam
+                                </button>
+                                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" disabled={busy} onClick={() => ask("delete", [c.id])} style={{ color: "var(--ad-danger)" }}>
+                                  <Trash2 size={14} />Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.article>
+                      );
+                    })}
+                  </AnimatePresence>
                 </div>
 
-                <p
-                  style={{
-                    margin: "0 0 14px",
-                    fontSize: 13.5,
-                    lineHeight: 1.7,
-                    color: "#333",
-                    background: "#F7F9F7",
-                    borderRadius: 6,
-                    padding: "10px 12px",
-                    whiteSpace: "pre-wrap",
-                    overflowWrap: "anywhere",
-                  }}
-                >
-                  {c.content}
-                </p>
-
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    onClick={() => act(c.id, "approved", "approve")}
-                    disabled={busyId === c.id}
-                    style={btn("#0A4F3C", "#fff")}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => act(c.id, "spam", "mark as spam")}
-                    disabled={busyId === c.id}
-                    style={btn("#fff", "#555")}
-                  >
-                    Spam
-                  </button>
-                  <button
-                    onClick={() => act(c.id, "delete", "delete")}
-                    disabled={busyId === c.id}
-                    style={btn("#fff", "#DC2626")}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-                  ))}
-                </div>
-
-                {/* The post itself on the right, pinned while its comments
-                    scroll past — a moderator judging "is this on topic?" should
-                    not have to scroll back up to remember what the post said. */}
+                {/* The post, pinned beside its comments. */}
                 <aside className="cmt-post">
-                  <div
-                    style={{
-                      background: "#fff",
-                      border: "0.5px solid #e5e7eb",
-                      borderRadius: 10,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {group.image && (
-                      // Decorative here: the real alt text is on the article
-                      // itself, and WordPress alt text is author-supplied.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={group.image}
-                        alt=""
-                        loading="lazy"
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          height: 130,
-                          objectFit: "cover",
-                        }}
-                      />
-                    )}
+                  <div className="ad-card" style={{ overflow: "hidden" }}>
+                    <div className="cmt-post-img">
+                      {group.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={group.image} alt="" loading="lazy" />
+                      ) : (
+                        <ImageOff size={24} strokeWidth={1.6} />
+                      )}
+                    </div>
                     <div style={{ padding: 16 }}>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          color: "#93A29B",
-                          marginBottom: 5,
-                        }}
-                      >
-                        Commented post
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 14.5,
-                          fontWeight: 700,
-                          color: "#111",
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        {group.title}
-                      </div>
-                      {group.date && (
-                        <div style={{ fontSize: 11.5, color: "#93A29B", marginTop: 5 }}>
-                          Published {onlyDate(group.date)}
-                        </div>
-                      )}
-                      {group.excerpt && (
-                        <p
-                          style={{
-                            margin: "10px 0 0",
-                            fontSize: 12.5,
-                            lineHeight: 1.65,
-                            color: "#555",
-                          }}
-                        >
-                          {group.excerpt}
-                        </p>
-                      )}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          flexWrap: "wrap",
-                          marginTop: 14,
-                          paddingTop: 12,
-                          borderTop: "0.5px solid #e5e7eb",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 11.5,
-                            fontWeight: 600,
-                            color: "#0A4F3C",
-                            background: "#EAF2EE",
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                          }}
-                        >
+                      <div className="ad-menu-label" style={{ padding: 0, marginBottom: 6 }}>Commented post</div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ad-text)", lineHeight: 1.35 }}>{group.title}</div>
+                      {group.date && <div className="ad-cell-sub" style={{ marginTop: 4 }}>Published {when(group.date, false)}</div>}
+                      {group.excerpt && <p className="ad-clamp-2" style={{ margin: "10px 0 0", fontSize: 12.5, lineHeight: 1.6, color: "var(--ad-text-2)", WebkitLineClamp: 4 } as React.CSSProperties}>{group.excerpt}</p>}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--ad-border)", flexWrap: "wrap" }}>
+                        <label className="ad-check" style={{ fontSize: 12.5 }}>
+                          <input type="checkbox" className="ad-cb" checked={allInGroup} onChange={() => toggleGroup(group)} />
                           {group.items.length} awaiting
-                        </span>
+                        </label>
                         {group.slug && (
-                          <a
-                            href={`/news/${group.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: "#0A4F3C",
-                              textDecoration: "underline",
-                            }}
-                          >
-                            View post ↗
+                          <a href={`/news/${group.slug}`} target="_blank" rel="noopener noreferrer" className="ad-card-link" style={{ marginLeft: "auto" }}>
+                            View post <ExternalLink size={13} />
                           </a>
                         )}
                       </div>
@@ -449,10 +348,86 @@ export default function CommentsPage() {
                   </div>
                 </aside>
               </section>
-            ))}
-          </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Bulk bar / progress */}
+      <AnimatePresence>
+        {(selected.size > 0 || busy) && (
+          <motion.div
+            className="ad-bulkbar"
+            initial={{ opacity: 0, y: 24, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 24, x: "-50%" }}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            role="toolbar"
+            aria-label="Bulk moderation"
+          >
+            {busy && progress ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 8px 4px 0", minWidth: 260 }}>
+                <RefreshCw size={15} className="ad-spin" />
+                <span>Working… {progress.done} of {progress.of}</span>
+                <div className="ad-meter" style={{ flex: 1, background: "rgba(255,255,255,0.12)" }}>
+                  <span style={{ width: `${(progress.done / progress.of) * 100}%`, ["--tone" as string]: "var(--ad-gold)", animation: "none", transition: "width .2s" }} />
+                </div>
+              </div>
+            ) : (
+              <>
+                <strong>{selected.size} selected</strong>
+                <span className="ad-bulkbar-sep" />
+                <button type="button" className="ad-btn ad-btn--sm" onClick={() => ask("approved", selectedIds)}><Check size={14} />Approve</button>
+                <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" onClick={() => ask("spam", selectedIds)}><ShieldAlert size={14} />Mark as spam</button>
+                <button type="button" className="ad-btn ad-btn--sm ad-btn--danger-soft" onClick={() => ask("delete", selectedIds)}><Trash2 size={14} />Delete</button>
+                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection"><X size={15} /></button>
+              </>
+            )}
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!confirm}
+        icon={confirm?.action === "approved" ? Check : confirm?.action === "spam" ? ShieldAlert : Trash2}
+        tone={confirm?.action === "approved" ? "primary" : "danger"}
+        title={
+          !confirm ? "" :
+          confirm.action === "approved" ? `Approve ${confirm.ids.length === 1 ? "this comment" : `${confirm.ids.length} comments`}?` :
+          confirm.action === "spam" ? `Mark ${confirm.ids.length} comments as spam?` :
+          `Delete ${confirm.ids.length} comments?`
+        }
+        text={
+          !confirm ? "" :
+          confirm.action === "approved" ? "Approved comments appear publicly under their post straight away. Make sure none contain personal health details or links you would not want on the hospital’s website." :
+          confirm.action === "spam" ? "They move to WordPress’s spam folder and are never shown on the website." :
+          "They move to the WordPress trash, where they can be restored for 30 days."
+        }
+        confirmLabel={!confirm ? "" : confirm.action === "approved" ? "Approve and publish" : confirm.action === "spam" ? "Mark as spam" : "Move to trash"}
+        onConfirm={() => { const c = confirm; setConfirm(null); if (c) moderate(c.ids, c.action); }}
+        onCancel={() => setConfirm(null)}
+      />
+
+      <style>{`
+        .cmt-group { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+        .cmt-group + .cmt-group { border-top: 1px solid var(--ad-border); padding-top: 28px; }
+        .cmt-post { position: sticky; top: 16px; }
+        @media (max-width: 1100px) {
+          .cmt-group { grid-template-columns: minmax(0, 1fr); }
+          .cmt-post { position: static; order: -1; }
+        }
+        .cmt-card { padding: 14px 16px; overflow: hidden; }
+        .cmt-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--ad-brand-ink); }
+        .cmt-text {
+          margin: 10px 0 12px; padding: 10px 12px; border-radius: 10px;
+          background: var(--ad-surface-2); border: 1px solid var(--ad-border);
+          font-size: 13.5px; line-height: 1.65; color: var(--ad-text-2);
+          white-space: pre-wrap; overflow-wrap: anywhere;
+          max-height: 180px; overflow-y: auto;
+        }
+        .cmt-post-img { height: 120px; overflow: hidden; background: var(--ad-surface-3); display: grid; place-items: center; color: var(--ad-text-3); }
+        .cmt-post-img img { width: 100%; height: 100% !important; object-fit: cover; display: block; }
+      `}</style>
     </>
   );
 }

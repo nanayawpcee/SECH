@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { WP_ENDPOINT } from "@/lib/wp-graphql";
+import { WP_ENDPOINT, ADMIN_COOKIE, SESSION_SECONDS } from "@/lib/wp-graphql";
+import { viewerForToken } from "@/lib/access";
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
           mutation LoginUser($username: String!, $password: String!) {
             login(input: { username: $username, password: $password }) {
               authToken
+              refreshToken
               user {
                 id
                 name
@@ -40,16 +42,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: cleanError }, { status: 401 });
     }
 
-    const response = NextResponse.json({ success: true, user: data.login.user });
-
-    // Store the auth token safely away from malicious XSS access 
-    response.cookies.set("admin_token", data.login.authToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 2, // 2 hours
+    // What this person may do, from their WordPress capabilities. Returned so
+    // the browser can send them to the right place; every API route still
+    // checks for itself.
+    const viewer = await viewerForToken(data.login.authToken);
+    const response = NextResponse.json({
+      success: true,
+      user: { ...data.login.user, databaseId: viewer?.id ?? null, roles: viewer?.roles ?? [] },
+      perms: viewer?.perms ?? [],
+      mustChangePassword: viewer?.mustChangePassword ?? false,
     });
+
+    // Both tokens live in httpOnly cookies, out of reach of page scripts. The
+    // auth token expires in minutes; the refresh token lets the server renew
+    // it (see getAdminToken). The session itself still ends after 2 hours.
+    response.cookies.set("admin_token", data.login.authToken, { ...ADMIN_COOKIE, maxAge: SESSION_SECONDS });
+    if (data.login.refreshToken) {
+      response.cookies.set("admin_refresh", data.login.refreshToken, { ...ADMIN_COOKIE, maxAge: SESSION_SECONDS });
+    }
 
     return response;
   } catch (err) {

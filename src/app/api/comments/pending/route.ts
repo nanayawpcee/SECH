@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { WP_BASE_URL } from "@/lib/wp-graphql";
+import { requirePerm } from "@/lib/access";
+import { WP_BASE_URL, getAdminToken } from "@/lib/wp-graphql";
 import { toPlainText, toPlainName } from "@/lib/wp-comments";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +53,9 @@ async function fetchMedia(
  * with the wrong one.
  */
 export async function GET() {
-  const adminToken = (await cookies()).get("admin_token")?.value;
+  const gate = await requirePerm("comments");
+  if (gate instanceof NextResponse) return gate;
+  const adminToken = await getAdminToken();
   if (!adminToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -77,6 +79,9 @@ export async function GET() {
     }
 
     const raw = (await response.json()) as Array<Record<string, any>>;
+    // The page is capped at 50; WordPress reports the real size of the queue
+    // in a header, so the console can say "50 of 212" rather than "50".
+    const total = Number(response.headers.get("X-WP-Total")) || raw.length;
 
     // The embedded parent carries only a media *id*, so resolve the thumbnails
     // in one extra call for the whole queue rather than one per comment.
@@ -117,7 +122,7 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ comments });
+    return NextResponse.json({ comments, total });
   } catch (error) {
     console.error("[wp] Could not load the moderation queue:", error);
     return NextResponse.json(

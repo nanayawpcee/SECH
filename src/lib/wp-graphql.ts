@@ -109,9 +109,74 @@ function cleanMessage(raw: string): string {
     .trim();
 }
 
+/** Cookie settings shared by login, refresh and logout — they must match
+ *  exactly, or the browser treats them as different cookies. */
+export const ADMIN_COOKIE = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+};
+export const SESSION_SECONDS = 60 * 60 * 2;
+
+/** Seconds until a JWT's `exp`, or -1 if it cannot be read. */
+function secondsLeft(jwt: string): number {
+  try {
+    const payload = JSON.parse(Buffer.from(jwt.split(".")[1], "base64url").toString("utf8"));
+    return typeof payload.exp === "number" ? payload.exp - Math.floor(Date.now() / 1000) : -1;
+  } catch {
+    return -1;
+  }
+}
+
+const REFRESH_MUTATION = `
+  mutation RefreshAuth($token: String!) {
+    refreshJwtAuthToken(input: { jwtRefreshToken: $token }) { authToken }
+  }
+`;
+
+/**
+ * The admin's WordPress JWT, renewed when it is about to expire.
+ *
+ * WPGraphQL JWT tokens live for 5 minutes by default, while the console
+ * session lasts 2 hours. Without renewal every request after minute five was
+ * rejected — posts and bookings failed with "Internal server error" and the
+ * console silently kept showing stale data. The long-lived refresh token from
+ * login (httpOnly, never exposed to the browser) buys a new auth token here.
+ */
 export async function getAdminToken(): Promise<string | null> {
   const store = await cookies();
-  return store.get("admin_token")?.value ?? null;
+  const token = store.get("admin_token")?.value ?? null;
+  const left = token ? secondsLeft(token) : 0;
+  // -1 = unreadable (not a JWT we understand): let WordPress be the judge.
+  if (token && (left > 30 || left === -1)) return token;
+
+  const refresh = store.get("admin_refresh")?.value;
+  // A session from before refresh tokens were stored: usable until it
+  // expires, then treated as signed out so the console can say so plainly.
+  if (!refresh) return left > 0 ? token : null;
+
+  try {
+    const response = await fetch(WP_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: REFRESH_MUTATION, variables: { token: refresh } }),
+      cache: "no-store",
+    });
+    const json = await response.json();
+    const fresh: string | undefined = json?.data?.refreshJwtAuthToken?.authToken;
+    if (!fresh) return null;
+    try {
+      // Allowed in route handlers; a no-op elsewhere. Either way this request
+      // uses the fresh token, and the next one refreshes again if needed.
+      store.set("admin_token", fresh, { ...ADMIN_COOKIE, maxAge: SESSION_SECONDS });
+    } catch {
+      /* read-only cookie store (server component) */
+    }
+    return fresh;
+  } catch {
+    return null;
+  }
 }
 
 interface WpRequestOptions {
@@ -169,13 +234,13 @@ export async function wpGraphQL<T>(
   if (payload.errors?.length) {
     const first = payload.errors[0];
     const message = cleanMessage(first?.message ?? "WordPress rejected the request.");
-    // WPGraphQL reports permission problems as ordinary errors; map the common
-    // ones onto real HTTP statuses so the client can react properly.
-    const unauthorised =
-      /not allowed|permission|cannot view|unauthenticated|expired|invalid.token/i.test(
-        message,
-      );
-    throw new WpGraphQLError(message, unauthorised ? 401 : 400);
+    // WPGraphQL reports auth problems as ordinary errors; map them onto real
+    // statuses. The distinction matters: 401 (session gone) signs the person
+    // out, 403 (signed in, but not allowed) must not — a staff writer trying
+    // something beyond their role should see a message, not the login page.
+    const sessionGone = /unauthenticated|expired|invalid.token|token is invalid/i.test(message);
+    const forbidden = /not allowed|permission|cannot view|do not have|sorry, you/i.test(message);
+    throw new WpGraphQLError(message, sessionGone ? 401 : forbidden ? 403 : 400);
   }
 
   if (!payload.data) {

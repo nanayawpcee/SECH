@@ -14,7 +14,11 @@ export function AdminShellSuppressor({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin =
+    pathname.startsWith("/admin") ||
+    pathname === "/staff" || pathname.startsWith("/staff/") ||
+    // The shareable notice board is a standalone page, opened from WhatsApp.
+    pathname === "/notices" || pathname.startsWith("/notices/");
 
   if (isAdmin) {
     // Don't show navbar and footer on admin pages

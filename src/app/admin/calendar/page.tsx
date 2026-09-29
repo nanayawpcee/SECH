@@ -1,262 +1,314 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  CalendarDays,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  List,
+  Stethoscope,
+} from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
-import { NotificationBell } from "@/components/admin/NotificationBell";
-import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import type { AdminBooking } from "@/lib/wp-bookings";
+import { Avatar, EmptyState, PageHeader, Skeleton, StatusBadge } from "@/components/admin/ui";
+import { dayKey, formatDay, fromNow, todayKey } from "@/lib/admin-dates";
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-/**
- * Group by day-of-month using the raw YYYY-MM-DD, restricted to the month on
- * screen. Parsing the localised display string would break as soon as the
- * format changed.
- */
-function groupByDay(bookings: AdminBooking[], year: number, month: number) {
-  const prefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
-  const map: Record<number, AdminBooking[]> = {};
-  bookings.forEach((b) => {
-    if (!b.preferredDateISO?.startsWith(prefix)) return;
-    const day = Number(b.preferredDateISO.slice(8, 10));
-    if (!Number.isFinite(day) || day < 1) return;
-    map[day] = map[day] ?? [];
-    map[day].push(b);
-  });
-  return map;
-}
-
-const STATUS_DOT: Record<string, string> = {
-  pending: "#d97706",
-  confirmed: "#16a34a",
-  cancelled: "#DC2626",
+const STATUS_COLOR: Record<AdminBooking["status"], string> = {
+  pending: "var(--ad-warn)",
+  confirmed: "var(--ad-success)",
+  cancelled: "var(--ad-danger)",
 };
 
+/** Six rows of seven days, Monday first, including the neighbouring months. */
+function monthGrid(year: number, month: number) {
+  const first = new Date(year, month, 1);
+  const offset = (first.getDay() + 6) % 7; // Monday = 0
+  const start = new Date(year, month, 1 - offset);
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    return { key: dayKey(d), day: d.getDate(), inMonth: d.getMonth() === month, weekend: d.getDay() === 0 || d.getDay() === 6 };
+  });
+}
+
+const byTime = (a: AdminBooking, b: AdminBooking) => (a.time || "").localeCompare(b.time || "");
+
 export default function CalendarPage() {
-  const { bookings, bookingsLoading, bookingsError } = useAdminData();
-  const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const { bookings, bookingsLoading } = useAdminData();
+  const now = new Date();
+  const today = todayKey();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
+  const [selected, setSelected] = useState<string>(today);
+  const [view, setView] = useState<"month" | "agenda">("month");
+  const [dir, setDir] = useState(0);
 
-  const byDay = groupByDay(bookings, year, month);
-  const selectedBookings = selectedDay ? (byDay[selectedDay] ?? []) : [];
+  const byDay = useMemo(() => {
+    const map = new Map<string, AdminBooking[]>();
+    for (const b of bookings) {
+      if (!b.preferredDateISO) continue;
+      const list = map.get(b.preferredDateISO) ?? [];
+      list.push(b);
+      map.set(b.preferredDateISO, list);
+    }
+    map.forEach((list) => list.sort(byTime));
+    return map;
+  }, [bookings]);
 
-  const startDow = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = useMemo(() => monthGrid(year, month), [year, month]);
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
+  const monthBookings = useMemo(
+    () => bookings.filter((b) => b.preferredDateISO.startsWith(monthPrefix)),
+    [bookings, monthPrefix],
+  );
+  const monthCounts = {
+    pending: monthBookings.filter((b) => b.status === "pending").length,
+    confirmed: monthBookings.filter((b) => b.status === "confirmed").length,
+    cancelled: monthBookings.filter((b) => b.status === "cancelled").length,
+  };
 
   const step = (delta: number) => {
     const d = new Date(year, month + delta, 1);
+    setDir(delta);
     setYear(d.getFullYear());
     setMonth(d.getMonth());
-    setSelectedDay(null);
+    setSelected(dayKey(d));
+  };
+  const goToday = () => {
+    setDir(0);
+    setYear(now.getFullYear());
+    setMonth(now.getMonth());
+    setSelected(today);
   };
 
-  const isCurrentMonth =
-    year === today.getFullYear() && month === today.getMonth();
+  // Arrow keys page through months when nothing else has focus.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || e.metaKey || e.ctrlKey) return;
+      if (e.key === "ArrowLeft" && e.shiftKey) step(-1);
+      if (e.key === "ArrowRight" && e.shiftKey) step(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
-  const cells: (number | null)[] = [
-    ...Array(startDow).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
-  while (cells.length % 7 !== 0) cells.push(null);
+  const dayList = byDay.get(selected) ?? [];
+  const monthLabel = new Date(year, month, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+
+  const agendaDays = useMemo(() => {
+    const keys = Array.from(new Set(monthBookings.map((b) => b.preferredDateISO))).sort();
+    return keys.map((k) => ({ key: k, list: byDay.get(k) ?? [] }));
+  }, [monthBookings, byDay]);
 
   return (
     <>
-      {/* Topbar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 5, background: "#fff", borderBottom: "0.5px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: "#111" }}>
-          Calendar — {MONTHS[month]} {year}
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={() => step(-1)} style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
-            ‹ Prev
-          </button>
-          <button onClick={() => step(1)} style={{ padding: "6px 12px", border: "0.5px solid #d1d5db", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 13, color: "#555" }}>
-            Next ›
-          </button>
-          <ThemeToggle />
-          <NotificationBell />
-        </div>
-      </div>
-
-      <div style={{ padding: 20 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16, alignItems: "start" }}>
-          {/* Calendar grid */}
-          <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
-            {/* Day headers */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", background: "#F9FAFB", borderBottom: "0.5px solid #e5e7eb" }}>
-              {DAYS.map((d) => (
-                <div key={d} style={{ padding: "8px 4px", textAlign: "center", fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  {d}
-                </div>
-              ))}
+      <PageHeader
+        title="Calendar"
+        subtitle={`${monthBookings.length} appointment${monthBookings.length === 1 ? "" : "s"} in ${monthLabel}`}
+        actions={
+          <>
+            <div className="ad-seg" role="group" aria-label="View">
+              <button type="button" className="ad-seg-btn" aria-pressed={view === "month"} onClick={() => setView("month")}>
+                {view === "month" && <motion.span layoutId="cal-view" className="ad-seg-pill" />}
+                <CalendarRange size={15} />Month
+              </button>
+              <button type="button" className="ad-seg-btn" aria-pressed={view === "agenda"} onClick={() => setView("agenda")}>
+                {view === "agenda" && <motion.span layoutId="cal-view" className="ad-seg-pill" />}
+                <List size={15} />Agenda
+              </button>
             </div>
+            <button type="button" className="ad-btn" onClick={goToday}>Today</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <button type="button" className="ad-btn ad-btn--icon" onClick={() => step(-1)} aria-label="Previous month" title="Previous month (Shift + ←)"><ChevronLeft size={17} /></button>
+              <div className="ad-cal-month" aria-live="polite">{monthLabel}</div>
+              <button type="button" className="ad-btn ad-btn--icon" onClick={() => step(1)} aria-label="Next month" title="Next month (Shift + →)"><ChevronRight size={17} /></button>
+            </div>
+          </>
+        }
+      />
 
-            {/* Weeks */}
-            <div>
-              {Array.from({ length: cells.length / 7 }, (_, week) => (
-                <div
-                  key={week}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(7,1fr)",
-                    borderBottom: week < cells.length / 7 - 1 ? "0.5px solid #f3f4f6" : "none",
-                  }}
+      <div className="ad-cal-layout">
+        <section className="ad-card" style={{ overflow: "hidden" }}>
+          {view === "month" ? (
+            <>
+              <div className="ad-cal-head">
+                {WEEKDAYS.map((d, i) => <div key={d} data-weekend={i >= 5}>{d}</div>)}
+              </div>
+              <AnimatePresence mode="wait" initial={false} custom={dir}>
+                <motion.div
+                  key={`${year}-${month}`}
+                  className="ad-cal-grid"
+                  initial={{ opacity: 0, x: dir * 24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: dir * -24 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  {cells.slice(week * 7, week * 7 + 7).map((day, col) => {
-                    const dayBookings = day ? (byDay[day] ?? []) : [];
-                    const isSelected = day === selectedDay;
-                    const isToday = isCurrentMonth && day === today.getDate();
-
+                  {cells.map((c) => {
+                    const list = byDay.get(c.key) ?? [];
+                    const live = list.filter((b) => b.status !== "cancelled");
                     return (
-                      <div
-                        key={col}
-                        onClick={() => day && setSelectedDay(day === selectedDay ? null : day)}
-                        style={{
-                          minHeight: 80,
-                          padding: 6,
-                          borderRight: col < 6 ? "0.5px solid #f3f4f6" : "none",
-                          background: isSelected ? "#F0F7F4" : day ? "#fff" : "#FAFAFA",
-                          cursor: day ? "pointer" : "default",
-                          transition: "background 0.15s",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (day && !isSelected) (e.currentTarget as HTMLElement).style.background = "#F7FAF8";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) (e.currentTarget as HTMLElement).style.background = day ? "#fff" : "#FAFAFA";
-                        }}
+                      <button
+                        key={c.key}
+                        type="button"
+                        className="ad-cal-cell"
+                        data-out={!c.inMonth}
+                        data-weekend={c.weekend}
+                        data-today={c.key === today}
+                        data-selected={c.key === selected}
+                        onClick={() => setSelected(c.key)}
+                        aria-label={`${formatDay(c.key, { weekday: "long", day: "numeric", month: "long" })}, ${list.length} appointment${list.length === 1 ? "" : "s"}`}
                       >
-                        {day && (
-                          <>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                fontWeight: isToday ? 700 : dayBookings.length ? 600 : 400,
-                                color: isSelected ? "#0A4F3C" : isToday ? "#fff" : dayBookings.length ? "#0A4F3C" : "#999",
-                                width: 22,
-                                height: 22,
-                                borderRadius: "50%",
-                                background: isToday ? "#0A4F3C" : "transparent",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginBottom: 4,
-                              }}
-                            >
-                              {day}
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                              {dayBookings.slice(0, 2).map((b) => (
-                                <div
-                                  key={b.id}
-                                  style={{
-                                    background: "#0A4F3C",
-                                    color: "#fff",
-                                    fontSize: 9,
-                                    borderRadius: 3,
-                                    padding: "2px 5px",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 3,
-                                  }}
-                                >
-                                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: STATUS_DOT[b.status], flexShrink: 0 }} />
-                                  {b.name.split(" ")[0]}
-                                </div>
-                              ))}
-                              {dayBookings.length > 2 && (
-                                <div style={{ fontSize: 9, color: "#0A4F3C", fontWeight: 600, paddingLeft: 4 }}>
-                                  +{dayBookings.length - 2} more
-                                </div>
-                              )}
-                            </div>
-                          </>
+                        <span className="ad-cal-day">{c.day}</span>
+                        {bookingsLoading ? null : (
+                          <span className="ad-cal-items">
+                            {list.slice(0, 3).map((b) => (
+                              <span key={b.databaseId} className="ad-cal-pill" data-status={b.status} style={{ ["--c" as string]: STATUS_COLOR[b.status] }}>
+                                <span className="ad-cal-pill-time">{b.time ? b.time.replace(/\s?(AM|PM)/i, (m) => m.trim().toLowerCase()[0]) : ""}</span>
+                                {b.name.split(" ")[0]}
+                              </span>
+                            ))}
+                            {list.length > 3 && <span className="ad-cal-more">+{list.length - 3} more</span>}
+                          </span>
                         )}
-                      </div>
+                        {live.length > 0 && <span className="ad-cal-count">{live.length}</span>}
+                      </button>
                     );
                   })}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Side panel */}
-          {/* Offset past the sticky topbar (~54px) so the panel parks below
-              it rather than sliding underneath. */}
-          <div style={{ position: "sticky", top: 74 }}>
-            {/* Legend */}
-            <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Legend</div>
-              {[
-                { color: STATUS_DOT.pending, label: "Pending" },
-                { color: STATUS_DOT.confirmed, label: "Confirmed" },
-                { color: STATUS_DOT.cancelled, label: "Cancelled" },
-              ].map((l) => (
-                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7, fontSize: 12, color: "#555" }}>
-                  <div style={{ width: 9, height: 9, borderRadius: "50%", background: l.color }} />
-                  {l.label}
-                </div>
-              ))}
-            </div>
-
-            {/* Selected day detail */}
-            <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden" }}>
-              <div style={{ padding: "12px 14px", borderBottom: "0.5px solid #e5e7eb", background: selectedDay ? "#0A4F3C" : "#F9FAFB" }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: selectedDay ? "#fff" : "#aaa" }}>
-                  {selectedDay ? `${MONTHS[month]} ${selectedDay}, ${year}` : "Select a day"}
-                </div>
-                {selectedDay && (
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
-                    {selectedBookings.length} appointment{selectedBookings.length !== 1 ? "s" : ""}
-                  </div>
-                )}
-              </div>
-              {selectedDay && selectedBookings.length === 0 && (
-                <div style={{ padding: 20, textAlign: "center", color: "#bbb", fontSize: 13 }}>No bookings this day</div>
-              )}
-              {selectedBookings.map((b) => (
-                <div key={b.id} style={{ padding: "12px 14px", borderBottom: "0.5px solid #f3f4f6" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#111" }}>{b.name}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_DOT[b.status] }} />
-                      <span style={{ fontSize: 11, color: "#888" }}>{b.time}</span>
+                </motion.div>
+              </AnimatePresence>
+            </>
+          ) : (
+            <div style={{ padding: "8px 8px 12px" }}>
+              {bookingsLoading ? (
+                <div style={{ display: "grid", gap: 12, padding: 10 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={56} r={10} />)}</div>
+              ) : agendaDays.length === 0 ? (
+                <EmptyState icon={CalendarDays} title={`Nothing booked in ${monthLabel}`} text="Use the arrows to look at another month." />
+              ) : (
+                agendaDays.map(({ key, list }) => (
+                  <div key={key} className="ad-agenda-day" data-today={key === today}>
+                    <button type="button" className="ad-agenda-date" onClick={() => { setSelected(key); setView("month"); }}>
+                      <span>{formatDay(key, { weekday: "short" })}</span>
+                      <strong>{formatDay(key, { day: "numeric" })}</strong>
+                    </button>
+                    <div style={{ flex: 1, display: "grid", gap: 6 }}>
+                      {list.map((b) => <ApptRow key={b.databaseId} b={b} />)}
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "#888" }}>{b.dept}</div>
-                  <div style={{ fontSize: 11, color: "#bbb", marginTop: 2 }}>{b.phone}</div>
-                </div>
-              ))}
-              {!selectedDay && <div style={{ padding: 20, textAlign: "center", color: "#ddd", fontSize: 28 }}>📅</div>}
+                ))
+              )}
             </div>
+          )}
+        </section>
 
-            {/* Monthly summary */}
-            <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", marginTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>{MONTHS[month]} Summary</div>
-              {[
-                { label: "Total bookings", value: bookings.length },
-                { label: "Confirmed", value: bookings.filter((b) => b.status === "confirmed").length },
-                { label: "Pending", value: bookings.filter((b) => b.status === "pending").length },
-                { label: "Cancelled", value: bookings.filter((b) => b.status === "cancelled").length },
-              ].map((row) => (
-                <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "0.5px solid #f3f4f6", fontSize: 12 }}>
-                  <span style={{ color: "#666" }}>{row.label}</span>
-                  <span style={{ fontWeight: 600, color: "#111" }}>{row.value}</span>
+        {/* Day detail */}
+        <aside className="ad-cal-side">
+          <section className="ad-card">
+            <div className="ad-card-head" style={{ paddingBottom: 8 }}>
+              <div>
+                <h2 className="ad-card-title">{formatDay(selected, { weekday: "long", day: "numeric", month: "long" })}</h2>
+                <p className="ad-card-sub" style={{ textTransform: "capitalize" }}>
+                  {fromNow(selected)} · {dayList.length} appointment{dayList.length === 1 ? "" : "s"}
+                </p>
+              </div>
+            </div>
+            <div style={{ padding: "0 10px 12px" }}>
+              {dayList.length === 0 ? (
+                <EmptyState icon={CalendarDays} title="Nothing booked" text="Pick another day to see its appointments." />
+              ) : (
+                <div style={{ display: "grid", gap: 6 }}>{dayList.map((b) => <ApptRow key={b.databaseId} b={b} />)}</div>
+              )}
+            </div>
+          </section>
+
+          <section className="ad-card" style={{ marginTop: 16 }}>
+            <div className="ad-card-head"><h2 className="ad-card-title">{monthLabel.split(" ")[0]} at a glance</h2></div>
+            <div className="ad-card-body" style={{ display: "grid", gap: 10 }}>
+              {(["confirmed", "pending", "cancelled"] as const).map((s) => (
+                <div key={s} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                  <span className="ad-legend-dot" style={{ background: STATUS_COLOR[s], margin: 0 }} />
+                  <span style={{ flex: 1, color: "var(--ad-text-2)", textTransform: "capitalize" }}>{s}</span>
+                  <strong>{monthCounts[s]}</strong>
                 </div>
               ))}
+              <p className="ad-hint" style={{ margin: "4px 0 0" }}>Tip: Shift + ← / → moves between months.</p>
             </div>
-          </div>
+          </section>
+        </aside>
+      </div>
+
+      <style>{`
+        .ad-cal-month { min-width: 150px; text-align: center; font-weight: 700; font-size: 14px; color: var(--ad-text); }
+        .ad-cal-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+        .ad-cal-side { position: sticky; top: 0; }
+        @media (max-width: 1100px) { .ad-cal-layout { grid-template-columns: minmax(0, 1fr); } .ad-cal-side { position: static; } }
+        .ad-cal-head { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--ad-border); background: var(--ad-surface-2); }
+        .ad-cal-head div { padding: 10px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ad-text-3); }
+        .ad-cal-head div[data-weekend="true"] { color: var(--ad-text-3); opacity: .7; }
+        .ad-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: minmax(104px, 1fr); }
+        .ad-cal-cell {
+          position: relative; text-align: left; font: inherit;
+          border: 0; border-right: 1px solid var(--ad-border); border-bottom: 1px solid var(--ad-border);
+          background: var(--ad-surface); padding: 8px; cursor: pointer;
+          display: flex; flex-direction: column; gap: 5px; min-width: 0;
+          transition: background .12s;
+        }
+        .ad-cal-cell:nth-child(7n) { border-right: 0; }
+        .ad-cal-cell[data-weekend="true"] { background: var(--ad-surface-2); }
+        .ad-cal-cell[data-out="true"] .ad-cal-day { color: var(--ad-text-3); opacity: .55; }
+        .ad-cal-cell:hover { background: var(--ad-surface-3); }
+        .ad-cal-cell[data-selected="true"] { background: var(--ad-brand-soft); box-shadow: inset 0 0 0 2px var(--ad-brand-ink); z-index: 1; }
+        .ad-cal-day { font-size: 13px; font-weight: 700; color: var(--ad-text); width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; }
+        .ad-cal-cell[data-today="true"] .ad-cal-day { background: var(--ad-brand); color: #fff; }
+        .ad-cal-items { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        .ad-cal-pill {
+          display: flex; gap: 5px; align-items: center; min-width: 0;
+          font-size: 11.5px; font-weight: 600; color: var(--ad-text);
+          padding: 2px 6px; border-radius: 5px;
+          background: color-mix(in srgb, var(--c) 14%, transparent);
+          border-left: 3px solid var(--c);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ad-cal-pill[data-status="cancelled"] { text-decoration: line-through; opacity: .6; }
+        .ad-cal-pill-time { color: var(--ad-text-3); font-weight: 500; }
+        .ad-cal-more { font-size: 11px; color: var(--ad-text-3); padding-left: 4px; }
+        .ad-cal-count { position: absolute; top: 9px; right: 9px; font-size: 10.5px; font-weight: 700; color: var(--ad-brand-ink); }
+        .ad-appt { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; text-decoration: none; color: inherit; border: 1px solid transparent; transition: background .12s, border-color .12s; }
+        .ad-appt:hover { background: var(--ad-surface-2); border-color: var(--ad-border); }
+        .ad-agenda-day { display: flex; gap: 14px; padding: 12px 10px; border-bottom: 1px solid var(--ad-border); }
+        .ad-agenda-day:last-child { border-bottom: 0; }
+        .ad-agenda-date { width: 52px; flex-shrink: 0; border: 0; border-radius: 12px; padding: 8px 0; background: var(--ad-surface-3); cursor: pointer; font: inherit; line-height: 1.1; text-align: center; height: fit-content; }
+        .ad-agenda-date span { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ad-text-3); }
+        .ad-agenda-date strong { display: block; font-size: 20px; color: var(--ad-text); }
+        .ad-agenda-day[data-today="true"] .ad-agenda-date { background: var(--ad-brand); }
+        .ad-agenda-day[data-today="true"] .ad-agenda-date span, .ad-agenda-day[data-today="true"] .ad-agenda-date strong { color: #fff; }
+        @media (max-width: 700px) {
+          .ad-cal-grid { grid-auto-rows: minmax(64px, 1fr); }
+          .ad-cal-items { display: none; }
+          .ad-cal-count { position: static; background: var(--ad-brand-soft); border-radius: 8px; padding: 1px 6px; align-self: flex-start; }
+        }
+      `}</style>
+    </>
+  );
+}
+
+function ApptRow({ b }: { b: AdminBooking }) {
+  return (
+    <Link href={`/admin/bookings?open=${encodeURIComponent(b.id)}`} className="ad-appt">
+      <Avatar name={b.name} size="sm" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="ad-cell-main ad-clamp-1">{b.name}</div>
+        <div className="ad-cell-sub" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><Clock size={12} />{b.time || "Any time"}</span>
+          <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><Stethoscope size={12} />{b.dept || "—"}</span>
         </div>
       </div>
-    </>
+      <StatusBadge status={b.status} />
+    </Link>
   );
 }

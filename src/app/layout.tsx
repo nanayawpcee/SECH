@@ -21,6 +21,9 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
+  // Resolves relative share-preview URLs (icons, og:url) to the live domain
+  // instead of localhost.
+  metadataBase: new URL("https://sech-gh.org"),
   title: {
     default: "St. Elizabeth Catholic Hospital | Hwidiem, Ghana",
     template: "%s | St. Elizabeth Catholic Hospital",

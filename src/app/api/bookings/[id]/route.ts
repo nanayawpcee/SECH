@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,8 @@ const SET_STATUS = `
 const ALLOWED = ["pending", "confirmed", "cancelled"];
 
 export async function PATCH(request: Request, { params }: Params) {
+  const gate = await requirePerm("bookings");
+  if (gate instanceof NextResponse) return gate;
   try {
     const { status } = await request.json();
 

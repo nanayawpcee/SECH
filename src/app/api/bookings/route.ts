@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 import { BOOKING_FIELDS, mapWpBooking, type WpBookingNode } from "@/lib/wp-bookings";
 
@@ -14,6 +15,8 @@ const LIST_BOOKINGS = `
 
 /** Patient records — always authenticated, never cached. */
 export async function GET() {
+  const gate = await requirePerm("bookings");
+  if (gate instanceof NextResponse) return gate;
   try {
     const data = await wpGraphQL<{ bookings: { nodes: WpBookingNode[] } }>(
       LIST_BOOKINGS,

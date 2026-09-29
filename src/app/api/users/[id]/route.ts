@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
-import { USER_FIELDS, mapWpUser, type WpUserNode } from "@/lib/wp-users";
+import { USER_FIELDS, isAssignableRole, mapWpUser, type WpUserNode } from "@/lib/wp-users";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +16,13 @@ const UPDATE_USER = `
 `;
 
 export async function PATCH(request: Request, { params }: Params) {
+  const gate = await requirePerm("team");
+  if (gate instanceof NextResponse) return gate;
   try {
     const { name, role } = await request.json();
+    if (role !== undefined && !isAssignableRole(role)) {
+      return NextResponse.json({ error: "That role isn’t one the portal assigns." }, { status: 400 });
+    }
 
     let firstName: string | undefined;
     let lastName: string | undefined;
@@ -55,6 +61,8 @@ const DELETE_USER = `
 `;
 
 export async function DELETE(request: Request, { params }: Params) {
+  const gate = await requirePerm("team");
+  if (gate instanceof NextResponse) return gate;
   try {
     const viewer = await wpGraphQL<{ viewer: { databaseId: number } | null }>(
       VIEWER,

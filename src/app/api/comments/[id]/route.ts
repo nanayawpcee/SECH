@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { WP_BASE_URL } from "@/lib/wp-graphql";
+import { requirePerm } from "@/lib/access";
+import { WP_BASE_URL, getAdminToken } from "@/lib/wp-graphql";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ const ALLOWED = ["approved", "hold", "spam"] as const;
 type Status = (typeof ALLOWED)[number];
 
 async function requireAdmin() {
-  const token = (await cookies()).get("admin_token")?.value;
+  const token = await getAdminToken();
   return token ?? null;
 }
 
@@ -22,6 +22,8 @@ function commentId(params: Params["params"]): number | null {
 
 /** Approve a comment, send it back to the queue, or mark it as spam. */
 export async function PATCH(request: Request, { params }: Params) {
+  const gate = await requirePerm("comments");
+  if (gate instanceof NextResponse) return gate;
   const adminToken = await requireAdmin();
   if (!adminToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -69,6 +71,8 @@ export async function PATCH(request: Request, { params }: Params) {
 
 /** Move a comment to the WordPress trash — recoverable, not a hard delete. */
 export async function DELETE(_request: Request, { params }: Params) {
+  const gate = await requirePerm("comments");
+  if (gate instanceof NextResponse) return gate;
   const adminToken = await requireAdmin();
   if (!adminToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

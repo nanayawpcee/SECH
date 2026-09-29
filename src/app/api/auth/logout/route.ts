@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
+import { ADMIN_COOKIE } from "@/lib/wp-graphql";
 
 export async function POST() {
   const response = NextResponse.json({ success: true });
 
-  // Attributes must match the cookie set in login/route.ts exactly, or the
-  // browser treats this as a different cookie and never clears the real one.
-  response.cookies.set("admin_token", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 0,
-  });
+  // Same attributes as login, or the browser treats these as different
+  // cookies and never clears the real ones.
+  response.cookies.set("admin_token", "", { ...ADMIN_COOKIE, maxAge: 0 });
+  response.cookies.set("admin_refresh", "", { ...ADMIN_COOKIE, maxAge: 0 });
 
   return response;
 }

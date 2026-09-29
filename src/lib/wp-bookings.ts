@@ -49,6 +49,9 @@ export type AdminBooking = Booking & {
   /** Raw YYYY-MM-DD, kept so the calendar can group by day without reparsing
    *  the localised display string. */
   preferredDateISO: string;
+  /** When the request was submitted, as an ISO timestamp — for "received"
+   *  counts and trends, which the localised createdAt cannot sort or compare. */
+  createdAtISO: string;
 };
 
 export function mapWpBooking(node: WpBookingNode): AdminBooking {
@@ -85,5 +88,6 @@ export function mapWpBooking(node: WpBookingNode): AdminBooking {
     notes: node.notes ?? "",
     status,
     createdAt: node.date ? new Date(node.date).toLocaleDateString("en-GB") : "",
+    createdAtISO: node.date ?? "",
   };
 }

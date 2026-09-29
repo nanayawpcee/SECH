@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { wpGraphQL, toErrorResponse, WP_ENDPOINT } from "@/lib/wp-graphql";
+import { wpGraphQL, toErrorResponse, WP_ENDPOINT, getAdminToken } from "@/lib/wp-graphql";
+import { forgetViewer, requireSignedInAllowingPasswordChange } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,9 @@ const LOGIN = `
  * the current password first by attempting a login with it.
  */
 export async function POST(request: Request) {
+  // Allowed while a temporary password is pending — this is how it gets replaced.
+  const gate = await requireSignedInAllowingPasswordChange();
+  if (gate instanceof NextResponse) return gate;
   try {
     const { currentPassword, newPassword, confirmPassword } = await request.json();
 
@@ -85,7 +89,7 @@ export async function POST(request: Request) {
     if (!verified?.data?.login?.authToken) {
       return NextResponse.json(
         { error: "Your current password is not correct." },
-        { status: 401 },
+        { status: 400 },
       );
     }
 
@@ -95,6 +99,9 @@ export async function POST(request: Request) {
       { authenticated: true },
     );
 
+    // The plugin clears the temporary-password flag as the password changes;
+    // drop the cached copy so the very next request sees that.
+    forgetViewer(await getAdminToken());
     return NextResponse.json({ success: true });
   } catch (error) {
     const { body, status } = toErrorResponse(error);

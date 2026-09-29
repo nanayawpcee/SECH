@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { WP_BASE_URL } from "@/lib/wp-graphql";
+import { requirePerm } from "@/lib/access";
+import { WP_BASE_URL, getAdminToken } from "@/lib/wp-graphql";
 
 export async function POST(request: Request) {
+  const gate = await requirePerm("media.upload");
+  if (gate instanceof NextResponse) return gate;
   try {
-    const cookieStore = await cookies();
-    const adminToken = cookieStore.get("admin_token")?.value;
+    const adminToken = await getAdminToken();
 
     if (!adminToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

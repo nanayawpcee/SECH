@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 import { SETTINGS_FIELDS, type HospitalSettings } from "@/lib/wp-settings";
 
@@ -36,6 +37,8 @@ const UPDATE_SETTINGS = `
 `;
 
 export async function PUT(request: Request) {
+  const gate = await requirePerm("settings");
+  if (gate instanceof NextResponse) return gate;
   try {
     const patch = (await request.json()) as Partial<HospitalSettings>;
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
-import { POST_FIELDS, mapWpPost, SET_FEATURED_IMAGE, type WpPostNode } from "@/lib/wp-posts";
+import { POST_FIELDS, mapWpPost, SET_FEATURED_IMAGE, allowedStatus, toWpStatus, type WpPostNode } from "@/lib/wp-posts";
+import { requirePerm } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +23,31 @@ const LIST_POSTS = `
   }
 `;
 
+/** A staff writer's own posts only — filtered by WordPress, not after the fact. */
+const LIST_OWN_POSTS = `
+  query OwnPosts($first: Int!, $author: Int!) {
+    posts(
+      first: $first
+      where: {
+        author: $author
+        stati: [PUBLISH, DRAFT, FUTURE, PENDING, PRIVATE]
+        orderby: { field: DATE, order: DESC }
+      }
+    ) {
+      nodes { ${POST_FIELDS} }
+    }
+  }
+`;
+
 /** List posts for the admin table. Includes drafts, so it needs the JWT. */
 export async function GET() {
+  const gate = await requirePerm("posts.write");
+  if (gate instanceof NextResponse) return gate;
+  const ownOnly = !gate.perms.includes("posts.editOthers");
   try {
     const data = await wpGraphQL<{ posts: { nodes: WpPostNode[] } }>(
-      LIST_POSTS,
-      { first: 100 },
+      ownOnly ? LIST_OWN_POSTS : LIST_POSTS,
+      ownOnly ? { first: 100, author: gate.id } : { first: 100 },
       { authenticated: true },
     );
     return NextResponse.json({ posts: (data.posts?.nodes ?? []).map(mapWpPost) });
@@ -62,6 +82,8 @@ const CREATE_POST = `
 `;
 
 export async function POST(request: Request) {
+  const gate = await requirePerm("posts.write");
+  if (gate instanceof NextResponse) return gate;
   try {
     const { title, content, excerpt, status, type, featuredImageId, commentsOpen } =
       await request.json();
@@ -78,7 +100,8 @@ export async function POST(request: Request) {
         title: String(title).trim(),
         content: content ?? "",
         excerpt: excerpt ?? "",
-        status: status === "published" ? "PUBLISH" : "DRAFT",
+        // Staff writers who ask to publish are submitting for review.
+        status: toWpStatus(allowedStatus(status === "published" || status === "pending" ? status : "draft", gate.perms.includes("posts.publish"))),
         categoryName: type || "news",
         // Default to open when the caller says nothing, matching WordPress.
         commentStatus: commentsOpen === false ? "closed" : "open",
