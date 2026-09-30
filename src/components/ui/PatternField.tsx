@@ -20,6 +20,9 @@ interface Props {
   influenceRadius?: number;
 
   maxOffset?: number;
+
+  /** Pointer mode only: a click sends a soft ripple through the field. */
+  ripple?: boolean;
 }
 const WAVE_STEP = 8;
 const WAVE_AMPLITUDE = 12;
@@ -29,6 +32,17 @@ const WAVE_SPEED = 0.8;
 const WAVE_ROW_PHASE = 0.5;
 const RAIN_SPEED = 15;
 const CROSS_DRIFT = 14;
+
+/*
+  Click ripple: an expanding ring that gently nudges points outward as it
+  passes through them, then fades, like a drop of water rather than a burst.
+  Same feel as the dot grid on the Acherensua SHS site.
+*/
+const RIPPLE_SPEED = 260; // px per second
+const RIPPLE_WIDTH = 70; // thickness of the ring's zone of influence
+const RIPPLE_MAX_RADIUS = 320; // a ripple is dropped once it grows past this
+const RIPPLE_OFFSET = 7; // peak displacement, px
+const RIPPLE_RADIUS_BOOST = 1; // dots swell slightly right on the ring
 
 const DEFAULT_SPACING: Record<FieldPattern, number> = {
   dots: 28,
@@ -55,6 +69,7 @@ export function PatternField({
   dotRadius = 2,
   influenceRadius = 140,
   maxOffset = 10,
+  ripple = true,
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -80,7 +95,18 @@ export function PatternField({
       oy: number;
       x: number;
       y: number;
+      /** Extra offset and size from any ripple passing through, this frame. */
+      rx?: number;
+      ry?: number;
+      pulse?: number;
     }
+
+    interface Ripple {
+      x: number;
+      y: number;
+      t0: number;
+    }
+    let ripples: Ripple[] = [];
 
 
     let rows: Point[][] = [];
@@ -128,9 +154,9 @@ export function PatternField({
     function stroke(points: Point[]) {
       if (!ctx || points.length < 2) return;
       ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
+      ctx.moveTo(points[0].x + (points[0].rx ?? 0), points[0].y + (points[0].ry ?? 0));
       for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i].x + (points[i].rx ?? 0), points[i].y + (points[i].ry ?? 0));
       }
       ctx.stroke();
     }
@@ -151,7 +177,13 @@ export function PatternField({
         for (const row of rows) {
           for (const p of row) {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, dotRadius, 0, Math.PI * 2);
+            ctx.arc(
+              p.x + (p.rx ?? 0),
+              p.y + (p.ry ?? 0),
+              dotRadius + (p.pulse ?? 0) * RIPPLE_RADIUS_BOOST,
+              0,
+              Math.PI * 2,
+            );
             ctx.fill();
           }
         }
@@ -245,6 +277,10 @@ export function PatternField({
 
     function tick() {
       let moving = false;
+      const now = performance.now();
+      if (ripples.length) {
+        ripples = ripples.filter((r) => ((now - r.t0) / 1000) * RIPPLE_SPEED < RIPPLE_MAX_RADIUS);
+      }
       for (const row of rows) {
         for (const p of row) {
           let targetX = p.ox;
@@ -262,6 +298,32 @@ export function PatternField({
           }
           p.x += (targetX - p.x) * EASE;
           p.y += (targetY - p.y) * EASE;
+
+          // Layer any active ripple rings on top: a soft outward nudge as
+          // each ring sweeps past this point.
+          let rx = 0;
+          let ry = 0;
+          let pulse = 0;
+          for (const r of ripples) {
+            const dx = p.ox - r.x;
+            const dy = p.oy - r.y;
+            const dist = Math.hypot(dx, dy);
+            const ringRadius = ((now - r.t0) / 1000) * RIPPLE_SPEED;
+            const band = dist - ringRadius;
+            if (Math.abs(band) < RIPPLE_WIDTH) {
+              const falloff = Math.cos((band / RIPPLE_WIDTH) * (Math.PI / 2));
+              const fade = 1 - ringRadius / RIPPLE_MAX_RADIUS;
+              const strength = falloff * fade * RIPPLE_OFFSET;
+              const angle = Math.atan2(dy, dx);
+              rx += Math.cos(angle) * strength;
+              ry += Math.sin(angle) * strength;
+              pulse += falloff * fade;
+            }
+          }
+          p.rx = rx;
+          p.ry = ry;
+          p.pulse = pulse;
+
           if (
             Math.abs(targetX - p.x) > 0.05 ||
             Math.abs(targetY - p.y) > 0.05
@@ -271,7 +333,7 @@ export function PatternField({
         }
       }
 
-      if (pointer.active || moving) {
+      if (pointer.active || moving || ripples.length) {
         paint();
         frame = requestAnimationFrame(tick);
         return;
@@ -281,6 +343,9 @@ export function PatternField({
         for (const p of row) {
           p.x = p.ox;
           p.y = p.oy;
+          p.rx = 0;
+          p.ry = 0;
+          p.pulse = 0;
         }
       }
       paint();
@@ -328,6 +393,14 @@ export function PatternField({
       start();
     }
 
+    function onSplash(e: PointerEvent) {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      ripples.push({ x: e.clientX - rect.left, y: e.clientY - rect.top, t0: performance.now() });
+      if (ripples.length > 6) ripples.shift(); // rapid clicking stays light
+      start();
+    }
+
 
     const observer = new ResizeObserver(resize);
     observer.observe(host);
@@ -346,6 +419,7 @@ export function PatternField({
     if (!reduced && !ambient) {
       host.addEventListener("pointermove", onPointerMove);
       host.addEventListener("pointerleave", onPointerLeave);
+      if (ripple) host.addEventListener("pointerdown", onSplash);
     }
 
     resize();
@@ -355,6 +429,7 @@ export function PatternField({
       seen.disconnect();
       host.removeEventListener("pointermove", onPointerMove);
       host.removeEventListener("pointerleave", onPointerLeave);
+      host.removeEventListener("pointerdown", onSplash);
       if (frame) cancelAnimationFrame(frame);
     };
   }, [
@@ -365,6 +440,7 @@ export function PatternField({
     dotRadius,
     influenceRadius,
     maxOffset,
+    ripple,
   ]);
 
   return (

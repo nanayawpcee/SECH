@@ -3,6 +3,8 @@ import { Lora } from "next/font/google";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminShellSuppressor } from "../components/layout/AdminShellSuppressor";
+import { wpQuery } from "@/lib/wp-graphql";
+import { CURRENT_NEWSLETTER_QUERY, type NewsletterIssue } from "@/lib/wp-newsletter";
 
 /**
  * Lora carries every heading on the site via --font-serif.
@@ -48,16 +50,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+/** The downloadable newsletter offered in the footer; null when none is set
+ *  or WordPress can't be reached, and the footer simply leaves the link out. */
+async function getCurrentNewsletter() {
+  const data = await wpQuery<{ currentNewsletter: NewsletterIssue | null }>(CURRENT_NEWSLETTER_QUERY, {}, 300);
+  return data?.currentNewsletter ?? null;
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const newsletter = await getCurrentNewsletter();
   return (
     <html lang="en" className={lora.variable}>
       <body>
         <AuthProvider>
-          <AdminShellSuppressor>{children}</AdminShellSuppressor>
+          <AdminShellSuppressor newsletter={newsletter}>{children}</AdminShellSuppressor>
         </AuthProvider>
       </body>
     </html>

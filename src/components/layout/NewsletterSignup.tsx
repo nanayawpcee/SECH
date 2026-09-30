@@ -2,12 +2,14 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Loader2, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileDown, Loader2, Mail } from "lucide-react";
+import { formatBytes, type NewsletterIssue } from "@/lib/wp-newsletter";
 
 type State = { kind: "idle" } | { kind: "sending" } | { kind: "done"; message: string } | { kind: "error"; message: string };
 
-/** Footer sign-up: health tips and hospital news by email. */
-export function NewsletterSignup() {
+/** Footer sign-up: health tips and hospital news by email, plus the latest
+ *  issue as a PDF when the admin portal has one set. */
+export function NewsletterSignup({ latest = null }: { latest?: NewsletterIssue | null }) {
   const id = useId();
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -47,6 +49,17 @@ export function NewsletterSignup() {
           <p className="fn-text">
             Health tips, clinic updates and hospital news from SECH, straight to your inbox. No spam.
           </p>
+          {latest && (
+            <a className="fn-issue" href={latest.url} target="_blank" rel="noopener noreferrer">
+              <span className="fn-issue-icon" aria-hidden="true"><FileDown size={18} /></span>
+              <span className="fn-issue-text">
+                <strong>Read the latest newsletter</strong>
+                <span>
+                  {[latest.issue || latest.title, "PDF", formatBytes(latest.sizeBytes)].filter(Boolean).join(" · ")}
+                </span>
+              </span>
+            </a>
+          )}
         </div>
       </div>
 

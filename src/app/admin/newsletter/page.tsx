@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useAdminData } from "@/context/AdminDataContext";
 import { Chip, ConfirmDialog, EmptyState, PageHeader, SkeletonRows, type Tone } from "@/components/admin/ui";
+import { NewsletterIssueCard } from "@/components/admin/NewsletterIssueCard";
 import { downloadCsv } from "@/lib/csv";
 import { keyOfTimestamp, todayKey } from "@/lib/admin-dates";
 import { SITE } from "@/lib/data";
@@ -191,6 +192,8 @@ export default function NewsletterPage() {
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
         </div>
       )}
+
+      <NewsletterIssueCard />
 
       <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
         {TILES.map((t) => {

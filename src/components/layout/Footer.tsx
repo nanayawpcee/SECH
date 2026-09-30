@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SITE } from "@/lib/data";
 import { NewsletterSignup } from "@/components/layout/NewsletterSignup";
+import type { NewsletterIssue } from "@/lib/wp-newsletter";
 
 /** Rendered height of the accreditation crests, in px. */
 const LOGO_HEIGHT = 30;
@@ -50,7 +51,7 @@ const FOOTER_LINKS = {
   ],
 };
 
-export function Footer() {
+export function Footer({ newsletter = null }: { newsletter?: NewsletterIssue | null }) {
   return (
     <footer
       style={{
@@ -60,7 +61,7 @@ export function Footer() {
       }}
     >
       <div className="container">
-        <NewsletterSignup />
+        <NewsletterSignup latest={newsletter} />
 
         {/* FIX: grid columns handled via className + globals.css — avoids hydration mismatch */}
         <div className="footer-grid" style={{ marginBottom: "2.5rem" }}>

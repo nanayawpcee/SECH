@@ -1428,13 +1428,15 @@ iframe {
 
 /* Services grid */
 .services-section {
-  padding: 6rem 2rem;
+  --services-pad: 2rem;
+  padding: 6rem var(--services-pad);
   background: #F7F9F7
 }
 
 @media (max-width: 640px) {
   .services-section {
-    padding: 4rem 1rem
+    --services-pad: 1rem;
+    padding: 4rem var(--services-pad)
   }
 }
 
@@ -1459,29 +1461,119 @@ iframe {
   line-height: 1.7
 }
 
-.services-grid {
-  display: grid;
-  gap: 1.25rem;
-  width: 100%;
-  max-width: 100%
+/* Service cards keep one fixed shape at every screen width. The grid picks
+   4, 2 or 1 columns from the space available, so the cards always form even
+   rows (4, 2x2, or a single column), never 3 with one left over. */
+.services-container {
+  container-type: inline-size;
 }
 
-@media (max-width: 640px) {
+.services-grid {
+  --service-card-w: 300px;
+  --service-card-h: 330px;
+  display: grid;
+  grid-template-columns: repeat(4, var(--service-card-w));
+  grid-auto-rows: var(--service-card-h);
+  justify-content: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* 4 cards need 4 x 300 + 3 x 20 = 1260px; 2 need 620px. */
+@container (max-width: 1259px) {
+  .services-grid { grid-template-columns: repeat(2, var(--service-card-w)); }
+}
+@container (max-width: 619px) {
+  .services-grid { grid-template-columns: var(--service-card-w); }
+}
+/* Whenever all four don't fit in a row (tablets and phones): rather than
+   cards stranded in the middle, a swipeable row that starts in line with the
+   heading and runs to the edge of the screen, with the next card peeking in.
+   Cards snap into place. Only very small screens stack them. */
+@container (min-width: 340px) and (max-width: 1259px) {
   .services-grid {
-    gap: 1rem
+    display: flex;
+    justify-content: flex-start;
+    width: auto;
+    max-width: none !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* Room for the hover lift and shadow, which a scroll box would clip,
+       and a bleed past the section's right padding. */
+    margin: -12px calc(-1 * var(--services-pad)) -28px 0;
+    padding: 12px var(--services-pad) 28px 2px;
   }
+  .services-grid::-webkit-scrollbar { display: none; }
+  .service-cell { flex: 0 0 var(--service-card-w); scroll-snap-align: start; }
+  .services-container .services-rail-nav { display: flex; }
+}
+/* Phones narrower than one card: shrink it to fit rather than overflow. */
+@container (max-width: 299px) {
+  .services-grid { --service-card-w: 100cqi; }
+}
+/* Browsers without container queries fall back to the window width. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 1323px) { .services-grid { grid-template-columns: repeat(2, var(--service-card-w)); } }
+  @media (max-width: 683px) { .services-grid { grid-template-columns: var(--service-card-w); } }
+}
+
+.services-rail-nav {
+  display: none;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: -2.25rem 0 1rem;
+}
+
+.services-rail-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid #D6E8DF;
+  background: #fff;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.services-rail-btn:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.services-rail-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.services-rail-btn:focus-visible,
+.services-grid:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.service-cell {
+  width: var(--service-card-w);
+  height: var(--service-card-h);
+  max-width: var(--service-card-w) !important;
 }
 
 .service-card {
+  height: 100%;
   background: #fff;
   border: 1.5px solid #E2EBE7;
   border-radius: var(--radius-md);
-  padding: 1.65rem;
+  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .service-card:hover {
@@ -1492,32 +1584,65 @@ iframe {
   color: #fff
 }
 
-.service-card img {
-  width: 20%;
-  height: auto
+/* A fixed box, so every icon sits at the same size and position. */
+.service-media {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 14px;
 }
 
+.service-card .service-media img {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  object-fit: contain;
+}
+
+/* Titles and descriptions reserve the same number of lines on every card,
+   so the buttons line up no matter how long the text is. */
 .service-card h3 {
   font-family: var(--font-serif);
-  margin: 0 0 8px
+  font-size: 1.08rem;
+  line-height: 1.3;
+  margin: 0 0 8px;
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .service-card p {
-  flex: 1
+  flex: 1;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@supports not (container-type: inline-size) {
+  @media (max-width: 331px) { .services-grid { --service-card-w: calc(100vw - 32px); } }
 }
 
 .service-actions {
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   display: flex;
   gap: 12px;
-  flex-wrap: wrap
+  flex-wrap: nowrap;
+  flex-shrink: 0
 }
 
 .service-actions .btn {
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 0.8rem;
-  font-weight: 600
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0
 }
 
 .service-actions .btn.book {

@@ -396,7 +396,7 @@ export default function SettingsPage() {
                         <div key={r.slug} className="st-role">
                           <strong>{r.label}</strong>
                           <span>{ROLE_LABELS[r.slug]?.description}</span>
-                          <em>{r.slug === "administrator" || r.slug === "editor" ? "Admin console" : "Staff area"}</em>
+                          <em>{r.slug === "administrator" || r.slug === "editor" || r.slug === "sech_hr" ? "Admin console" : "Staff area"}</em>
                         </div>
                       ))}
                     </div>

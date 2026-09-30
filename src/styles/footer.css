@@ -16,6 +16,18 @@
 .fn-title { margin: 0 0 6px; font-family: var(--font-serif); font-size: 1.35rem; font-weight: 800; color: #fff; line-height: 1.2; }
 .fn-text { margin: 0; font-size: 0.9rem; line-height: 1.6; color: rgba(255, 255, 255, 0.62); }
 
+.fn-issue {
+  display: inline-flex; align-items: center; gap: 12px; margin-top: 14px; padding: 9px 16px 9px 10px;
+  border-radius: 12px; border: 1px solid rgba(232, 184, 75, 0.35); background: rgba(232, 184, 75, 0.08);
+  color: #fff; text-decoration: none; transition: background 0.18s, border-color 0.18s, transform 0.18s;
+}
+.fn-issue:hover { background: rgba(232, 184, 75, 0.16); border-color: #E8B84B; transform: translateY(-1px); }
+.fn-issue:focus-visible { outline: 3px solid #E8B84B; outline-offset: 2px; }
+.fn-issue-icon { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; background: #E8B84B; color: #0D1F1A; }
+.fn-issue-text { display: grid; gap: 1px; min-width: 0; }
+.fn-issue-text strong { font-size: 0.88rem; font-weight: 700; }
+.fn-issue-text span { font-size: 0.76rem; color: rgba(255, 255, 255, 0.6); }
+
 .fn-form { display: grid; gap: 12px; }
 .fn-row { display: flex; gap: 10px; }
 .fn-input {

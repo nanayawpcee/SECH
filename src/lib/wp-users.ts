@@ -60,6 +60,7 @@ export function mapWpUser(node: WpUserNode, viewerId: number | null): AdminUser 
  *  jargon — see ROLE_LABELS in lib/permissions. */
 export const ASSIGNABLE_ROLES = [
   { slug: "administrator", label: "Administrator" },
+  { slug: "sech_hr", label: "HR officer" },
   { slug: "editor", label: "Content manager" },
   { slug: "author", label: "Staff author" },
   { slug: "contributor", label: "Staff writer" },
@@ -71,7 +72,7 @@ export function isAssignableRole(role: unknown): role is string {
 }
 
 /** Roles that may be created with a temporary password — never administrators. */
-export const TEMP_PASSWORD_ROLES = ["editor", "author", "contributor", "subscriber"];
+export const TEMP_PASSWORD_ROLES = ["sech_hr", "editor", "author", "contributor", "subscriber"];
 
 /** WordPress-safe username: letters, numbers, dots, dashes, underscores. */
 export function isValidUsername(u: unknown): u is string {

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const fileItem = formData.get("file") as File;
 
     if (!fileItem) {
-      return NextResponse.json({ error: "No image file provided" }, { status: 400 });
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Build the Multi-Part Request directly to WordPress REST endpoint
@@ -34,7 +34,18 @@ export async function POST(request: Request) {
     const mediaResult = await wpResponse.json();
 
     if (!wpResponse.ok) {
-      return NextResponse.json({ error: mediaResult.message || "WP Rejected media upload" }, { status: wpResponse.status });
+      const raw = String(mediaResult.message || "");
+      // PHP's own size limit on the WordPress host, reported in php.ini terms.
+      if (/upload_max_filesize|post_max_size|exceeds the maximum upload size/i.test(raw)) {
+        return NextResponse.json(
+          {
+            error:
+              "This file is bigger than the WordPress hosting allows. Use a smaller file, or raise the upload limit in cPanel (upload_max_filesize and post_max_size).",
+          },
+          { status: 413 },
+        );
+      }
+      return NextResponse.json({ error: raw || "WordPress rejected the upload." }, { status: wpResponse.status });
     }
 
     // Return numerical ID directly back to frontend layout loop

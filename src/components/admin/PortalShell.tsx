@@ -7,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   AlertTriangle,
+  Award,
+  Building2,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
@@ -76,6 +78,14 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/calendar", icon: CalendarDays, label: "Calendar", perm: "bookings" },
     ],
   },
+  {
+    section: "People",
+    items: [
+      { href: "/admin/employees", icon: UsersRound, label: "Employees", perm: "staff.manage" },
+      { href: "/admin/departments", icon: Building2, label: "Departments", perm: "staff.manage" },
+      { href: "/admin/ranks", icon: Award, label: "Ranks & positions", perm: "staff.manage" },
+    ],
+  },
   { section: "Staff", items: [{ href: "/admin/notices", icon: Megaphone, label: "Notice board", badgeKey: "notices" }] },
   { section: "System", items: [{ href: "/admin/settings", icon: SettingsIcon, label: "Settings", perm: "settings" }] },
 ];
@@ -108,6 +118,7 @@ const VARIANT = {
       admin: "Dashboard", posts: "News & Blogs", new: "New post", edit: "Edit post",
       comments: "Comments", bookings: "Bookings", calendar: "Calendar", settings: "Settings",
       notices: "Notice board", newsletter: "Newsletter", messages: "Messages",
+      employees: "Employees", departments: "Departments and units", ranks: "Ranks and positions",
     } as Record<string, string>,
   },
   staff: {
@@ -129,6 +140,9 @@ const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/comments", "comments"],
   ["/admin/newsletter", "newsletter"],
   ["/admin/messages", "messages"],
+  ["/admin/employees", "staff.manage"],
+  ["/admin/departments", "staff.manage"],
+  ["/admin/ranks", "staff.manage"],
   ["/admin/posts", "posts.write"],
   ["/staff/posts", "posts.write"],
 ];

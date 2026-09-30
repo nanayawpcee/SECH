@@ -24,7 +24,9 @@ export type Perm =
   /** The newsletter mailing list — personal data, so administrators only. */
   | "newsletter"
   /** Contact-form messages — can include complaints and personal details. */
-  | "messages";
+  | "messages"
+  /** Employee records, departments/units, ranks. Administrators and HR officers. */
+  | "staff.manage";
 
 /** WordPress capability → portal permission. */
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
@@ -40,13 +42,14 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   "notices.manage": (c) => c.has("edit_others_posts"),
   newsletter: (c) => c.has("manage_options"),
   messages: (c) => c.has("manage_options"),
+  "staff.manage": (c) => c.has("sech_manage_staff"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {
   const caps = new Set(capabilities);
   const perms: Perm[] = (Object.keys(CAP_MAP) as (keyof typeof CAP_MAP)[]).filter((p) => CAP_MAP[p](caps));
   // The console is for people who manage something beyond their own posts.
-  if (perms.some((p) => p === "bookings" || p === "settings" || p === "comments" || p === "posts.editOthers")) {
+  if (perms.some((p) => p === "bookings" || p === "settings" || p === "comments" || p === "posts.editOthers" || p === "staff.manage")) {
     perms.push("portal.admin");
   }
   return perms;
@@ -64,6 +67,7 @@ export function homeFor(perms: readonly Perm[] | undefined): "/admin" | "/staff"
 /** Plain-English labels for the WordPress roles the portal assigns. */
 export const ROLE_LABELS: Record<string, { label: string; description: string }> = {
   administrator: { label: "Administrator", description: "Everything, including bookings, settings and team access" },
+  sech_hr: { label: "HR officer", description: "Employee records, departments and ranks only" },
   editor: { label: "Content manager", description: "All posts and comment moderation, but no bookings or settings" },
   author: { label: "Staff author", description: "Writes and publishes their own posts" },
   contributor: { label: "Staff writer", description: "Writes their own posts; an administrator reviews and publishes" },

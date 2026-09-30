@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CalendarCheck2,
@@ -50,7 +51,21 @@ type Range = "7" | "30" | "90";
 
 const RANGE_LABEL: Record<Range, string> = { "7": "last 7 days", "30": "last 30 days", "90": "last 90 days" };
 
+/** HR officers manage staff records only; the dashboard has nothing for them. */
 export default function DashboardPage() {
+  const { admin } = useAuth();
+  const router = useRouter();
+  const perms = admin?.perms ?? [];
+  const staffOnly =
+    can(perms, "staff.manage") &&
+    !(["bookings", "comments", "posts.write", "settings"] as const).some((p) => can(perms, p));
+  useEffect(() => {
+    if (staffOnly) router.replace("/admin/employees");
+  }, [staffOnly, router]);
+  return staffOnly ? null : <Dashboard />;
+}
+
+function Dashboard() {
   const { admin } = useAuth();
   const {
     posts,

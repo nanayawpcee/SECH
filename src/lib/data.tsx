@@ -129,7 +129,9 @@ export const SERVICES = [
     slug: "psychiatry",
     icon: "/icons/mental.png",
     title: "Psychiatry & Counselling",
-    image: "/images/psychiatry.jpeg",
+    image:
+      // Stock photo (Unsplash) until the hospital has its own.
+      "https://images.unsplash.com/photo-1573495804664-b1c0849525af?auto=format&fit=crop&w=1400&q=80",
     shortDesc:
       "Mental health support, counselling, and inpatient psychiatric care.",
     fullDesc:
@@ -178,7 +180,9 @@ export const SERVICES = [
     slug: "x-ray",
     icon: "/icons/x-ray.png",
     title: "X-Ray",
-    image: "/images/x-ray.png",
+    image:
+      // Stock photo (Unsplash) until the hospital has its own.
+      "https://images.unsplash.com/photo-1631563018856-81be9c118283?auto=format&fit=crop&w=1400&q=80",
     shortDesc: "Digital X-ray services for accurate diagnostics.",
     fullDesc:
       "Our X-Ray department provides high-quality digital X-ray imaging for a wide range of clinical applications, ensuring fast and reliable results for healthcare providers.",
@@ -186,9 +190,11 @@ export const SERVICES = [
   },
   {
     slug: "OPG",
-    icon: "/icons/dental-xray.png",
+    icon: "/icons/tooth.png",
     title: "Dental X-Ray (OPG)",
-    image: "/images/dental-xray.png",
+    image:
+      // Stock photo (Unsplash) until the hospital has its own.
+      "https://images.unsplash.com/photo-1777445374290-eedda5be8e5b?auto=format&fit=crop&w=1400&q=80",
     shortDesc:
       "Specialised dental imaging for comprehensive oral health assessment.",
     fullDesc:
@@ -204,7 +210,9 @@ export const SERVICES = [
     slug: "ultrasound",
     icon: "/icons/ultrasound.png",
     title: "Ultrasound Scan",
-    image: "/images/ultrasound.png",
+    image:
+      // Stock photo (Unsplash) until the hospital has its own.
+      "https://images.unsplash.com/photo-1691933880096-4046bc9e2fa0?auto=format&fit=crop&w=1400&q=80",
     shortDesc:
       "Comprehensive ultrasound services for obstetric and general imaging.",
     fullDesc:
@@ -220,7 +228,9 @@ export const SERVICES = [
     slug: "ecg",
     icon: "/icons/ecg.png",
     title: "Electrocardiogram (ECG)",
-    image: "/images/ecg.png",
+    image:
+      // Stock photo (Unsplash) until the hospital has its own.
+      "https://images.unsplash.com/photo-1724395261682-c8b152dc5b9b?auto=format&fit=crop&w=1400&q=80",
     shortDesc: "ECG services for cardiac assessment and monitoring.",
     fullDesc:
       "Our ECG department provides comprehensive electrocardiogram services for cardiac assessment, including resting ECGs, stress tests, and Holter monitoring, to support accurate diagnosis and management of heart conditions.",
@@ -492,6 +502,10 @@ export const PHOTOS = [
   },
 ];
 // ─── Departments Grid Data (For Services Page) ────────────────────
+/**
+ * The four service categories on /services. `slug` links an item to its
+ * detail page under /services; items without one have no page yet.
+ */
 export const DEPARTMENT_GRID_DATA = [
   {
     key: "general",
@@ -500,18 +514,18 @@ export const DEPARTMENT_GRID_DATA = [
     subtitle: "Core daily healthcare for every patient",
     featured: false,
     services: [
-      "Out-Patient Services",
-      "In-Patient Services",
-      "24-Hour Emergency Services",
-      "Child Welfare Clinic (CWC)",
-      "Psychiatry Services",
-      "Dietherapy Services",
-      "ANC Services",
-      "Wellness Clinic",
-      "Reproductive & Child Health",
-      "Pharmacy Services",
-      "Counselling / ART Services",
-      "Mortuary Services",
+      { name: "Out-Patient Services", slug: "outpatient" },
+      { name: "In-Patient Services", slug: "inpatient" },
+      { name: "24-Hour Emergency Services" },
+      { name: "Child Welfare Clinic (CWC)", slug: "cwc" },
+      { name: "Psychiatry Services", slug: "psychiatry" },
+      { name: "Diet Therapy Services", slug: "nutrition" },
+      { name: "ANC Services", slug: "antenatal" },
+      { name: "Wellness Clinic" },
+      { name: "Reproductive & Child Health", slug: "postnatal" },
+      { name: "Pharmacy Services", slug: "pharmacy" },
+      { name: "Counselling / ART Services" },
+      { name: "Mortuary Services" },
     ],
     headerStyle: { background: "#0A4F3C" },
     badgeStyle: {
@@ -534,16 +548,16 @@ export const DEPARTMENT_GRID_DATA = [
     featured: true,
     featuredLabel: "Featured",
     services: [
-      "Eye",
-      "Ear, Nose & Throat",
-      "Dental & Maxillofacial Surgery",
-      "Family Medicine",
-      "Obstetrics & Gynaecology (Maternal)",
-      "General Surgery",
-      "Physiotherapy",
-      "Pediatric (Child Health)",
-      "Restorative Dentistry",
-      "Urology",
+      { name: "Eye", slug: "eye-center" },
+      { name: "Ear, Nose & Throat", slug: "ENT" },
+      { name: "Dental & Maxillofacial Surgery", slug: "dental" },
+      { name: "Family Medicine" },
+      { name: "Obstetrics & Gynaecology (Maternal)" },
+      { name: "General Surgery" },
+      { name: "Physiotherapy" },
+      { name: "Paediatric (Child Health)" },
+      { name: "Restorative Dentistry", slug: "dental" },
+      { name: "Urology" },
     ],
     headerStyle: { background: "#063328" },
     badgeStyle: {
@@ -563,10 +577,10 @@ export const DEPARTMENT_GRID_DATA = [
     subtitle: "Precision imaging & non-invasive tests",
     featured: false,
     services: [
-      "Digital X-Ray",
-      "Ultrasound Scan",
-      "Electrocardiogram (ECG)",
-      "Dental X-Ray (OPG)",
+      { name: "Digital X-Ray", slug: "x-ray" },
+      { name: "Ultrasound Scan", slug: "ultrasound" },
+      { name: "Electrocardiogram (ECG)", slug: "ecg" },
+      { name: "Dental X-Ray (OPG)", slug: "OPG" },
     ],
     headerStyle: { background: "#0A4F3C" },
     badgeStyle: {
@@ -586,12 +600,12 @@ export const DEPARTMENT_GRID_DATA = [
     subtitle: "Advanced diagnostics & scientific analysis",
     featured: false,
     services: [
-      "Haematology",
-      "Microbiology",
-      "Biochemistry",
-      "Transfusion Services",
-      "Endocrinology",
-      "Immunology",
+      { name: "Haematology", slug: "laboratory" },
+      { name: "Microbiology", slug: "laboratory" },
+      { name: "Biochemistry", slug: "laboratory" },
+      { name: "Transfusion Services", slug: "laboratory" },
+      { name: "Endocrinology", slug: "laboratory" },
+      { name: "Immunology", slug: "laboratory" },
     ],
     headerStyle: { background: "#1A2F2A" },
     badgeStyle: {

@@ -6,7 +6,20 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 import { HoverLink } from "@/components/ui/HoverLink";
-import { Check } from "lucide-react";
+import fs from "node:fs";
+import path from "node:path";
+import { Activity, Check, ScanLine, Stethoscope, type LucideIcon } from "lucide-react";
+
+/** Drawn icons for services whose icon image doesn't exist yet. */
+const FALLBACK_ICON: Record<string, LucideIcon> = { ecg: Activity, ultrasound: ScanLine };
+
+function iconExists(src: string) {
+  try {
+    return fs.existsSync(path.join(process.cwd(), "public", src));
+  } catch {
+    return false;
+  }
+}
 
 interface Props {
   params: { slug: string };
@@ -60,11 +73,19 @@ export default function ServiceDetailPage({ params }: Props) {
                 fontFamily: "var(--font-serif)",
               }}
             >
-              <img
-                src={svc.icon}
-                alt={`${svc.title} icon`}
-                style={{ width: "40px", height: "auto" }}
-              />
+              {iconExists(svc.icon) ? (
+                <img
+                  src={svc.icon}
+                  alt=""
+                  aria-hidden="true"
+                  style={{ width: "40px", height: "auto" }}
+                />
+              ) : (
+                (() => {
+                  const Icon = FALLBACK_ICON[svc.slug] ?? Stethoscope;
+                  return <Icon size={36} color="var(--primary)" aria-hidden="true" style={{ flexShrink: 0 }} />;
+                })()
+              )}
               {svc.title}
             </div>
 
