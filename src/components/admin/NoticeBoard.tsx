@@ -203,7 +203,7 @@ export function NoticeBoard() {
                 icon={view === "unread" ? CheckCheck : Megaphone}
                 title={notices.length === 0 ? "No notices yet" : view === "unread" ? "You’re all caught up" : "No notices match"}
                 text={notices.length === 0
-                  ? canManage ? "Post the first one — meetings, memos, events, anything staff need to know." : "Announcements from management will appear here."
+                  ? canManage ? "Post the first one: meetings, memos, events, anything staff need to know." : "Announcements from management will appear here."
                   : view === "unread" ? "You’ve read every notice on the board." : "Try a different filter or search."}
                 action={notices.length === 0 && canManage
                   ? <button type="button" className="ad-btn ad-btn--primary" onClick={() => setComposer("new")}><Plus size={15} />Post a notice</button>
@@ -433,7 +433,7 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
               <label className="ad-field">
                 <span className="ad-label">Message</span>
                 <textarea className="ad-textarea" rows={7} value={form.body} onChange={(e) => set("body", e.target.value)} maxLength={4000}
-                  placeholder="What staff need to know. Plain text — line breaks are kept." />
+                  placeholder="What staff need to know. Plain text; line breaks are kept." />
                 <span className="ad-hint" style={{ textAlign: "right" }}>{form.body.length}/4000</span>
               </label>
 
@@ -489,7 +489,7 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
                   <div className="ad-hint">
                     {form.publicHeadline
                       ? "Anyone with the link sees the title (not the message). Keep names and confidential details out of it."
-                      : "The share link shows only “Staff-only notice” — the title needs a sign-in too."}
+                      : "The share link shows only “Staff-only notice”. The title needs a sign-in too."}
                   </div>
                 </div>
                 <Switch checked={form.publicHeadline} onChange={(v) => set("publicHeadline", v)} label="Show the title on the share link" />
@@ -507,7 +507,7 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
                 <div className="nb-toggle">
                   <div>
                     <div style={{ fontWeight: 600, color: "var(--ad-text)", display: "flex", gap: 6, alignItems: "center" }}><Bell size={14} />Ask everyone to read it again</div>
-                    <div className="ad-hint">Use for important changes — clears who has read it ({editing.readCount ?? 0} so far)</div>
+                    <div className="ad-hint">Use for important changes. Clears who has read it ({editing.readCount ?? 0} so far)</div>
                   </div>
                   <Switch checked={form.resetReads} onChange={(v) => set("resetReads", v)} label="Ask everyone to read it again" />
                 </div>
@@ -573,7 +573,7 @@ function ShareDialog({ open, notices, onClose }: { open: boolean; notices: Staff
   const date = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 
   const message = [
-    `*SECH staff notices — ${date}*`,
+    `*SECH staff notices, ${date}*`,
     "",
     ...shown.map((n) => `• ${n.priority === "urgent" ? "URGENT: " : n.priority === "important" ? "Important: " : ""}${n.title}`),
     ...(hidden ? [`• ${hidden} staff-only notice${hidden === 1 ? "" : "s"}`] : []),

@@ -8,7 +8,7 @@ import { ORG_CHART, countNodes, findPostHolder } from "@/lib/org-chart";
 export const metadata: Metadata = {
   title: "Organogram",
   description:
-    "The organisational structure of St. Elizabeth Catholic Hospital — Goaso Diocesan Health Service.",
+    "The organisational structure of St. Elizabeth Catholic Hospital, part of the Goaso Diocesan Health Service.",
 };
 
 /** Leadership tier, in the order it appears on the diocesan chart. */
@@ -61,7 +61,7 @@ export default function OrganogramPage() {
       <PageHero
         tag="Our Structure"
         title="Organisational Chart"
-        subtitle={`The governance and operational structure of St. Elizabeth Catholic Hospital under the Goaso Diocesan Health Service — ${countNodes(
+        subtitle={`The governance and operational structure of St. Elizabeth Catholic Hospital under the Goaso Diocesan Health Service: ${countNodes(
           ORG_CHART,
         )} posts across six reporting lines.`}
       />

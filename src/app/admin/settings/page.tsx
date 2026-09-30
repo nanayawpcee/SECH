@@ -303,7 +303,7 @@ export default function SettingsPage() {
                         ))}
                       </AnimatePresence>
                       {settings.departments.length === 0 && !settingsLoading && (
-                        <span className="ad-hint">No departments yet — add the first below.</span>
+                        <span className="ad-hint">No departments yet. Add the first below.</span>
                       )}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -405,7 +405,7 @@ export default function SettingsPage() {
                   <Card
                     title="Add a colleague"
                     subtitle={inviteMode === "email"
-                      ? "WordPress emails them a link to choose their own password — you never handle it."
+                      ? "WordPress emails them a link to choose their own password. You never handle it."
                       : "For staff without reliable email. You get a one-time password to hand over in person; they must replace it when they first sign in."}
                     action={
                       <div className="ad-seg" role="tablist" aria-label="How to give access">
@@ -647,7 +647,7 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
             <div className="ad-kpi-icon ad-tone-success" style={{ marginBottom: 14 }}><KeySquare size={18} /></div>
             <h3 className="ad-modal-title">{credentials.reset ? "New temporary password" : "Account created"}</h3>
             <p className="ad-modal-text" style={{ marginBottom: 14 }}>
-              Give these to <strong>{credentials.name}</strong> in person. <strong>This is the only time the password is shown</strong> — the portal keeps no copy.
+              Give these to <strong>{credentials.name}</strong> in person. <strong>This is the only time the password is shown.</strong> The portal keeps no copy.
             </p>
 
             <div className="st-cred">
@@ -670,7 +670,7 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
             </p>
             <div className="ad-modal-actions">
               <button type="button" className="ad-btn" onClick={printSlip}><Printer size={15} />Print slip</button>
-              <button type="button" className="ad-btn ad-btn--primary" onClick={onDone} autoFocus>I’ve noted it — done</button>
+              <button type="button" className="ad-btn ad-btn--primary" onClick={onDone} autoFocus>I’ve noted it, done</button>
             </div>
           </motion.div>
         </motion.div>

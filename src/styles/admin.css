@@ -927,3 +927,54 @@ tr:hover .ad-row-actions, .ad-row-actions:focus-within { opacity: 1; }
 /* Disabled stays visibly unavailable against the dark bar. */
 .ad-bulkbar .ad-btn:disabled { opacity: 0.4; }
 .ad-bulkbar :focus-visible { outline-color: var(--ad-gold); }
+
+/* ── Messages inbox (/admin/messages) ─────────────────────────────────────── */
+.ad-root .msg-layout { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.ad-root .msg-list-card { display: flex; flex-direction: column; min-height: 420px; overflow: hidden; }
+.ad-root .msg-list-head { display: grid; gap: 10px; padding: 14px; border-bottom: 1px solid var(--ad-border); }
+.ad-root .msg-list-head .ad-seg { width: 100%; }
+.ad-root .msg-list-head .ad-seg-btn { flex: 1; justify-content: center; }
+.ad-root .msg-list { list-style: none; margin: 0; padding: 6px; display: grid; gap: 2px; max-height: calc(100vh - 290px); overflow-y: auto; }
+.ad-root .msg-item {
+  width: 100%; display: flex; gap: 11px; align-items: flex-start; padding: 11px 12px; border-radius: 12px;
+  border: 1px solid transparent; background: transparent; text-align: left; cursor: pointer; color: var(--ad-text-2);
+  font: inherit; transition: background .15s, border-color .15s;
+}
+.ad-root .msg-item:hover { background: var(--ad-surface-2); }
+.ad-root .msg-item[data-active] { background: var(--ad-brand-soft); border-color: color-mix(in srgb, var(--ad-brand) 25%, transparent); }
+.ad-root .msg-item:focus-visible { outline: 2px solid var(--ad-ring); outline-offset: 1px; }
+.ad-root .msg-item-main { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.ad-root .msg-item-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ad-root .msg-item-name { font-size: 13.5px; font-weight: 600; color: var(--ad-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-root .msg-item-when { flex-shrink: 0; font-size: 11.5px; color: var(--ad-text-3); }
+.ad-root .msg-item-topic { font-size: 12px; font-weight: 600; color: var(--ad-text-3); }
+.ad-root .msg-item-snippet { font-size: 12.5px; color: var(--ad-text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-root .msg-item[data-unread] .msg-item-name { font-weight: 800; }
+.ad-root .msg-item[data-unread] .msg-item-name::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--ad-brand); vertical-align: 2px;
+}
+.ad-root .msg-item[data-unread] .msg-item-snippet { color: var(--ad-text-2); }
+
+.ad-root .msg-read { min-height: 420px; position: sticky; top: calc(var(--ad-topbar-h) + 16px); }
+.ad-root .msg-article { display: grid; gap: 18px; padding: 22px 24px 24px; }
+.ad-root .msg-back { display: none; justify-self: start; }
+.ad-root .msg-read-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.ad-root .msg-read-name { margin: 0; font-size: 19px; font-weight: 750; color: var(--ad-text); overflow-wrap: anywhere; }
+.ad-root .msg-read-meta { margin-top: 2px; font-size: 12.5px; color: var(--ad-text-3); }
+.ad-root .msg-contact { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--ad-surface-2); }
+.ad-root .msg-contact div { display: grid; gap: 2px; min-width: 0; }
+.ad-root .msg-contact dt { display: inline-flex; gap: 6px; align-items: center; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ad-text-3); }
+.ad-root .msg-contact dd { margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.ad-root .msg-contact a { color: var(--ad-brand-ink); text-decoration: none; }
+.ad-root .msg-contact a:hover { text-decoration: underline; }
+.ad-root .msg-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14.5px; line-height: 1.7; color: var(--ad-text); }
+.ad-root .msg-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid var(--ad-border); }
+
+@media (max-width: 900px) {
+  .ad-root .msg-layout { grid-template-columns: minmax(0, 1fr); }
+  .ad-root .msg-read { display: none; position: static; }
+  .ad-root .msg-layout[data-open] .msg-read { display: block; }
+  .ad-root .msg-layout[data-open] .msg-list-card { display: none; }
+  .ad-root .msg-back { display: inline-flex; }
+  .ad-root .msg-list { max-height: none; }
+}

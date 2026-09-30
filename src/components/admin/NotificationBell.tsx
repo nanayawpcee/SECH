@@ -77,7 +77,7 @@ export function NotificationBell() {
         type="button"
         className="ad-icon-btn"
         onClick={toggleToastPanel}
-        aria-label={hasUrgent ? "Notifications — items need attention" : "Notifications"}
+        aria-label={hasUrgent ? "Notifications: items need attention" : "Notifications"}
         aria-expanded={toastPanelOpen}
         title="Notifications"
       >
@@ -109,7 +109,7 @@ export function NotificationBell() {
               {attention.length === 0 ? (
                 <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", color: "var(--ad-text-3)", fontSize: 13 }}>
                   <CheckCircle2 size={18} style={{ color: "var(--ad-success)" }} />
-                  All caught up — nothing is waiting on you.
+                  All caught up. Nothing is waiting on you.
                 </div>
               ) : (
                 attention.map((a) => {

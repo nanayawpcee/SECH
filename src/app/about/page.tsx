@@ -101,7 +101,7 @@ export default function AboutPage() {
         />
         <UnderConstruction
           subject="our history and team"
-          message="We are updating the photographs on this page so our story and the people behind it are shown as they are today. The new page will be back shortly — in the meantime, everything else on the site is up to date."
+          message="We are updating the photographs on this page so our story and the people behind it are shown as they are today. The new page will be back shortly. In the meantime, everything else on the site is up to date."
         />
         <EmergencyBanner />
       </>

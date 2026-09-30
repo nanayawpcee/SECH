@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Check, Info, Microscope, RefreshCw, Stethoscope, UserRound } from "lucide-react";
 import { submitAppointment } from "@/lib/submit-booking";
 import { useState, useEffect, useRef } from "react";
 import { DEPARTMENTS } from "@/lib/data";
@@ -47,7 +48,7 @@ const TIMES = [
 ];
 
 const STEPS: { key: Step; label: string; icon: string }[] = [
-  { key: "personal",    label: "Personal Info",   icon: "👤" },
+  { key: "personal",    label: "Personal Info",   icon: "user" },
   { key: "appointment", label: "Appointment",     icon: "/svgs/appointment.svg" },
   { key: "review",      label: "Review",          icon: "/svgs/review.svg" },
 ];
@@ -161,9 +162,9 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                   }}>
                     {/* Upcoming steps sit on a pale disc, where these light-toned
                         marks would otherwise wash out; darken them just there. */}
-                    {i < stepIndex ? "✓" : s.icon.startsWith("/")
+                    {i < stepIndex ? <Check size={18} strokeWidth={3} aria-hidden="true" /> : s.icon.startsWith("/")
                       ? <Image src={s.icon} alt="" aria-hidden="true" width={18} height={18} style={{ width: 18, height: 18, objectFit: "contain", filter: i > stepIndex ? "brightness(0.55)" : undefined }} />
-                      : s.icon}
+                      : <UserRound size={18} aria-hidden="true" />}
                   </div>
                   <span style={{ fontSize: "0.66rem", fontWeight: 700, color: i <= stepIndex ? "var(--primary)" : "var(--text-light)", letterSpacing: "0.06em", textAlign: "center", textTransform: "uppercase" }}>{s.label}</span>
                 </div>
@@ -269,9 +270,9 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                 <label className="form-label">Appointment Type</label>
                 <div style={{ display: "flex", gap: 10 }}>
                   {[
-                    { value: "consultation", label: "New Consultation", icon: "🩺" },
-                    { value: "followup",     label: "Follow-Up",        icon: "🔄" },
-                    { value: "test",         label: "Test / Lab",       icon: "🔬" },
+                    { value: "consultation", label: "New Consultation", Icon: Stethoscope },
+                    { value: "followup",     label: "Follow-Up",        Icon: RefreshCw },
+                    { value: "test",         label: "Test / Lab",       Icon: Microscope },
                   ].map(opt => (
                     <label key={opt.value} style={{
                       flex: 1, padding: "10px", border: `1.5px solid ${data.appointmentType === opt.value ? "var(--primary)" : "#D6E8DF"}`,
@@ -280,7 +281,7 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                       transition: "all 0.2s",
                     }}>
                       <input type="radio" name="apptType" value={opt.value} checked={data.appointmentType === opt.value} onChange={() => set("appointmentType", opt.value)} style={{ display: "none" }} />
-                      <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
+                      <div style={{ display: "flex", justifyContent: "center", marginBottom: 6, color: data.appointmentType === opt.value ? "var(--primary)" : "var(--text-light)" }}><opt.Icon size={22} aria-hidden="true" /></div>
                       <div style={{ fontSize: "0.75rem", fontWeight: 700, color: data.appointmentType === opt.value ? "var(--primary)" : "var(--text-light)", letterSpacing: "0.04em" }}>{opt.label}</div>
                     </label>
                   ))}
@@ -320,10 +321,10 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                   title: "Personal Information",
                   rows: [
                     ["Name",    `${data.firstName} ${data.lastName}`],
-                    ["Gender",  data.gender || "—"],
-                    ["DOB",     data.dob || "—"],
+                    ["Gender",  data.gender || "Not given"],
+                    ["DOB",     data.dob || "Not given"],
                     ["Phone",   data.phone],
-                    ["Email",   data.email || "—"],
+                    ["Email",   data.email || "Not given"],
                     ...(data.hasInsurance ? [["Insurance", `${data.insuranceName} · ${data.insuranceNumber}`]] : []),
                   ],
                 },
@@ -354,7 +355,7 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
               ))}
 
               <div style={{ background: "#FFF8E8", border: "1px solid #F5D080", borderRadius: "var(--radius-sm)", padding: "0.85rem 1rem", display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>ℹ️</span>
+                <Info size={17} color="#8A6410" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
                 <p style={{ fontSize: "0.8rem", color: "#6B5E2B", lineHeight: 1.55, margin: 0 }}>Our team will call you on <strong>{data.phone}</strong> within 24 hours to confirm your appointment slot. Please bring a valid ID and any previous medical records to your visit.</p>
               </div>
             </div>
@@ -363,7 +364,7 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
           {/* ── SUCCESS ── */}
           {step === "success" && (
             <div style={{ textAlign: "center", padding: "2rem 1rem", animation: "slideUp 0.4s ease" }}>
-              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--light-green)", border: "3px solid var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 1.25rem" }}>✓</div>
+              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--light-green)", border: "3px solid var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 1.25rem" }}><Check size={36} strokeWidth={2.6} color="var(--primary)" aria-hidden="true" /></div>
               <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 800, color: "var(--text-dark)", margin: "0 0 10px" }}>Booking Request Sent!</h2>
               <p style={{ color: "var(--text-light)", lineHeight: 1.7, maxWidth: 380, margin: "0 auto 1.75rem" }}>
                 Thank you, <strong>{data.firstName}</strong>. We have received your appointment request for <strong>{data.department}</strong> on <strong>{data.preferredDate}</strong>. Our team will call <strong>{data.phone}</strong> to confirm within 24 hours.
@@ -421,7 +422,7 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                     <span style={{ width: 16, height: 16, border: "2px solid rgba(13,31,26,0.3)", borderTopColor: "var(--text-dark)", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
                     Submitting…
                   </span>
-                ) : "Confirm Booking ✓"}
+                ) : <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>Confirm Booking <Check size={17} strokeWidth={2.6} aria-hidden="true" /></span>}
               </button>
             )}
           </div>

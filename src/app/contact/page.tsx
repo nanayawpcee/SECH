@@ -1,116 +1,138 @@
+import "@/styles/contact.css";
 import type { Metadata } from "next";
+import Link from "next/link";
+import {
+  ArrowRight,
+  CalendarCheck,
+  CreditCard,
+  FileText,
+  IdCard,
+  Mail,
+  MapPin,
+  Navigation,
+  Phone,
+  Pill,
+  Siren,
+  ExternalLink,
+} from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
-import { ContactSection } from "@/components/sections/ContactSection";
+import { ContactForm } from "@/components/contact/ContactForm";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
-import { AnimateIn } from "@/components/ui/AnimateIn";
+import { SITE } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with St. Elizabeth Catholic Hospital. Find our address, phone number, email, and opening hours.",
+    "Get in touch with St. Elizabeth Catholic Hospital, Hwidiem. Call us 24/7, send a message, or get directions to the hospital.",
 };
 
+// The hospital's pin on Google Maps.
+const LAT_LNG = "6.9325279,-2.3580684";
+const MAPS_PLACE =
+  "https://www.google.com/maps/place/St.+Elizabeth+Catholic+Hospital/@6.9325332,-2.3606433,17z/data=!4m6!3m5!1s0xfdb2e3e952a5dcd:0xaaa7c226d485c7f7!8m2!3d6.9325279!4d-2.3580684!16s%2Fg%2F11cktmsnnr";
+const MAPS_DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${LAT_LNG}`;
+
 export default function ContactPage() {
+  const phone = SITE.phone.trim();
+  const tel = `tel:${phone.replace(/\s+/g, "")}`;
+
   return (
     <>
       <PageHero
         tag="Get in Touch"
         title="Contact St. Elizabeth Catholic Hospital"
-        subtitle="We're here for you — reach out by phone, email, or visit us in Hwidiem, off Kumasi-Goaso Highway."
+        subtitle="We're here for you. Call us any time, send a message, or visit us in Hwidiem, off the Kumasi–Goaso highway."
         dotGrid
       />
 
-      {/* Map embed placeholder */}
-      <div style={{ background: "var(--light-green)", padding: "3rem 2rem" }}>
-        <div className="container">
-          <AnimateIn>
-            <div
-              style={{
-                borderRadius: "var(--radius-lg)",
-                overflow: "hidden",
-                border: "1.5px solid #C8DCCE",
-                height: 320,
-                background: "var(--primary-dark)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}
-            >
-              {/* Stylised map placeholder */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundImage:
-                    "radial-gradient(circle at 50% 50%, rgba(26,122,94,0.15) 0%, transparent 70%)",
-                }}
-              />
-              <div style={{ textAlign: "center", position: "relative" }}>
-                {/* Flex-centred rather than an inline image: an inline <img>
-                    sits on the text baseline, which left a descender-sized gap
-                    under the pin. Sized in px, not %, so it does not rescale
-                    with the width of the address text beside it. */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    marginBottom: 12,
-                  }}
-                >
-                  <img
-                    src="/svgs/location.svg"
-                    alt=""
-                    aria-hidden="true"
-                    width={56}
-                    height={56}
-                    style={{ width: 56, height: 56, objectFit: "contain" }}
-                  />
+      <section className="ct-page">
+        <div className="ct-container">
+          {/* The four ways people most often need to reach us. */}
+          <div className="ct-quick">
+            <a href={tel} className="ct-card" data-tone="emergency">
+              <span className="ct-card-icon"><Siren size={22} aria-hidden="true" /></span>
+              <span className="ct-card-label">Emergency, 24/7</span>
+              <span className="ct-card-value">{phone}</span>
+              <span className="ct-card-note">Our Emergency Unit never closes. Call, or come straight in.</span>
+              <span className="ct-card-cta">Call now <ArrowRight size={15} aria-hidden="true" /></span>
+            </a>
+            <a href={`mailto:${SITE.email}`} className="ct-card">
+              <span className="ct-card-icon"><Mail size={22} aria-hidden="true" /></span>
+              <span className="ct-card-label">Email</span>
+              <span className="ct-card-value">{SITE.email}</span>
+              <span className="ct-card-note">For general enquiries, records requests and partnerships.</span>
+              <span className="ct-card-cta">Write to us <ArrowRight size={15} aria-hidden="true" /></span>
+            </a>
+            <a href={MAPS_DIRECTIONS} target="_blank" rel="noopener noreferrer" className="ct-card">
+              <span className="ct-card-icon"><MapPin size={22} aria-hidden="true" /></span>
+              <span className="ct-card-label">Visit</span>
+              <span className="ct-card-value">Hwidiem</span>
+              <span className="ct-card-note">Asutifi South District, Ahafo Region.</span>
+              <span className="ct-card-cta">Get directions <ArrowRight size={15} aria-hidden="true" /></span>
+            </a>
+            <Link href="/appointment" className="ct-card" data-tone="gold">
+              <span className="ct-card-icon"><CalendarCheck size={22} aria-hidden="true" /></span>
+              <span className="ct-card-label">Appointments</span>
+              <span className="ct-card-value">Book online</span>
+              <span className="ct-card-note">Request a slot and we’ll call you to confirm.</span>
+              <span className="ct-card-cta">Book a visit <ArrowRight size={15} aria-hidden="true" /></span>
+            </Link>
+          </div>
+
+          <div className="ct-main">
+            <div className="ct-panel">
+              <ContactForm theme="light" />
+            </div>
+
+            <div className="ct-side">
+              <div>
+                <div className="ct-map" role="img" aria-label="Illustration of the hospital's location in Hwidiem">
+                  <div className="ct-pin">
+                    <span className="ct-pin-head"><MapPin size={22} aria-hidden="true" /></span>
+                    <span className="ct-pin-pulse" aria-hidden="true" />
+                    <span className="ct-pin-label">St. Elizabeth Catholic Hospital</span>
+                  </div>
+                  <span className="ct-road">Kumasi–Goaso highway</span>
                 </div>
-                <div
-                  style={{
-                    color: "#fff",
-                    fontFamily: "var(--font-serif)",
-                    fontSize: "1.1rem",
-                    fontWeight: 700,
-                  }}
-                >
-                  Hwidiem
+                <div className="ct-visit">
+                  <h2>Find us</h2>
+                  <address className="ct-address">
+                    {SITE.name}<br />
+                    Hwidiem, off the Kumasi–Goaso highway<br />
+                    Asutifi South District, Ahafo Region, Ghana
+                  </address>
+                  <div className="ct-actions">
+                    <a href={MAPS_DIRECTIONS} target="_blank" rel="noopener noreferrer" className="ct-btn">
+                      <Navigation size={16} aria-hidden="true" />Get directions
+                    </a>
+                    <a href={MAPS_PLACE} target="_blank" rel="noopener noreferrer" className="ct-btn ct-btn--ghost">
+                      <ExternalLink size={16} aria-hidden="true" />Open in Google Maps
+                    </a>
+                  </div>
+                  <ul className="ct-hours" aria-label="Opening hours">
+                    <li><span>Emergency Unit</span><strong>24 hours, every day</strong></li>
+                    <li><span>Hospital</span><strong>{SITE.hours}</strong></li>
+                  </ul>
                 </div>
-                <div
-                  style={{
-                    color: "rgba(255,255,255,0.6)",
-                    fontSize: "0.85rem",
-                    marginTop: 4,
-                  }}
-                >
-                  Asutufi South District, Ahafo Region, Ghana
-                </div>
-                <a
-                  href="https://www.google.com/maps/place/St.+Elizabeth+Catholic+Hospital/@6.9325332,-2.3606433,17z/data=!4m6!3m5!1s0xfdb2e3e952a5dcd:0xaaa7c226d485c7f7!8m2!3d6.9325279!4d-2.3580684!16s%2Fg%2F11cktmsnnr?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-block",
-                    marginTop: 16,
-                    padding: "9px 20px",
-                    background: "var(--accent)",
-                    color: "var(--text-dark)",
-                    borderRadius: 4,
-                    fontSize: "0.82rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  Open in Google Maps →
+              </div>
+
+              <div className="ct-panel ct-bring">
+                <h2>Coming to the hospital?</h2>
+                <ul>
+                  <li><CreditCard size={18} aria-hidden="true" />Your NHIS card or other insurance details</li>
+                  <li><IdCard size={18} aria-hidden="true" />A valid ID</li>
+                  <li><FileText size={18} aria-hidden="true" />Previous medical records, test results or referral letters</li>
+                  <li><Pill size={18} aria-hidden="true" />Any medicines you are currently taking</li>
+                </ul>
+                <a href={tel} className="ct-btn ct-btn--ghost" style={{ justifySelf: "start" }}>
+                  <Phone size={16} aria-hidden="true" />Questions? Call {phone}
                 </a>
               </div>
             </div>
-          </AnimateIn>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <ContactSection />
       <EmergencyBanner />
     </>
   );

@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     const key = process.env.SECH_BOOKING_KEY;
     if (!key) {
       // Fail loudly rather than silently dropping a patient's booking.
-      console.error("SECH_BOOKING_KEY is not set — booking submissions cannot be saved.");
+      console.error("SECH_BOOKING_KEY is not set, so booking submissions cannot be saved.");
       return NextResponse.json(
         { error: "Online booking is temporarily unavailable. Please call the hospital." },
         { status: 503 },

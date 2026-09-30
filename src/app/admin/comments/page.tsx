@@ -177,7 +177,7 @@ export default function CommentsPage() {
 
     const verb = action === "approved" ? "approved and now public" : action === "spam" ? "marked as spam" : "moved to trash";
     if (ok) addToast(`${ok} comment${ok === 1 ? "" : "s"} ${verb}`);
-    if (failed) addToast(`${failed} could not be updated — try again`, "danger");
+    if (failed) addToast(`${failed} could not be updated. Try again.`, "danger");
     refreshPendingComments();
     // The queue page holds 50; fetch the next batch once this one is cleared.
     if (ok && comments.length - ok <= 0 && total - ok > 0) load();
@@ -213,7 +213,7 @@ export default function CommentsPage() {
         <div className="ad-alert ad-tone-warn" style={{ marginBottom: 16, alignItems: "center" }}>
           <ShieldAlert size={18} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
-            <strong>{withLinks.length} of these {comments.length} contain links</strong> — the usual signature of spam bots.
+            <strong>{withLinks.length} of these {comments.length} contain links</strong>, the usual signature of spam bots.
             Nothing held here has been shown on the website.
           </span>
           <button type="button" className="ad-btn ad-btn--sm" disabled={busy}

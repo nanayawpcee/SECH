@@ -36,6 +36,7 @@ import {
   type Tone,
   useInitialParam,
 } from "@/components/admin/ui";
+import { downloadCsv } from "@/lib/csv";
 import { addDays, formatDay, fromNow, keyOfTimestamp, relativeDay, todayKey } from "@/lib/admin-dates";
 
 type StatusFilter = "all" | AdminBooking["status"];
@@ -47,17 +48,6 @@ const TYPE_META: Record<AdminBooking["type"], { label: string; tone: Tone }> = {
   followup: { label: "Follow-up", tone: "violet" },
   test: { label: "Test / lab", tone: "teal" },
 };
-
-/**
- * One CSV cell. Quoted so commas and line breaks in a patient's notes stay in
- * their column, and prefixed with ' when it starts like a formula — booking
- * fields are typed by the public, and "=HYPERLINK(...)" in a name would
- * otherwise run when the export is opened in Excel.
- */
-function csvCell(value: string) {
-  const v = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-  return `"${v.replace(/"/g, '""')}"`;
-}
 
 export default function BookingsPage() {
   const {
@@ -166,14 +156,7 @@ export default function BookingsPage() {
       b.id, b.name, b.phone, b.email, b.dept, TYPE_META[b.type].label, b.preferredDateISO, b.time,
       b.insurance, b.insuranceNumber ?? "", b.status, keyOfTimestamp(b.createdAtISO), b.notes ?? "",
     ]);
-    // BOM so Excel opens it as UTF-8 and keeps names like "Adwoa Mensah-Bonsu" intact.
-    const csv = "﻿" + [headers, ...rows].map((r) => r.map((c) => csvCell(String(c ?? ""))).join(",")).join("\r\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sech-bookings-${today}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`sech-bookings-${today}.csv`, headers, rows);
     addToast(`Exported ${rows.length} booking${rows.length === 1 ? "" : "s"}`);
   };
 
@@ -319,7 +302,7 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ whiteSpace: "nowrap" }}>{b.dept || "—"}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{b.dept || "Not set"}</td>
                     <td><Chip tone={TYPE_META[b.type].tone}>{TYPE_META[b.type].label}</Chip></td>
                     <td style={{ whiteSpace: "nowrap" }}>
                       <div className="ad-cell-main" style={{ fontWeight: 600 }}>
@@ -494,18 +477,18 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
 
               <h3 className="ad-drawer-h">Patient</h3>
               <dl className="ad-dl">
-                <dt>Phone</dt><dd>{booking.phone || "—"}</dd>
-                <dt>Email</dt><dd>{booking.email || "—"}</dd>
+                <dt>Phone</dt><dd>{booking.phone || "Not given"}</dd>
+                <dt>Email</dt><dd>{booking.email || "Not given"}</dd>
                 {booking.dateOfBirth && (<><dt>Date of birth</dt><dd>{formatDay(booking.dateOfBirth, { day: "numeric", month: "long", year: "numeric" })}</dd></>)}
                 {booking.gender && (<><dt>Gender</dt><dd style={{ textTransform: "capitalize" }}>{booking.gender}</dd></>)}
               </dl>
 
               <h3 className="ad-drawer-h">Appointment</h3>
               <dl className="ad-dl">
-                <dt><Stethoscope size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Department</dt><dd>{booking.dept || "—"}</dd>
+                <dt><Stethoscope size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Department</dt><dd>{booking.dept || "Not set"}</dd>
                 <dt><ShieldCheck size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Insurance</dt>
                 <dd>{booking.insurance}{booking.insuranceNumber ? ` · ${booking.insuranceNumber}` : ""}</dd>
-                <dt><CalendarDays size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Received</dt><dd>{booking.createdAt || "—"}</dd>
+                <dt><CalendarDays size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Received</dt><dd>{booking.createdAt || "Unknown"}</dd>
               </dl>
 
               {booking.notes && (

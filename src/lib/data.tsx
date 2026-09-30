@@ -2,10 +2,11 @@
 export const SITE = {
   name: "St. Elizabeth Catholic Hospital",
   shortName: "SECH",
+  url: "https://sech-gh.org",
   tagline: "Healing with Faith & Excellence",
   phone: " 032 229 8428",
   email: "info@sech-gh.org",
-  address: "Hwidiem, Asutufi South District,Ahafo Region, Ghana",
+  address: "Hwidiem, Asutifi South District, Ahafo Region, Ghana",
   hours: "24 hours, 7 days a week",
   chag: true,
 };
@@ -472,7 +473,7 @@ export const PHOTOS = [
     caption:
       "Fully stocked with WHO essential medicines and specialised drugs, with expert pharmacist counselling.",
     color: "#0A4F3C",
-    icon: "💊",
+    icon: "/icons/pharm.png",
     image: "/images/pharm.jpeg",
     pattern: "dots",
     accent: "#5DCAA5",
@@ -483,7 +484,7 @@ export const PHOTOS = [
     caption:
       "Our 24/7 emergency department and busy OPD serve hundreds of patients daily with expert triage.",
     color: "#1A2F2A",
-    icon: "🚑",
+    icon: "/icons/outpatient.png",
     image:
       "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80",
     pattern: "wave",

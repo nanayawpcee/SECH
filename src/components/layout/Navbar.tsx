@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
 import { SITE } from "@/lib/data";
+import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/services", label: "Services" },
@@ -164,7 +165,7 @@ export function Navbar() {
             className="show-mobile" /* Let classes handle display none/block */
             aria-label="Toggle menu"
           >
-            {mobileOpen ? "×" : "☰"}
+            {mobileOpen ? <X size={26} aria-hidden="true" /> : <Menu size={26} aria-hidden="true" />}
           </button>
         </div>
 

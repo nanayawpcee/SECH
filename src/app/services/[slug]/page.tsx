@@ -6,6 +6,7 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 import { HoverLink } from "@/components/ui/HoverLink";
+import { Check } from "lucide-react";
 
 interface Props {
   params: { slug: string };
@@ -129,7 +130,7 @@ export default function ServiceDetailPage({ params }: Props) {
                       flexShrink: 0,
                     }}
                   >
-                    ✓
+                    <Check size={12} strokeWidth={3} aria-hidden="true" />
                   </div>
                   <span
                     style={{

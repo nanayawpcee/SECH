@@ -1,16 +1,7 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { Siren } from "lucide-react";
 import { SITE } from "@/lib/data";
 
 export function EmergencyBanner() {
-  const [pulse, setPulse] = useState(false);
-
-  useEffect(() => {
-    const t = setInterval(() => setPulse((p) => !p), 1200);
-    return () => clearInterval(t);
-  }, []);
-
   return (
     <div
       style={{
@@ -27,7 +18,9 @@ export function EmergencyBanner() {
           {/* Pulsing dot */}
           <div className="emergency-dot">
             <div className="emergency-dot-pulse" aria-hidden />
-            <div className="emergency-dot-core">🚨</div>
+            <div className="emergency-dot-core">
+              <Siren size={22} strokeWidth={2.2} color="var(--red)" aria-hidden="true" />
+            </div>
           </div>
           <div>
             <div className="emergency-title">24 / 7 Emergency Services</div>

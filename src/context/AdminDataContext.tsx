@@ -79,6 +79,10 @@ interface AdminDataCtx {
   pendingComments: number;
   refreshPendingComments: () => Promise<void>;
 
+  /** Unread contact-form messages — drives the Messages nav badge. */
+  newMessages: number;
+  setNewMessages: (n: number) => void;
+
   /** Hospital profile + booking config, persisted in WordPress. */
   settings: HospitalSettings;
   settingsLoading: boolean;
@@ -132,6 +136,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const canBookings = can(admin?.perms, "bookings");
   const canSettings = can(admin?.perms, "settings");
   const canComments = can(admin?.perms, "comments");
+  const canMessages = can(admin?.perms, "messages");
   const logoutRef = useRef(logout);
   logoutRef.current = logout;
   /** A 401 means WordPress no longer accepts the session: sign out cleanly
@@ -155,6 +160,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [savingSettings, setSavingSettings] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [pendingComments, setPendingComments] = useState(0);
+  const [newMessages, setNewMessages] = useState(0);
   const [notices, setNotices] = useState<StaffNotice[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
   const [noticesNeedPlugin, setNoticesNeedPlugin] = useState(false);
@@ -422,6 +428,20 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     if (canComments) refreshPendingComments();
   }, [canComments, refreshPendingComments]);
 
+  /* ── Unread contact messages (badge only; the inbox loads its own list) ── */
+  useEffect(() => {
+    if (!canMessages) return;
+    fetch("/api/contact")
+      .then(async (res) => {
+        if (expired(res) || !res.ok) return; // A badge is not worth an error toast.
+        const data = await res.json();
+        const list: { status?: string }[] = Array.isArray(data.messages) ? data.messages : [];
+        setNewMessages(list.filter((m) => m.status === "new").length);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canMessages]);
+
   /* ── Hospital settings ── */
   const refreshSettings = useCallback(async () => {
     setSettingsLoading(true);
@@ -559,6 +579,8 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         cancelBooking,
         pendingComments,
         refreshPendingComments,
+        newMessages,
+        setNewMessages,
         notices,
         noticesLoading,
         noticesNeedPlugin,

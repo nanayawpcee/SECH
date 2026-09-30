@@ -159,7 +159,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
       );
     }
     if (held) {
-      addToast(`${held} post${held === 1 ? " was" : "s were"} sent for review instead — your account can’t publish`, "warn");
+      addToast(`${held} post${held === 1 ? " was" : "s were"} sent for review instead. Your account can’t publish.`, "warn");
     }
   };
 
@@ -294,7 +294,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                     </td>
                     <td><Chip tone={TYPE_TONE[p.type]}>{p.type}</Chip></td>
                     <td style={{ whiteSpace: "nowrap" }}>{p.author}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{p.date || "—"}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{p.date || "No date"}</td>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} />

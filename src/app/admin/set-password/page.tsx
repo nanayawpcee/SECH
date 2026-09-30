@@ -70,7 +70,7 @@ export default function SetPasswordPage() {
         <img src="/images/logo.png" alt="" className="sp-logo" />
         <h1 className="sp-title">Welcome, {firstName}</h1>
         <p className="sp-sub">
-          You signed in with a temporary password. Choose your own now — it’s the only one you’ll use from here on,
+          You signed in with a temporary password. Choose your own now. It’s the only one you’ll use from here on,
           and nobody else will know it.
         </p>
 
@@ -124,7 +124,7 @@ export default function SetPasswordPage() {
           </label>
 
           <p className="ad-hint" style={{ margin: 0 }}>
-            At least 12 characters. A short phrase of unrelated words — like “mango river lantern 42” — is easy to remember and hard to guess.
+            At least 12 characters. A short phrase of unrelated words, like “mango river lantern 42”, is easy to remember and hard to guess.
           </p>
 
           <button type="submit" className="ad-btn ad-btn--primary sp-submit" disabled={!ready || saving}>

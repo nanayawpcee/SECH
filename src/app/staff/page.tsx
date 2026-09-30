@@ -189,7 +189,7 @@ export default function StaffHome() {
                 <ol className="sf-steps">
                   <li>
                     <span className="sf-step-icon ad-tone-brand"><PenLine size={16} /></span>
-                    <span><strong>Write</strong><small>Draft your post. Save as often as you like — drafts are private.</small></span>
+                    <span><strong>Write</strong><small>Draft your post. Save as often as you like. Drafts are private.</small></span>
                   </li>
                   {canPublish ? (
                     <li>

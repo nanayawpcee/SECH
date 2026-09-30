@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BadgeCheck, Clock, ShieldCheck, Stethoscope } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
 import { AppointmentPageForm } from "@/components/ui/AppointmentPageForm";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
@@ -13,22 +14,22 @@ export const metadata: Metadata = {
 
 const WHYS = [
   {
-    icon: "⚡",
+    icon: Clock,
     title: "Fast Confirmation",
     desc: "We call you within 24 hours to confirm your slot.",
   },
   {
-    icon: "🩺",
+    icon: Stethoscope,
     title: "All Specialties",
     desc: "General medicine, surgery, eye care, dental, psychiatry, and more.",
   },
   {
-    icon: "🔒",
+    icon: ShieldCheck,
     title: "Your Privacy",
     desc: "Your personal health information is kept strictly confidential.",
   },
   {
-    icon: "💳",
+    icon: BadgeCheck,
     title: "NHIS Accepted",
     desc: "We accept the National Health Insurance Scheme and most major insurers.",
   },
@@ -92,7 +93,7 @@ export default function AppointmentPage() {
                         flexShrink: 0,
                       }}
                     >
-                      {w.icon}
+                      <w.icon size={19} color="var(--primary)" aria-hidden="true" />
                     </div>
                     <div>
                       <div

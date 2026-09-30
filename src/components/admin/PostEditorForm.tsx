@@ -172,7 +172,7 @@ export function PostEditorForm({
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
-      addToast("That image is over 8 MB — please use a smaller one", "warn");
+      addToast("That image is over 8 MB. Please use a smaller one.", "warn");
       return;
     }
     setPreviewUrl(URL.createObjectURL(file));
@@ -245,13 +245,13 @@ export function PostEditorForm({
       // Say what WordPress actually did: a request to publish from an account
       // that can't is stored as "pending", and the message must match.
       if (next === "published" && stored === "pending") {
-        addToast("Saved and sent for review — your account can’t publish directly", "warn");
+        addToast("Saved and sent for review. Your account can’t publish directly.", "warn");
         goToList();
         return;
       }
       addToast(
         next === "published" ? (published ? "Changes published" : inReview ? "Approved and published" : "Post published")
-          : next === "pending" ? (inReview ? "Submission updated" : "Submitted for review — an administrator will publish it")
+          : next === "pending" ? (inReview ? "Submission updated" : "Submitted for review. An administrator will publish it.")
           : inReview ? "Sent back to draft" : "Saved as draft",
       );
       goToList();
@@ -399,7 +399,7 @@ export function PostEditorForm({
                 value={body}
                 onChange={(e) => { setBody(e.target.value); markDirty(); }}
                 onKeyDown={onBodyKeyDown}
-                placeholder={"Write the article here. Select text and use the toolbar to format it.\n\nParagraphs are wrapped in <p> … </p> tags — the Paragraph button adds them."}
+                placeholder={"Write the article here. Select text and use the toolbar to format it.\n\nParagraphs are wrapped in <p> … </p> tags. The Paragraph button adds them."}
                 aria-label="Article body"
                 spellCheck
               />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { PHOTOS } from "@/lib/data";
+import { Pause } from "lucide-react";
 
 function drawPattern(canvas: HTMLCanvasElement, type: string, color: string) {
   const ctx = canvas.getContext("2d");
@@ -629,7 +630,8 @@ export function PhotoCarousel() {
                   backdropFilter: "blur(4px)",
                 }}
               >
-                ⏸ PAUSED
+                <Pause size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" style={{ marginRight: 5, verticalAlign: "-1px" }} />
+                PAUSED
               </div>
             )}
           </div>

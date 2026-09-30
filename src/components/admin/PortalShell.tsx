@@ -18,7 +18,9 @@ import {
   Home,
   Megaphone,
   LayoutGrid,
+  Inbox,
   LogOut,
+  Mail,
   MessageSquare,
   Newspaper,
   Plus,
@@ -38,7 +40,7 @@ import { Avatar } from "@/components/admin/ui";
 import { adminFont } from "@/app/admin/fonts";
 import { can, type Perm } from "@/lib/permissions";
 
-type BadgeKey = "drafts" | "pending" | "comments" | "review" | "notices";
+type BadgeKey = "drafts" | "pending" | "comments" | "review" | "notices" | "messages";
 
 interface NavItem {
   href: string;
@@ -63,6 +65,8 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/posts", icon: Newspaper, label: "News & Blogs", badgeKey: "review", perm: "posts.write" },
       { href: "/admin/posts/new", icon: FilePlus2, label: "New Post", neverActive: true, perm: "posts.write" },
       { href: "/admin/comments", icon: MessageSquare, label: "Comments", badgeKey: "comments", perm: "comments" },
+      { href: "/admin/messages", icon: Inbox, label: "Messages", badgeKey: "messages", perm: "messages" },
+      { href: "/admin/newsletter", icon: Mail, label: "Newsletter", perm: "newsletter" },
     ],
   },
   {
@@ -103,7 +107,7 @@ const VARIANT = {
     crumbs: {
       admin: "Dashboard", posts: "News & Blogs", new: "New post", edit: "Edit post",
       comments: "Comments", bookings: "Bookings", calendar: "Calendar", settings: "Settings",
-      notices: "Notice board",
+      notices: "Notice board", newsletter: "Newsletter", messages: "Messages",
     } as Record<string, string>,
   },
   staff: {
@@ -123,6 +127,8 @@ const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/calendar", "bookings"],
   ["/admin/settings", "settings"],
   ["/admin/comments", "comments"],
+  ["/admin/newsletter", "newsletter"],
+  ["/admin/messages", "messages"],
   ["/admin/posts", "posts.write"],
   ["/staff/posts", "posts.write"],
 ];
@@ -162,7 +168,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   const reduceMotion = useReducedMotion();
   const { admin, loading, logout } = useAuth();
   const {
-    theme, sidebarCollapsed, toggleSidebar, posts, bookings, pendingComments,
+    theme, sidebarCollapsed, toggleSidebar, posts, bookings, pendingComments, newMessages,
     requestLeave, guardTarget, confirmLeave, cancelLeave, poppingToast, notices,
   } = useAdminData();
 
@@ -233,6 +239,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
     // Staff submissions waiting for someone who can publish them.
     review: can(perms, "posts.publish") ? posts.filter((p) => p.status === "pending").length : 0,
     notices: notices.filter((n) => !n.isRead).length,
+    messages: newMessages,
   };
 
   const nav = cfg.nav

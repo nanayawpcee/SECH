@@ -83,7 +83,7 @@ export async function POST(request: Request) {
   try {
     const key = process.env.SECH_BOOKING_KEY;
     if (!key) {
-      console.error("SECH_BOOKING_KEY is not set — comments cannot be submitted.");
+      console.error("SECH_BOOKING_KEY is not set, so comments cannot be submitted.");
       return NextResponse.json(
         { error: "Comments are temporarily unavailable." },
         { status: 503 },

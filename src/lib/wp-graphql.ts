@@ -65,7 +65,7 @@ export async function wpQuery<T>(
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.includes("json")) {
       console.error(
-        `[wp] ${WP_ENDPOINT} answered with "${contentType}" instead of JSON — the endpoint is not serving WPGraphQL.`,
+        `[wp] ${WP_ENDPOINT} answered with "${contentType}" instead of JSON, so the endpoint is not serving WPGraphQL.`,
       );
       return null;
     }

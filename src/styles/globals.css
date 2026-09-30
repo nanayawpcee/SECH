@@ -458,12 +458,26 @@ html {
 }
 
 /* To prevent container overflow */
-.container,
 section,
 main,
 div {
   max-width: 100% !important;
   box-sizing: border-box;
+}
+
+/* Page containers are the exception: on wide screens they stop at a readable
+   width and centre, leaving margins either side, instead of the guard above
+   stretching every page edge to edge. Section backgrounds still run full
+   width — only the content column is capped. !important is what it takes to
+   out-rank the guard. */
+.container {
+  max-width: 1280px !important;
+}
+@media (min-width: 769px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 /* Fix common culprits */

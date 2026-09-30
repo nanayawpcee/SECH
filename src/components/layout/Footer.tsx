@@ -1,8 +1,11 @@
 "use client";
 
+import "@/styles/footer.css";
 import Link from "next/link";
 import Image from "next/image";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { SITE } from "@/lib/data";
+import { NewsletterSignup } from "@/components/layout/NewsletterSignup";
 
 /** Rendered height of the accreditation crests, in px. */
 const LOGO_HEIGHT = 30;
@@ -57,6 +60,8 @@ export function Footer() {
       }}
     >
       <div className="container">
+        <NewsletterSignup />
+
         {/* FIX: grid columns handled via className + globals.css — avoids hydration mismatch */}
         <div className="footer-grid" style={{ marginBottom: "2.5rem" }}>
           <div>
@@ -197,32 +202,18 @@ export function Footer() {
             flexWrap: "wrap",
           }}
         >
-          {[
-            { icon: "📞", val: SITE.phone, href: `tel:${SITE.phone}` },
-            { icon: "✉️", val: SITE.email, href: `mailto:${SITE.email}` },
-            { icon: "📍", val: "Hwidiem, Ahafo Region, Ghana", href: "#" },
-          ].map((item) => (
-            <a
-              key={item.val}
-              href={item.href}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                color: "rgba(255, 255, 255, 0.51)",
-                fontSize: "0.78rem",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "rgba(255,255,255,0.7)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "rgba(255,255,255,0.35)")
-              }
-            >
-              <span>{item.icon}</span> {item.val}
-            </a>
-          ))}
+          <a href={`tel:${SITE.phone.replace(/\s+/g, "")}`} className="ft-contact">
+            <Phone size={15} aria-hidden="true" />
+            {SITE.phone.trim()}
+          </a>
+          <a href={`mailto:${SITE.email}`} className="ft-contact">
+            <Mail size={15} aria-hidden="true" />
+            {SITE.email}
+          </a>
+          <span className="ft-contact">
+            <MapPin size={15} aria-hidden="true" />
+            Hwidiem, Ahafo Region, Ghana
+          </span>
         </div>
 
         <div
@@ -240,9 +231,12 @@ export function Footer() {
             © {new Date().getFullYear()} St. Elizabeth Catholic Hospital, Ghana.
             All rights reserved.
           </span>
-          <span style={{ color: "rgba(255, 255, 255, 0.51)", fontSize: "0.74rem" }}>
-            A CHAG Member Institution
-          </span>
+          <nav className="ft-legal" aria-label="Legal">
+            <Link href="/disclaimer">Disclaimer &amp; privacy</Link>
+            <span style={{ color: "rgba(255, 255, 255, 0.51)", fontSize: "0.74rem" }}>
+              A CHAG Member Institution
+            </span>
+          </nav>
         </div>
       </div>
     </footer>

@@ -20,7 +20,11 @@ export type Perm =
   | "posts.editOthers"
   | "media.upload"
   /** Post, edit and remove staff notices. Reading needs only a sign-in. */
-  | "notices.manage";
+  | "notices.manage"
+  /** The newsletter mailing list — personal data, so administrators only. */
+  | "newsletter"
+  /** Contact-form messages — can include complaints and personal details. */
+  | "messages";
 
 /** WordPress capability → portal permission. */
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
@@ -34,6 +38,8 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   "media.upload": (c) => c.has("upload_files"),
   // Matches the plugin's own check for the notice board.
   "notices.manage": (c) => c.has("edit_others_posts"),
+  newsletter: (c) => c.has("manage_options"),
+  messages: (c) => c.has("manage_options"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {
@@ -58,7 +64,7 @@ export function homeFor(perms: readonly Perm[] | undefined): "/admin" | "/staff"
 /** Plain-English labels for the WordPress roles the portal assigns. */
 export const ROLE_LABELS: Record<string, { label: string; description: string }> = {
   administrator: { label: "Administrator", description: "Everything, including bookings, settings and team access" },
-  editor: { label: "Content manager", description: "All posts and comment moderation — no bookings or settings" },
+  editor: { label: "Content manager", description: "All posts and comment moderation, but no bookings or settings" },
   author: { label: "Staff author", description: "Writes and publishes their own posts" },
   contributor: { label: "Staff writer", description: "Writes their own posts; an administrator reviews and publishes" },
   subscriber: { label: "Staff (read only)", description: "Can sign in to the staff area but not write" },

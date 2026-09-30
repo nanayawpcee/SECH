@@ -115,7 +115,7 @@ export function CommentSection({ slug }: { slug: string }) {
       </h2>
       <p style={{ color: "var(--text-light)", fontSize: "0.88rem", marginBottom: "1.75rem" }}>
         Comments are read by hospital staff before they appear. Please don&rsquo;t share
-        personal medical details here — call us on {" "}
+        personal medical details here. Call us on {" "}
         <a href="tel:0322298428" style={{ color: "var(--primary-light)", fontWeight: 600 }}>
           032 229 8428
         </a>{" "}
@@ -196,7 +196,7 @@ export function CommentSection({ slug }: { slug: string }) {
                 margin: "0 0 6px",
               }}
             >
-              Thank you — your comment has been received
+              Thank you, your comment has been received
             </h3>
             <p style={{ margin: 0, color: "var(--text-mid)", fontSize: "0.9rem" }}>
               It will appear on this page once a member of staff has reviewed it.

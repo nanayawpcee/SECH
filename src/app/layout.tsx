@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "St. Elizabeth Catholic Hospital",
-    description: "Healing with Faith & Excellence — Ahafo Region, Ghana",
+    description: "Healing with Faith & Excellence in the Ahafo Region, Ghana",
     url: "https://sech-gh.org",
     siteName: "SECH Ghana",
     locale: "en_GH",

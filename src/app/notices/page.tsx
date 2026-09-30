@@ -15,7 +15,7 @@ async function getHeadlines() {
 export async function generateMetadata(): Promise<Metadata> {
   const headlines = await getHeadlines();
   const n = headlines?.length ?? 0;
-  const title = "Staff notice board — St. Elizabeth Catholic Hospital";
+  const title = "Staff notice board | St. Elizabeth Catholic Hospital";
   const description = n
     ? `${n} current notice${n === 1 ? "" : "s"} for SECH staff. Sign in to read the details.`
     : "Notices for St. Elizabeth Catholic Hospital staff.";

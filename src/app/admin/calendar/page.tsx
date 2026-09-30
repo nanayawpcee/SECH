@@ -305,7 +305,7 @@ function ApptRow({ b }: { b: AdminBooking }) {
         <div className="ad-cell-main ad-clamp-1">{b.name}</div>
         <div className="ad-cell-sub" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><Clock size={12} />{b.time || "Any time"}</span>
-          <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><Stethoscope size={12} />{b.dept || "—"}</span>
+          <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}><Stethoscope size={12} />{b.dept || "No department"}</span>
         </div>
       </div>
       <StatusBadge status={b.status} />
