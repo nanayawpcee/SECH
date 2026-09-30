@@ -1,4 +1,16 @@
 {
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/posts/route": "app/api/posts/route.js",
   "/page": "app/page.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js"
+  "/api/notices/route": "app/api/notices/route.js",
+  "/api/contact/route": "app/api/contact/route.js",
+  "/api/bookings/route": "app/api/bookings/route.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/api/comments/pending/route": "app/api/comments/pending/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/settings/route": "app/api/settings/route.js",
+  "/api/newsletter/route": "app/api/newsletter/route.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/newsletter/page": "app/admin/newsletter/page.js"
 }

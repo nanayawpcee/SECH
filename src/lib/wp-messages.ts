@@ -1,5 +1,8 @@
 /** Contact-form messages — shapes, labels and GraphQL documents (plugin 1.5.0+). */
 
+/** The contact form is for short enquiries; longer ones go to the hospital's email. */
+export const MESSAGE_MAX = 500;
+
 export type MessageTopic =
   | "general" | "appointments" | "feedback" | "complaint" | "billing" | "records" | "media" | "other";
 

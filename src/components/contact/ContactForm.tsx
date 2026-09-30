@@ -4,10 +4,10 @@ import "@/styles/contact.css";
 import { useId, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Send, ShieldCheck } from "lucide-react";
 import { SITE } from "@/lib/data";
-import { MESSAGE_TOPICS, type MessageTopic } from "@/lib/wp-messages";
+import { MESSAGE_MAX, MESSAGE_TOPICS, type MessageTopic } from "@/lib/wp-messages";
 
 const EMPTY = { name: "", phone: "", email: "", topic: "general" as MessageTopic, message: "" };
-const MAX = 3000;
+const MAX = MESSAGE_MAX;
 
 type Errors = Partial<Record<keyof typeof EMPTY | "contact", string>>;
 
@@ -128,8 +128,19 @@ export function ContactForm({ theme = "light", compact = false }: { theme?: "lig
         <textarea {...field("message")} className="ct-input ct-textarea" rows={compact ? 3 : 5} value={form.message} maxLength={MAX}
           onChange={(e) => set("message", e.target.value)} />
         <div className="ct-under">
-          {err("message") ?? <span />}
-          <span className="ct-count" aria-live="polite">{form.message.length > MAX - 300 ? `${MAX - form.message.length} characters left` : ""}</span>
+          {err("message") ?? (
+            <span className="ct-hint">
+              {form.message.length >= MAX ? "That’s the limit. " : "Keep it short. "}
+              For longer enquiries, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+            </span>
+          )}
+          <span
+            className="ct-count"
+            data-state={form.message.length >= MAX ? "full" : form.message.length >= MAX - 50 ? "near" : undefined}
+            aria-live={form.message.length >= MAX - 50 ? "polite" : "off"}
+          >
+            {form.message.length}/{MAX}
+          </span>
         </div>
       </div>
 

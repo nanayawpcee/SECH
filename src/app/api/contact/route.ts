@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { requirePerm } from "@/lib/access";
+import { SITE } from "@/lib/data";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { wpGraphQL, toErrorResponse, WpGraphQLError } from "@/lib/wp-graphql";
 import { isPlausibleEmail } from "@/lib/wp-newsletter";
 import {
   MESSAGES_QUERY,
+  MESSAGE_MAX,
   MESSAGE_TOPICS,
   SUBMIT_MESSAGE,
   isMissingMessagesPlugin,
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
   const name = String(body.name ?? "").trim().slice(0, 80);
   const email = String(body.email ?? "").trim().toLowerCase();
   const phone = String(body.phone ?? "").trim().slice(0, 30);
-  const message = String(body.message ?? "").trim().slice(0, 3000);
+  const message = String(body.message ?? "").trim();
   const topic = MESSAGE_TOPICS.some((t) => t.value === body.topic) ? String(body.topic) : "general";
 
   if (!name) return NextResponse.json({ error: "Please tell us your name." }, { status: 400 });
@@ -55,6 +57,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please give an email address or phone number so we can reply." }, { status: 400 });
   }
   if (message.length < 5) return NextResponse.json({ error: "Please write your message." }, { status: 400 });
+  if (message.length > MESSAGE_MAX) {
+    return NextResponse.json(
+      { error: `Please keep your message under ${MESSAGE_MAX} characters. For longer enquiries, email ${SITE.email}.` },
+      { status: 400 },
+    );
+  }
 
   if (rateLimited(request)) {
     return NextResponse.json({ error: "You’ve sent several messages already. Please wait a few minutes, or call us." }, { status: 429 });
