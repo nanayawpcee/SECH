@@ -4,12 +4,22 @@ export const SITE = {
   shortName: "SECH",
   url: "https://sech-gh.org",
   tagline: "Healing with Faith & Excellence",
-  phone: " 032 229 8428",
+  /** Administration office (the secretary). Answered Mon to Fri, 8am to 5pm
+   *  only: never offer it for emergencies. */
+  phone: "032 229 8428",
+  phoneHours: "Mon to Fri, 8am to 5pm",
+  /** Emergency lines, answered 24 hours a day, every day. */
+  emergencyPhones: ["050 870 5607", "059 183 9622"],
   email: "info@sech-gh.org",
   address: "Hwidiem, Asutifi South District, Ahafo Region, Ghana",
   hours: "24 hours, 7 days a week",
   chag: true,
 };
+
+/** A tel: link that works from any SIM: "050 870 5607" -> "tel:+233508705607". */
+export function telHref(number: string) {
+  return `tel:+233${number.replace(/\D/g, "").replace(/^0/, "")}`;
+}
 
 // ─── Services ──────────────────────────────────────────────────
 export const SERVICES = [
@@ -98,7 +108,7 @@ export const SERVICES = [
     slug: "ENT",
     icon: "/icons/ent.png",
     title: "Ear, Nose & Throat Services",
-    image: "/images/ent.png",
+    image: "/images/ent-exam.jpg",
     shortDesc: "Specialised care for ear, nose, and throat conditions.",
     fullDesc:
       "The SECH ENT department provides comprehensive care for a wide range of ear, nose, and throat conditions. Our specialists offer both medical and surgical interventions to ensure optimal patient outcomes.",

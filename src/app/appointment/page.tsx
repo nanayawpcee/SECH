@@ -4,7 +4,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { AppointmentPageForm } from "@/components/ui/AppointmentPageForm";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
-import { SITE, DEPARTMENTS } from "@/lib/data";
+import { SITE, DEPARTMENTS, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Book an Appointment",
@@ -150,12 +150,30 @@ export default function AppointmentPage() {
                     marginBottom: 4,
                   }}
                 >
-                  {SITE.phone}
+                  <a href={telHref(SITE.phone)} style={{ color: "#fff", textDecoration: "none" }}>{SITE.phone}</a>
                 </div>
                 <div
                   style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.8rem" }}
                 >
-                  Available 24 / 7 for emergencies
+                  Administration office, {SITE.phoneHours}
+                </div>
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 12,
+                    borderTop: "1px solid rgba(255,255,255,0.14)",
+                    color: "rgba(255,255,255,0.75)",
+                    fontSize: "0.8rem",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Emergency, 24 / 7:{" "}
+                  {SITE.emergencyPhones.map((n, i) => (
+                    <span key={n}>
+                      {i > 0 && " or "}
+                      <a href={telHref(n)} style={{ color: "#fff", fontWeight: 700 }}>{n}</a>
+                    </span>
+                  ))}
                 </div>
               </div>
 

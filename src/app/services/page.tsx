@@ -7,7 +7,7 @@ import { CalendarCheck, DoorOpen, MessageCircle, Phone, ShieldCheck, Siren } fro
 import { PageHero } from "@/components/ui/PageHero";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { ServicesExplorer, type Category, type ServiceTile } from "@/components/services/ServicesExplorer";
-import { DEPARTMENT_GRID_DATA, SERVICES, SITE } from "@/lib/data";
+import { DEPARTMENT_GRID_DATA, SERVICES, SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Our Services",
@@ -53,8 +53,10 @@ export default function ServicesPage() {
     category: categoryOf.get(s.slug) ?? "general",
   }));
 
-  const phone = SITE.phone.trim();
-  const tel = `tel:${phone.replace(/\s+/g, "")}`;
+  // Office line for questions (weekday hours); the 24-hour line for emergencies.
+  const phone = SITE.phone;
+  const tel = telHref(phone);
+  const emergencyPhone = SITE.emergencyPhones[0];
 
   return (
     <>
@@ -91,7 +93,7 @@ export default function ServicesPage() {
                 <span className="sv-step-icon"><Siren size={22} aria-hidden="true" /></span>
                 <h3>Emergency</h3>
                 <p>Our Emergency Unit is open 24 hours a day. Come straight in, or call ahead.</p>
-                <a href={tel} className="sv-step-link">Call {phone}</a>
+                <a href={telHref(emergencyPhone)} className="sv-step-link">Call {emergencyPhone}</a>
               </div>
             </div>
             <p className="sv-nhis">
@@ -103,10 +105,12 @@ export default function ServicesPage() {
           <section className="sv-help" aria-labelledby="sv-help-title">
             <div>
               <h2 id="sv-help-title">Not sure which service you need?</h2>
-              <p>Tell us what’s wrong and we’ll point you to the right department.</p>
+              <p>Tell us what’s wrong and we’ll point you to the right department. The office is open {SITE.phoneHours}.</p>
             </div>
             <div className="sv-help-actions">
-              <a href={tel} className="sv-btn sv-btn--light"><Phone size={16} aria-hidden="true" />Call {phone}</a>
+              <a href={tel} className="sv-btn sv-btn--light" title={`Administration office, ${SITE.phoneHours}`}>
+                <Phone size={16} aria-hidden="true" />Call {phone}
+              </a>
               <Link href="/contact" className="sv-btn sv-btn--gold"><MessageCircle size={16} aria-hidden="true" />Send us a message</Link>
             </div>
           </section>

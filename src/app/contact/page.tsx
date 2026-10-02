@@ -18,7 +18,7 @@ import {
 import { PageHero } from "@/components/ui/PageHero";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
-import { SITE } from "@/lib/data";
+import { SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -33,8 +33,9 @@ const MAPS_PLACE =
 const MAPS_DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${LAT_LNG}`;
 
 export default function ContactPage() {
-  const phone = SITE.phone.trim();
-  const tel = `tel:${phone.replace(/\s+/g, "")}`;
+  // The office line closes at 5pm and at weekends; emergencies use the 24-hour lines.
+  const officePhone = SITE.phone;
+  const officeTel = telHref(officePhone);
 
   return (
     <>
@@ -49,13 +50,18 @@ export default function ContactPage() {
         <div className="ct-container">
           {/* The four ways people most often need to reach us. */}
           <div className="ct-quick">
-            <a href={tel} className="ct-card" data-tone="emergency">
+            <div className="ct-card" data-tone="emergency">
               <span className="ct-card-icon"><Siren size={22} aria-hidden="true" /></span>
               <span className="ct-card-label">Emergency, 24/7</span>
-              <span className="ct-card-value">{phone}</span>
-              <span className="ct-card-note">Our Emergency Unit never closes. Call, or come straight in.</span>
-              <span className="ct-card-cta">Call now <ArrowRight size={15} aria-hidden="true" /></span>
-            </a>
+              <span className="ct-card-lines">
+                {SITE.emergencyPhones.map((n) => (
+                  <a key={n} href={telHref(n)} className="ct-card-value ct-card-call" aria-label={`Call the emergency line ${n}`}>
+                    <Phone size={16} aria-hidden="true" />{n}
+                  </a>
+                ))}
+              </span>
+              <span className="ct-card-note">Answered day and night, every day. Or come straight to our Emergency Unit.</span>
+            </div>
             <a href={`mailto:${SITE.email}`} className="ct-card">
               <span className="ct-card-icon"><Mail size={22} aria-hidden="true" /></span>
               <span className="ct-card-label">Email</span>
@@ -112,6 +118,10 @@ export default function ContactPage() {
                   <ul className="ct-hours" aria-label="Opening hours">
                     <li><span>Emergency Unit</span><strong>24 hours, every day</strong></li>
                     <li><span>Hospital</span><strong>{SITE.hours}</strong></li>
+                    <li>
+                      <span>Administration office</span>
+                      <strong>{SITE.phoneHours}<br /><a href={officeTel}>{officePhone}</a></strong>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -124,9 +134,12 @@ export default function ContactPage() {
                   <li><FileText size={18} aria-hidden="true" />Previous medical records, test results or referral letters</li>
                   <li><Pill size={18} aria-hidden="true" />Any medicines you are currently taking</li>
                 </ul>
-                <a href={tel} className="ct-btn ct-btn--ghost" style={{ justifySelf: "start" }}>
-                  <Phone size={16} aria-hidden="true" />Questions? Call {phone}
+                <a href={officeTel} className="ct-btn ct-btn--ghost" style={{ justifySelf: "start" }}>
+                  <Phone size={16} aria-hidden="true" />Questions? Call the office, {officePhone}
                 </a>
+                <p className="ct-office-hours">
+                  The office is open {SITE.phoneHours}, closed on public holidays.
+                </p>
               </div>
             </div>
           </div>

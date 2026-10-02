@@ -1,5 +1,5 @@
-import { Siren } from "lucide-react";
-import { SITE } from "@/lib/data";
+import { Phone, Siren } from "lucide-react";
+import { SITE, telHref } from "@/lib/data";
 
 export function EmergencyBanner() {
   return (
@@ -25,15 +25,22 @@ export function EmergencyBanner() {
           <div>
             <div className="emergency-title">24 / 7 Emergency Services</div>
             <div className="emergency-sub">
-              Our emergency team is always ready. Don't wait ・ call us
-              immediately.
+              Our emergency team is always ready, day and night. Don’t wait:
+              call us now.
             </div>
           </div>
         </div>
 
-        <a href={`tel:${SITE.phone}`} className="emergency-cta">
-          {SITE.phone}
-        </a>
+        {/* The 24-hour emergency lines, never the office line, which closes
+            at 5pm and on weekends. */}
+        <div className="emergency-ctas">
+          {SITE.emergencyPhones.map((n) => (
+            <a key={n} href={telHref(n)} className="emergency-cta" aria-label={`Call the emergency line ${n}`}>
+              <Phone size={17} strokeWidth={2.4} aria-hidden="true" />
+              {n}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

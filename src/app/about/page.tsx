@@ -3,7 +3,7 @@ import Image from "next/image";
 import { PageHero } from "@/components/ui/PageHero";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
-import { SITE, TEAM } from "@/lib/data";
+import { SITE, TEAM, telHref } from "@/lib/data";
 import { StatsBar } from "@/components/sections/StatsBar";
 import { LinkedInIcon } from "@/components/ui/LinkedInIcon";
 import { Mail, Phone } from "lucide-react";
@@ -18,7 +18,7 @@ const UNDER_CONSTRUCTION = true;
 
 /** Members without their own contact details reach the hospital's lines. */
 const HOSPITAL_EMAIL = SITE.email;
-const HOSPITAL_TEL = `tel:${SITE.phone.replace(/\s+/g, "")}`;
+const HOSPITAL_TEL = telHref(SITE.phone); // office line, weekdays
 
 export const metadata: Metadata = {
   title: "About Us",

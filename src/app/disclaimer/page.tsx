@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle, Phone } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
-import { SITE } from "@/lib/data";
+import { SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Disclaimer & Privacy",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Terms of use, medical disclaimer, cookies and how St. Elizabeth Catholic Hospital handles the information you give us through this website.",
 };
 
-const LAST_UPDATED = "30 September 2026";
+const LAST_UPDATED = "2 October 2026";
 
 const SECTIONS = [
   { id: "about", title: "About this page" },
@@ -27,8 +27,15 @@ const SECTIONS = [
 ];
 
 export default function DisclaimerPage() {
-  const phone = SITE.phone.trim();
-  const tel = `tel:${phone.replace(/\s+/g, "")}`;
+  // Office line: weekday office hours only. Emergencies use the 24-hour lines.
+  const phone = SITE.phone;
+  const tel = telHref(phone);
+  const emergency = (
+    <>
+      <a href={telHref(SITE.emergencyPhones[0])}>{SITE.emergencyPhones[0]}</a> or{" "}
+      <a href={telHref(SITE.emergencyPhones[1])}>{SITE.emergencyPhones[1]}</a>
+    </>
+  );
   const mail = <a href={`mailto:${SITE.email}`}>{SITE.email}</a>;
 
   return (
@@ -62,8 +69,8 @@ export default function DisclaimerPage() {
               <div>
                 <strong>In an emergency, do not use this website.</strong>
                 <span>
-                  Call us on <a href={tel}>{phone}</a> or come straight to our Emergency Unit, open 24 hours a day,
-                  7 days a week.
+                  Call our emergency lines, {emergency}, or come straight to our Emergency Unit, open 24 hours a
+                  day, 7 days a week.
                 </span>
               </div>
             </div>
@@ -95,7 +102,7 @@ export default function DisclaimerPage() {
                 <li>Never ignore professional medical advice, or delay seeking it, because of something you read here.</li>
                 <li>
                   Do not send urgent or detailed medical information through the website&rsquo;s forms or comments.
-                  They are not monitored around the clock. Please phone us instead on <a href={tel}>{phone}</a>.
+                  They are not monitored around the clock. For anything urgent, call our emergency lines, {emergency}.
                 </li>
               </ul>
               <p>
@@ -171,8 +178,8 @@ export default function DisclaimerPage() {
               <p>
                 We handle this information in line with Ghana&rsquo;s Data Protection Act, 2012 (Act 843). We do not
                 sell it, and we do not share it with anyone outside the hospital except where the law requires us to.
-                You can ask to see, correct or delete the information we hold about you by emailing {mail} or calling{" "}
-                <a href={tel}>{phone}</a>.
+                You can ask to see, correct or delete the information we hold about you by emailing {mail} or calling
+                the administration office on <a href={tel}>{phone}</a> ({SITE.phoneHours}).
               </p>
             </section>
 
@@ -241,7 +248,7 @@ export default function DisclaimerPage() {
                 <div>
                   <strong>Questions about this page?</strong>
                   <span>
-                    Contact {SITE.name}, {SITE.address}.
+                    Contact {SITE.name}, {SITE.address}. The administration office is open {SITE.phoneHours}.
                   </span>
                 </div>
                 <a href={tel} className="lg-btn">

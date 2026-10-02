@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { HERO_SLIDES } from "@/lib/data";
+import { HERO_SLIDES, SITE, telHref } from "@/lib/data";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
 import { PatternField } from "@/components/ui/PatternField";
+import { Siren } from "lucide-react";
 
 export function HeroCarousel() {
   const [current, setCurrent] = useState(0);
@@ -108,10 +109,12 @@ export function HeroCarousel() {
             </Link>
           )}
           <a
-            href="tel:+233322298428"
+            href={telHref(SITE.emergencyPhones[0])}
             style={{
-              display: "inline-block",
-              padding: "14px 32px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "14px 28px",
               background: "transparent",
               color: "#fff",
               border: "1.5px solid rgba(255,255,255,0.38)",
@@ -127,8 +130,10 @@ export function HeroCarousel() {
             onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) =>
               (e.currentTarget.style.borderColor = "rgba(255,255,255,0.38)")
             }
+            aria-label={`Emergency line, 24 hours: ${SITE.emergencyPhones[0]}`}
           >
-            +233 322 298 428
+            <Siren size={17} aria-hidden="true" />
+            Emergency {SITE.emergencyPhones[0]}
           </a>
         </div>
       </div>

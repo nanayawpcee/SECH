@@ -1128,6 +1128,24 @@ iframe {
   transition: transform 0.2s, box-shadow 0.2s
 }
 
+.emergency-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.emergency-ctas .emergency-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+}
+
+@media (max-width: 480px) {
+  .emergency-ctas { width: 100%; }
+  .emergency-ctas .emergency-cta { flex: 1 1 100%; justify-content: center; }
+}
+
 .emergency-cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
@@ -1489,8 +1507,9 @@ iframe {
 /* Whenever all four don't fit in a row (tablets and phones): rather than
    cards stranded in the middle, a swipeable row that starts in line with the
    heading and runs to the edge of the screen, with the next card peeking in.
-   Cards snap into place. Only very small screens stack them. */
-@container (min-width: 340px) and (max-width: 1259px) {
+   Cards snap into place. Phones 375px wide and narrower stack them instead
+   (the container is the screen less 2 x 16px, so 344px = a 376px screen). */
+@container (min-width: 344px) and (max-width: 1259px) {
   .services-grid {
     display: flex;
     justify-content: flex-start;
@@ -1509,8 +1528,9 @@ iframe {
   .service-cell { flex: 0 0 var(--service-card-w); scroll-snap-align: start; }
   .services-container .services-rail-nav { display: flex; }
 }
-/* Phones narrower than one card: shrink it to fit rather than overflow. */
-@container (max-width: 299px) {
+/* Small phones (375px screens and below): one card per row, stacked
+   vertically, each the full width so it lines up with the heading. */
+@container (max-width: 343px) {
   .services-grid { --service-card-w: 100cqi; }
 }
 /* Browsers without container queries fall back to the window width. */

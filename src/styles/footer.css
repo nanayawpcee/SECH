@@ -81,6 +81,10 @@
 }
 .ft-contact svg { color: #E8B84B; flex-shrink: 0; }
 a.ft-contact:hover { color: #fff; }
+.ft-contact--emergency { color: rgba(255, 255, 255, 0.82); font-weight: 600; }
+.ft-contact--emergency svg { color: #F08A8D; }
+.ft-contact--emergency a { color: #fff; font-weight: 700; text-decoration: none; }
+.ft-contact--emergency a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .ft-legal { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
 .ft-legal a { color: rgba(255, 255, 255, 0.6); font-size: 0.76rem; text-decoration: none; transition: color 0.2s; }

@@ -3,7 +3,7 @@
 import "@/styles/contact.css";
 import { useId, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Send, ShieldCheck } from "lucide-react";
-import { SITE } from "@/lib/data";
+import { SITE, telHref } from "@/lib/data";
 import { MESSAGE_MAX, MESSAGE_TOPICS, type MessageTopic } from "@/lib/wp-messages";
 
 const EMPTY = { name: "", phone: "", email: "", topic: "general" as MessageTopic, message: "" };
@@ -154,13 +154,14 @@ export function ContactForm({ theme = "light", compact = false }: { theme?: "lig
         {compact ? (
           <span>
             No medical details, please. Emergencies: call{" "}
-            <a href={`tel:${SITE.phone.replace(/\s+/g, "")}`}>{SITE.phone.trim()}</a>.{" "}
+            <a href={telHref(SITE.emergencyPhones[0])}>{SITE.emergencyPhones[0]}</a>.{" "}
             <a href="/disclaimer#personal-information">Privacy</a>
           </span>
         ) : (
           <span>
             Please don’t include detailed medical information. In an emergency, call{" "}
-            <a href={`tel:${SITE.phone.replace(/\s+/g, "")}`}>{SITE.phone.trim()}</a>. See how we use your details in our{" "}
+            <a href={telHref(SITE.emergencyPhones[0])}>{SITE.emergencyPhones[0]}</a> or{" "}
+            <a href={telHref(SITE.emergencyPhones[1])}>{SITE.emergencyPhones[1]}</a>, day or night. See how we use your details in our{" "}
             <a href="/disclaimer#personal-information">privacy notes</a>.
           </span>
         )}

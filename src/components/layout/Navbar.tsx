@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
-import { SITE } from "@/lib/data";
 import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
@@ -208,6 +207,7 @@ export function Navbar() {
             >
               Book Appointment
             </button>
+
           </div>
         )}
       </nav>

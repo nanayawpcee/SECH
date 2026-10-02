@@ -3,8 +3,8 @@
 import "@/styles/footer.css";
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { SITE } from "@/lib/data";
+import { Mail, MapPin, Phone, Siren } from "lucide-react";
+import { SITE, telHref } from "@/lib/data";
 import { NewsletterSignup } from "@/components/layout/NewsletterSignup";
 import type { NewsletterIssue } from "@/lib/wp-newsletter";
 
@@ -203,9 +203,19 @@ export function Footer({ newsletter = null }: { newsletter?: NewsletterIssue | n
             flexWrap: "wrap",
           }}
         >
-          <a href={`tel:${SITE.phone.replace(/\s+/g, "")}`} className="ft-contact">
+          <span className="ft-contact ft-contact--emergency">
+            <Siren size={15} aria-hidden="true" />
+            Emergency, 24/7:{" "}
+            {SITE.emergencyPhones.map((n, i) => (
+              <span key={n}>
+                {i > 0 && " / "}
+                <a href={telHref(n)}>{n}</a>
+              </span>
+            ))}
+          </span>
+          <a href={telHref(SITE.phone)} className="ft-contact">
             <Phone size={15} aria-hidden="true" />
-            {SITE.phone.trim()}
+            Office {SITE.phone} ({SITE.phoneHours})
           </a>
           <a href={`mailto:${SITE.email}`} className="ft-contact">
             <Mail size={15} aria-hidden="true" />

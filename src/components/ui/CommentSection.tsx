@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SITE, telHref } from "@/lib/data";
 
 interface PublicComment {
   id: string;
@@ -115,11 +116,11 @@ export function CommentSection({ slug }: { slug: string }) {
       </h2>
       <p style={{ color: "var(--text-light)", fontSize: "0.88rem", marginBottom: "1.75rem" }}>
         Comments are read by hospital staff before they appear. Please don&rsquo;t share
-        personal medical details here. Call us on {" "}
-        <a href="tel:0322298428" style={{ color: "var(--primary-light)", fontWeight: 600 }}>
-          032 229 8428
-        </a>{" "}
-        instead.
+        personal medical details here. In an emergency, call{" "}
+        <a href={telHref(SITE.emergencyPhones[0])} style={{ color: "var(--primary-light)", fontWeight: 600 }}>
+          {SITE.emergencyPhones[0]}
+        </a>
+        , day or night.
       </p>
 
       {loading ? (
