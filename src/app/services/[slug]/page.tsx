@@ -6,6 +6,8 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 import { HoverLink } from "@/components/ui/HoverLink";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import fs from "node:fs";
 import path from "node:path";
 import { Activity, Check, ScanLine, Stethoscope, type LucideIcon } from "lucide-react";
@@ -32,7 +34,23 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const svc = SERVICES.find((s) => s.slug === params.slug);
   if (!svc) return { title: "Service Not Found" };
-  return { title: svc.title, description: svc.shortDesc };
+  const url = `/services/${svc.slug}`;
+  // Share previews use the service photo when there is one, else the site default.
+  const photo = svc.image && (/^https?:\/\//.test(svc.image) || iconExists(svc.image)) ? svc.image : null;
+  return {
+    title: svc.title,
+    description: svc.shortDesc,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: "SECH Ghana",
+      locale: "en_GH",
+      title: `${svc.title} | St. Elizabeth Catholic Hospital`,
+      description: svc.shortDesc,
+      images: photo ? [{ url: photo, alt: svc.title }] : [DEFAULT_SHARE_IMAGE],
+    },
+  };
 }
 
 export default function ServiceDetailPage({ params }: Props) {
@@ -43,6 +61,13 @@ export default function ServiceDetailPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Services", path: "/services" },
+          { name: svc.title, path: `/services/${svc.slug}` },
+        ])}
+      />
       <PageHero
         tag="Our Services"
         title={svc.title}

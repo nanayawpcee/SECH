@@ -2,7 +2,9 @@
 export const SITE = {
   name: "St. Elizabeth Catholic Hospital",
   shortName: "SECH",
-  url: "https://sech-gh.org",
+  /** The canonical address: the bare sech-gh.org redirects here, so search
+   *  engines and share previews should always be given the www form. */
+  url: "https://www.sech-gh.org",
   tagline: "Healing with Faith & Excellence",
   /** Administration office (the secretary). Answered Mon to Fri, 8am to 5pm
    *  only: never offer it for emergencies. */
@@ -13,6 +15,10 @@ export const SITE = {
   email: "info@sech-gh.org",
   address: "Hwidiem, Asutifi South District, Ahafo Region, Ghana",
   hours: "24 hours, 7 days a week",
+  /** The hospital's pin on Google Maps. */
+  geo: { lat: 6.9325279, lng: -2.3580684 },
+  mapsUrl:
+    "https://www.google.com/maps/place/St.+Elizabeth+Catholic+Hospital/@6.9325332,-2.3606433,17z/data=!4m6!3m5!1s0xfdb2e3e952a5dcd:0xaaa7c226d485c7f7!8m2!3d6.9325279!4d-2.3580684!16s%2Fg%2F11cktmsnnr",
   chag: true,
 };
 

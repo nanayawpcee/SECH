@@ -11,6 +11,9 @@ import { ArticleShare } from "@/components/news/ArticleShare";
 import { CategoryChip, NewsCard } from "@/components/news/NewsCard";
 import { getNewsArticle, getNewsItems } from "@/lib/news-data";
 import { formatNewsDate } from "@/lib/news";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { absoluteUrl, breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
+import { SITE } from "@/lib/data";
 
 interface Props {
   params: { slug: string };
@@ -58,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: article.title,
     description: article.excerpt,
+    alternates: { canonical: `/news/${article.slug}` },
     // A page's openGraph replaces the root one rather than merging, so the
     // site-wide fields are repeated here.
     openGraph: {
@@ -68,9 +72,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: article.title,
       description: article.excerpt,
       publishedTime: article.date,
-      images,
+      images: images ?? [DEFAULT_SHARE_IMAGE],
     },
-    twitter: { card: images ? "summary_large_image" : "summary", title: article.title, description: article.excerpt },
+    twitter: { card: "summary_large_image", title: article.title, description: article.excerpt },
   };
 }
 
@@ -82,8 +86,35 @@ export default async function ArticlePage({ params }: Props) {
   // A tall poster would fill the whole screen at full width; keep it framed.
   const portrait = article.image ? article.image.height > article.image.width : false;
 
+  const articleUrl = absoluteUrl(`/news/${article.slug}`);
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    mainEntityOfPage: articleUrl,
+    url: articleUrl,
+    headline: article.title.slice(0, 110),
+    description: article.excerpt || undefined,
+    datePublished: article.date,
+    image: [article.image ? article.image.src : absoluteUrl(DEFAULT_SHARE_IMAGE.url)],
+    articleSection: article.category,
+    author: { "@type": "Organization", name: SITE.name, url: absoluteUrl("/") },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      logo: { "@type": "ImageObject", url: absoluteUrl("/images/logo.png") },
+    },
+  };
+
   return (
     <>
+      <JsonLd data={articleLd} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "News & Announcements", path: "/news" },
+          { name: article.title, path: `/news/${article.slug}` },
+        ])}
+      />
       <header className="nw-article-hero">
         <div className="nw-container nw-article-hero-inner">
           <nav className="nw-crumbs" aria-label="Breadcrumb">

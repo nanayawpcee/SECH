@@ -5,6 +5,7 @@ import { NewsBrowser } from "@/components/news/NewsBrowser";
 import { getNewsItems } from "@/lib/news-data";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/news" },
   title: "News & Announcements",
   description:
     "Stay up to date with the latest news, events, and health updates from St. Elizabeth Catholic Hospital.",

@@ -1,4 +1,5 @@
 import "@/styles/contact.css";
+import "@/styles/faq.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -6,6 +7,7 @@ import {
   CalendarCheck,
   CreditCard,
   FileText,
+  HelpCircle,
   IdCard,
   Mail,
   MapPin,
@@ -18,18 +20,20 @@ import {
 import { PageHero } from "@/components/ui/PageHero";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
+import { FaqList } from "@/components/faq/FaqList";
+import { FEATURED_FAQS } from "@/lib/faq";
 import { SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
     "Get in touch with St. Elizabeth Catholic Hospital, Hwidiem. Call us 24/7, send a message, or get directions to the hospital.",
+  alternates: { canonical: "/contact" },
 };
 
 // The hospital's pin on Google Maps.
-const LAT_LNG = "6.9325279,-2.3580684";
-const MAPS_PLACE =
-  "https://www.google.com/maps/place/St.+Elizabeth+Catholic+Hospital/@6.9325332,-2.3606433,17z/data=!4m6!3m5!1s0xfdb2e3e952a5dcd:0xaaa7c226d485c7f7!8m2!3d6.9325279!4d-2.3580684!16s%2Fg%2F11cktmsnnr";
+const LAT_LNG = `${SITE.geo.lat},${SITE.geo.lng}`;
+const MAPS_PLACE = SITE.mapsUrl;
 const MAPS_DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${LAT_LNG}`;
 
 export default function ContactPage() {
@@ -143,6 +147,18 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
+
+          <section className="fq-teaser" aria-labelledby="ct-faq-title">
+            <div>
+              <span className="fq-teaser-eyebrow">Before you write</span>
+              <h2 id="ct-faq-title">Common questions</h2>
+              <p>Your answer may already be here. For everything else, send us a message above.</p>
+              <Link href="/faq" className="fq-btn fq-btn--ghost">
+                <HelpCircle size={16} aria-hidden="true" />See all questions
+              </Link>
+            </div>
+            <FaqList items={FEATURED_FAQS} />
+          </section>
         </div>
       </section>
 

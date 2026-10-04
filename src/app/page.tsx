@@ -6,7 +6,14 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { NewsSection } from "@/components/sections/NewsSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { PhotoCarousel } from "@/components/sections/PhotoCarousel";
+import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getNewsItems } from "@/lib/news-data";
+import { hospitalJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   // Fetch data on the server side
@@ -14,6 +21,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={hospitalJsonLd()} />
       <HeroCarousel />
       <StatsBar />
       <PhotoCarousel />

@@ -21,6 +21,7 @@ const HOSPITAL_EMAIL = SITE.email;
 const HOSPITAL_TEL = telHref(SITE.phone); // office line, weekdays
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About Us",
   description:
     "Learn about the history, mission, and team behind St. Elizabeth Catholic Hospital in Hwidiem, Ahafo Region, Ghana.",

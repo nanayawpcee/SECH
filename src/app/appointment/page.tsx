@@ -7,6 +7,7 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { SITE, DEPARTMENTS, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/appointment" },
   title: "Book an Appointment",
   description:
     "Request a consultation or specialist appointment at St. Elizabeth Catholic Hospital online. Fast, easy, and confirmed within 24 hours.",

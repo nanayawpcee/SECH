@@ -6,6 +6,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/disclaimer" },
   title: "Disclaimer & Privacy",
   description:
     "Terms of use, medical disclaimer, cookies and how St. Elizabeth Catholic Hospital handles the information you give us through this website.",

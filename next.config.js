@@ -27,6 +27,17 @@ const nextConfig = {
   async redirects() {
     return wpAdminRedirects;
   },
+  // Keeps the portals out of search results. Their layouts are client
+  // components, so they can't export robots metadata; robots.txt must leave
+  // these paths crawlable or search engines never see this header.
+  async headers() {
+    // The shareable notice board also sets robots metadata in its layout; the
+    // header is a second layer that holds even if that metadata is changed.
+    return ['/admin', '/admin/:path*', '/staff', '/staff/:path*', '/notices', '/notices/:path*'].map((source) => ({
+      source,
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }));
+  },
   allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', '192.168.2.82', '10.10.0.218'],
   images: {
     // AVIF first, WebP fallback — pushes delivered photo payloads well below

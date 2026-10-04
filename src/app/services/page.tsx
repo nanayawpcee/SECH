@@ -10,6 +10,7 @@ import { ServicesExplorer, type Category, type ServiceTile } from "@/components/
 import { DEPARTMENT_GRID_DATA, SERVICES, SITE, telHref } from "@/lib/data";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/services" },
   title: "Our Services",
   description:
     "Explore the full range of medical and health services offered at St. Elizabeth Catholic Hospital, from in-patient care to specialist clinics.",

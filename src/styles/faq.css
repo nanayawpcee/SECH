@@ -1,0 +1,123 @@
+/* FAQs: /faq and the "Common questions" strip on /contact. Prefix fq-. */
+
+.fq-page { background: #fff; padding: 3.5rem 0 5rem; }
+.fq-container {
+  width: 100%; max-width: 1100px !important; margin: 0 auto; padding: 0 2rem;
+  display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 4rem; align-items: start;
+}
+
+/* Topic list */
+.fq-toc { align-self: stretch; }
+.fq-toc-inner { position: sticky; top: 90px; }
+.fq-toc-label { display: block; margin-bottom: 12px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-light); }
+.fq-toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid #E2EDE7; }
+.fq-toc a {
+  display: flex; align-items: center; gap: 10px; margin-left: -2px; padding: 8px 0 8px 14px;
+  border-left: 2px solid transparent; font-size: 0.9rem; color: var(--text-mid); text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.fq-toc a svg { flex-shrink: 0; color: var(--primary-light); }
+.fq-toc a:hover { color: var(--primary); border-left-color: var(--accent); }
+
+/* Body */
+.fq-body { max-width: 760px; }
+.fq-emergency {
+  display: flex; gap: 14px; align-items: flex-start; margin-bottom: 2.6rem; padding: 1.1rem 1.25rem;
+  border-radius: 14px; background: #FDF1F1; border: 1px solid #F3C9CA; color: #B0343A;
+}
+.fq-emergency svg { flex-shrink: 0; margin-top: 2px; }
+.fq-emergency strong { display: block; color: #8E2328; }
+.fq-emergency > div > span { display: block; font-size: 0.95rem; color: #5D2A2D; line-height: 1.6; }
+.fq-emergency a { color: #B0343A; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+.fq-topic { scroll-margin-top: 90px; margin-bottom: 2.8rem; }
+.fq-topic h2 {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 1rem;
+  font-family: var(--font-serif); font-size: 1.4rem; font-weight: 800; color: var(--text-dark);
+}
+.fq-topic-icon {
+  display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 12px; background: var(--light-green); color: var(--primary);
+}
+.fq-topic-icon[data-icon="emergency"] { background: #FDF1F1; color: #B0343A; }
+
+/* Questions */
+.fq-list { display: grid; gap: 10px; }
+.fq-item {
+  border: 1px solid #DCEAE3; border-radius: 14px; background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.fq-item:hover { border-color: #BFD8CB; }
+.fq-item[open] { border-color: #BFD8CB; box-shadow: 0 8px 24px rgba(13, 61, 46, 0.07); }
+.fq-item summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 1rem 1.2rem; cursor: pointer; list-style: none;
+  font-weight: 700; font-size: 1rem; line-height: 1.45; color: var(--text-dark);
+}
+.fq-item summary::-webkit-details-marker { display: none; }
+.fq-item summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 14px; }
+.fq-chevron { flex-shrink: 0; color: var(--primary); transition: transform 0.25s ease; }
+.fq-item[open] .fq-chevron { transform: rotate(180deg); }
+.fq-answer { padding: 0 1.2rem 1.15rem; color: var(--text-mid); font-size: 0.97rem; line-height: 1.75; }
+.fq-answer p { margin: 0 0 0.75rem; }
+.fq-answer p:last-of-type { margin-bottom: 0; }
+.fq-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 0.85rem; }
+.fq-link {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700;
+  color: var(--primary); text-decoration: none;
+}
+.fq-link svg { transition: transform 0.2s; }
+.fq-link:hover { color: var(--primary-light); }
+.fq-link:hover svg { transform: translateX(3px); }
+
+/* "Still have a question?" */
+.fq-more {
+  display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+  padding: 1.5rem 1.6rem; border-radius: 18px; background: var(--light-green);
+}
+.fq-more h2 { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.3rem; font-weight: 800; color: var(--text-dark); }
+.fq-more p { margin: 0; color: var(--text-mid); font-size: 0.95rem; }
+.fq-more-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.fq-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px;
+  border-radius: 999px; background: var(--primary); color: #fff; border: 1px solid var(--primary);
+  font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: background 0.2s, color 0.2s;
+}
+.fq-btn:hover { background: var(--primary-light); color: #fff; }
+.fq-btn--ghost { background: transparent; color: var(--primary); }
+.fq-btn--ghost:hover { background: #fff; color: var(--primary); }
+.fq-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Contact page strip */
+.fq-teaser {
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 3rem; align-items: start;
+  margin-top: 3.5rem; padding-top: 3rem; border-top: 1px solid #E2EDE7;
+}
+.fq-teaser-eyebrow { display: block; margin-bottom: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--primary-light); }
+.fq-teaser h2 { margin: 0 0 10px; font-family: var(--font-serif); font-size: 1.7rem; font-weight: 800; line-height: 1.25; color: var(--text-dark); }
+.fq-teaser p { margin: 0 0 1.3rem; color: var(--text-mid); line-height: 1.7; }
+
+@media (max-width: 900px) {
+  .fq-container { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .fq-toc-inner { position: static; padding: 1.1rem 1.25rem; border-radius: 14px; background: var(--off-white); }
+  .fq-toc ol { display: flex; flex-wrap: wrap; gap: 6px; border-left: 0; }
+  .fq-toc a {
+    margin: 0; padding: 7px 12px; border: 1px solid #DCEAE3; border-radius: 999px; background: #fff; font-size: 0.85rem;
+  }
+  .fq-toc a:hover { border-color: var(--accent); }
+  .fq-teaser { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+}
+@media (max-width: 640px) {
+  .fq-page { padding: 2.2rem 0 3.5rem; }
+  .fq-container { padding: 0 16px; }
+  .fq-topic h2 { font-size: 1.2rem; }
+  .fq-item summary { padding: 0.9rem 1rem; font-size: 0.96rem; }
+  .fq-answer { padding: 0 1rem 1rem; font-size: 0.95rem; }
+  .fq-more { padding: 1.3rem; }
+  .fq-teaser { margin-top: 2.5rem; padding-top: 2.2rem; }
+  .fq-teaser h2 { font-size: 1.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fq-chevron, .fq-link svg { transition: none; }
+}

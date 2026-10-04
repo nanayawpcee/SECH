@@ -6,6 +6,7 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { ORG_CHART, countNodes, findPostHolder } from "@/lib/org-chart";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/organogram" },
   title: "Organogram",
   description:
     "The organisational structure of St. Elizabeth Catholic Hospital, part of the Goaso Diocesan Health Service.",

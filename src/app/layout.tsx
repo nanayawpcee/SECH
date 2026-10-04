@@ -5,6 +5,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AdminShellSuppressor } from "../components/layout/AdminShellSuppressor";
 import { wpQuery } from "@/lib/wp-graphql";
 import { CURRENT_NEWSLETTER_QUERY, type NewsletterIssue } from "@/lib/wp-newsletter";
+import { SITE } from "@/lib/data";
+import { DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 
 /**
  * Lora carries every heading on the site via --font-serif.
@@ -25,7 +27,7 @@ const lora = Lora({
 export const metadata: Metadata = {
   // Resolves relative share-preview URLs (icons, og:url) to the live domain
   // instead of localhost.
-  metadataBase: new URL("https://sech-gh.org"),
+  metadataBase: new URL(SITE.url),
   title: {
     default: "St. Elizabeth Catholic Hospital | Hwidiem, Ghana",
     template: "%s | St. Elizabeth Catholic Hospital",
@@ -37,17 +39,25 @@ export const metadata: Metadata = {
     "Ghana",
     "CHAG",
     "Hwidiem",
+    "Ahafo Region",
+    "Asutifi South",
     "healthcare",
     "Catholic hospital",
+    "emergency",
+    "NHIS",
   ],
+  applicationName: SITE.name,
+  // Pages that don't set their own openGraph inherit this one, so it carries no
+  // url: og:url would otherwise point every page at the homepage.
   openGraph: {
     title: "St. Elizabeth Catholic Hospital",
     description: "Healing with Faith & Excellence in the Ahafo Region, Ghana",
-    url: "https://sech-gh.org",
     siteName: "SECH Ghana",
     locale: "en_GH",
     type: "website",
+    images: [DEFAULT_SHARE_IMAGE],
   },
+  twitter: { card: "summary_large_image", images: [DEFAULT_SHARE_IMAGE.url] },
 };
 
 /** The downloadable newsletter offered in the footer; null when none is set
