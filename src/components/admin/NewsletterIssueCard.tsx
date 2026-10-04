@@ -158,7 +158,7 @@ export function NewsletterIssueCard() {
       {!loaded ? (
         <Skeleton h={56} />
       ) : needsPlugin ? (
-        <div className="ad-alert ad-tone-warn" role="status">
+        <div className="po-alert po-tone-warn" role="status">
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>WordPress needs the SECH Portal plugin version 1.6.0 before a newsletter can be offered for download.</span>
         </div>
@@ -169,25 +169,25 @@ export function NewsletterIssueCard() {
               <div className="nli-current">
                 <span className="nli-icon"><FileText size={22} /></span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="ad-cell-main">{current.title}</div>
-                  <div className="ad-cell-sub">
+                  <div className="po-cell-main">{current.title}</div>
+                  <div className="po-cell-sub">
                     {[current.issue, "PDF", formatBytes(current.sizeBytes), current.updatedAt && `set ${day(current.updatedAt)}`].filter(Boolean).join(" · ")}
                   </div>
                 </div>
                 <div className="nli-actions">
-                  <a className="ad-btn ad-btn--sm" href={current.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} />Open</a>
-                  <button type="button" className="ad-btn ad-btn--sm ad-btn--primary" onClick={startEditing}><Replace size={14} />Replace</button>
-                  <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={() => setConfirmClear(true)}><XCircle size={14} />Remove link</button>
+                  <a className="po-btn po-btn--sm" href={current.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} />Open</a>
+                  <button type="button" className="po-btn po-btn--sm po-btn--primary" onClick={startEditing}><Replace size={14} />Replace</button>
+                  <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setConfirmClear(true)}><XCircle size={14} />Remove link</button>
                 </div>
               </div>
             ) : (
               <div className="nli-current">
                 <span className="nli-icon" data-empty><FileText size={22} /></span>
                 <div style={{ flex: 1 }}>
-                  <div className="ad-cell-main">No newsletter offered yet</div>
-                  <div className="ad-cell-sub">Upload the latest issue and the footer shows a download link.</div>
+                  <div className="po-cell-main">No newsletter offered yet</div>
+                  <div className="po-cell-sub">Upload the latest issue and the footer shows a download link.</div>
                 </div>
-                <button type="button" className="ad-btn ad-btn--primary" onClick={startEditing}><Upload size={15} />Add newsletter</button>
+                <button type="button" className="po-btn po-btn--primary" onClick={startEditing}><Upload size={15} />Add newsletter</button>
               </div>
             )
           )}
@@ -195,10 +195,10 @@ export function NewsletterIssueCard() {
           {editing && (
             <div className="nli-editor">
               <div className="nli-row">
-                <div className="ad-field" style={{ flex: "1 1 260px" }}>
-                  <span className="ad-label">PDF file</span>
+                <div className="po-field" style={{ flex: "1 1 260px" }}>
+                  <span className="po-label">PDF file</span>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <select className="ad-select" style={{ flex: "1 1 220px" }} value={pick}
+                    <select className="po-select" style={{ flex: "1 1 220px" }} value={pick}
                       onChange={(e) => setPick(e.target.value ? Number(e.target.value) : "")} aria-label="Choose a PDF">
                       <option value="">Choose a PDF…</option>
                       {pdfs.map((p) => (
@@ -209,23 +209,23 @@ export function NewsletterIssueCard() {
                     </select>
                     <input ref={fileRef} type="file" accept="application/pdf,.pdf" hidden
                       onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-                    <button type="button" className="ad-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                      {uploading ? <><Loader2 size={15} className="ad-spin" />Uploading…</> : <><Upload size={15} />Upload PDF</>}
+                    <button type="button" className="po-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                      {uploading ? <><Loader2 size={15} className="po-spin" />Uploading…</> : <><Upload size={15} />Upload PDF</>}
                     </button>
                   </div>
-                  <span className="ad-hint">Up to 4 MB here. Compress bigger files first, or use the Media Library.</span>
+                  <span className="po-hint">Up to 4 MB here. Compress bigger files first, or use the Media Library.</span>
                 </div>
               </div>
 
               {tooBig && (
-                <div className="ad-alert ad-tone-warn" role="alert">
+                <div className="po-alert po-tone-warn" role="alert">
                   <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
                   <span>
                     That file is over 4 MB, too big to upload here. Either save a smaller version (for example with
                     “Reduce file size” in your PDF app), or upload it in the{" "}
                     <a href="/wp-admin/media-new.php" target="_blank" rel="noopener noreferrer"><strong>WordPress Media Library</strong></a>,
                     then press{" "}
-                    <button type="button" className="ad-btn ad-btn--sm" onClick={() => { setTooBig(false); load(); }}>
+                    <button type="button" className="po-btn po-btn--sm" onClick={() => { setTooBig(false); load(); }}>
                       <RefreshCw size={13} />Refresh list
                     </button>{" "}
                     and choose it above.
@@ -234,27 +234,27 @@ export function NewsletterIssueCard() {
               )}
 
               <div className="nli-row">
-                <label className="ad-field" style={{ flex: "2 1 260px" }}>
-                  <span className="ad-label">Title</span>
-                  <input className="ad-input" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
+                <label className="po-field" style={{ flex: "2 1 260px" }}>
+                  <span className="po-label">Title</span>
+                  <input className="po-input" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
                 </label>
-                <label className="ad-field" style={{ flex: "1 1 200px" }}>
-                  <span className="ad-label">Issue (optional)</span>
-                  <input className="ad-input" value={issue} maxLength={80} placeholder="e.g. Maiden edition, November 2022"
+                <label className="po-field" style={{ flex: "1 1 200px" }}>
+                  <span className="po-label">Issue (optional)</span>
+                  <input className="po-input" value={issue} maxLength={80} placeholder="e.g. Maiden edition, November 2022"
                     onChange={(e) => setIssue(e.target.value)} />
                 </label>
               </div>
 
               {error && (
-                <div className="ad-alert ad-tone-danger" role="alert">
+                <div className="po-alert po-tone-danger" role="alert">
                   <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
                 </div>
               )}
 
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                <button type="button" className="ad-btn ad-btn--ghost" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
-                <button type="button" className="ad-btn ad-btn--primary" onClick={save} disabled={saving || uploading || !pick}>
-                  {saving ? <><Loader2 size={15} className="ad-spin" />Saving…</> : "Save and publish"}
+                <button type="button" className="po-btn po-btn--ghost" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
+                <button type="button" className="po-btn po-btn--primary" onClick={save} disabled={saving || uploading || !pick}>
+                  {saving ? <><Loader2 size={15} className="po-spin" />Saving…</> : "Save and publish"}
                 </button>
               </div>
             </div>

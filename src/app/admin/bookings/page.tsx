@@ -186,10 +186,10 @@ export default function BookingsPage() {
         subtitle="Appointment requests from the website, newest first"
         actions={
           <>
-            <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
-              <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />Refresh
+            <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
+              <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
             </button>
-            <button type="button" className="ad-btn ad-btn--primary" onClick={exportCSV} disabled={!filtered.length}>
+            <button type="button" className="po-btn po-btn--primary" onClick={exportCSV} disabled={!filtered.length}>
               <Download size={15} />Export {filtersOn ? "filtered" : "all"}
             </button>
           </>
@@ -197,7 +197,7 @@ export default function BookingsPage() {
       />
 
       {/* Status tiles double as the status filter. */}
-      <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
+      <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
         {TILES.map((t) => {
           const Icon = t.icon;
           const active = status === t.key;
@@ -205,36 +205,36 @@ export default function BookingsPage() {
             <button
               key={t.key}
               type="button"
-              className={`ad-card ad-card--hover ad-kpi ad-tone-${t.tone} ad-bk-tile`}
+              className={`po-card po-card--hover po-kpi po-tone-${t.tone} po-bk-tile`}
               data-active={active}
               aria-pressed={active}
               onClick={() => setStatus(t.key)}
             >
-              <div className="ad-kpi-top">
-                <span className="ad-kpi-label">{t.label}</span>
-                <span className="ad-kpi-icon"><Icon size={17} /></span>
+              <div className="po-kpi-top">
+                <span className="po-kpi-label">{t.label}</span>
+                <span className="po-kpi-icon"><Icon size={17} /></span>
               </div>
-              <div className="ad-kpi-value">{counts[t.key]}</div>
+              <div className="po-kpi-value">{counts[t.key]}</div>
             </button>
           );
         })}
       </div>
 
-      <section className="ad-card">
-        <div className="ad-toolbar">
-          <div className="ad-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
+      <section className="po-card">
+        <div className="po-toolbar">
+          <div className="po-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="ad-input" placeholder="Name, reference, phone or email" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search bookings" />
+            <input className="po-input" placeholder="Name, reference, phone or email" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search bookings" />
           </div>
-          <select className="ad-select" style={{ width: 190 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
+          <select className="po-select" style={{ width: 190 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
             <option value="all">All departments</option>
             {depts.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
-          <select className="ad-select" style={{ width: 150 }} value={type} onChange={(e) => setType(e.target.value as typeof type)} aria-label="Type">
+          <select className="po-select" style={{ width: 150 }} value={type} onChange={(e) => setType(e.target.value as typeof type)} aria-label="Type">
             <option value="all">All types</option>
             {(Object.keys(TYPE_META) as AdminBooking["type"][]).map((t) => <option key={t} value={t}>{TYPE_META[t].label}</option>)}
           </select>
-          <select className="ad-select" style={{ width: 160 }} value={when} onChange={(e) => setWhen(e.target.value as When)} aria-label="Appointment date">
+          <select className="po-select" style={{ width: 160 }} value={when} onChange={(e) => setWhen(e.target.value as When)} aria-label="Appointment date">
             <option value="all">Any date</option>
             <option value="today">Today</option>
             <option value="week">Next 7 days</option>
@@ -243,7 +243,7 @@ export default function BookingsPage() {
           </select>
           <button
             type="button"
-            className="ad-btn ad-btn--ghost"
+            className="po-btn po-btn--ghost"
             onClick={() => setSort((s) => (s === "received" ? "appointment" : "received"))}
             title="Change sort order"
             style={{ marginLeft: "auto" }}
@@ -252,30 +252,30 @@ export default function BookingsPage() {
             {sort === "received" ? "Newest request" : "Appointment date"}
           </button>
           {filtersOn && (
-            <button type="button" className="ad-btn ad-btn--ghost" onClick={clearFilters}><X size={15} />Clear</button>
+            <button type="button" className="po-btn po-btn--ghost" onClick={clearFilters}><X size={15} />Clear</button>
           )}
         </div>
-        <hr className="ad-divider" />
+        <hr className="po-divider" />
 
         {bookingsLoading && bookings.length === 0 ? (
           <SkeletonRows rows={6} cols={6} />
         ) : bookingsError ? (
           <EmptyState icon={AlertTriangle} title="Couldn’t load bookings" text={bookingsError}
-            action={<button type="button" className="ad-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>} />
+            action={<button type="button" className="po-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>} />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={ClipboardList}
             title={bookings.length ? "No bookings match" : "No bookings yet"}
             text={bookings.length ? "Try widening the filters." : "Requests made through the website’s booking form appear here."}
-            action={filtersOn ? <button type="button" className="ad-btn" onClick={clearFilters}><X size={15} />Clear filters</button> : undefined}
+            action={filtersOn ? <button type="button" className="po-btn" onClick={clearFilters}><X size={15} />Clear filters</button> : undefined}
           />
         ) : (
-          <div className="ad-table-wrap">
-            <table className="ad-table">
+          <div className="po-table-wrap">
+            <table className="po-table">
               <thead>
                 <tr>
                   <th style={{ width: 44 }}>
-                    <input type="checkbox" className="ad-cb" checked={allSelected}
+                    <input type="checkbox" className="po-cb" checked={allSelected}
                       onChange={() => setSelected(allSelected ? new Set() : new Set(filtered.map((b) => b.databaseId)))}
                       aria-label="Select all visible bookings" />
                   </th>
@@ -291,41 +291,41 @@ export default function BookingsPage() {
                 {filtered.map((b) => (
                   <tr key={b.databaseId} data-clickable="true" data-selected={selected.has(b.databaseId)} onClick={() => setOpenId(b.databaseId)}>
                     <td onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="ad-cb" checked={selected.has(b.databaseId)} onChange={() => toggle(b.databaseId)} aria-label={`Select ${b.name}`} />
+                      <input type="checkbox" className="po-cb" checked={selected.has(b.databaseId)} onChange={() => toggle(b.databaseId)} aria-label={`Select ${b.name}`} />
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
                         <Avatar name={b.name} />
                         <div style={{ minWidth: 0 }}>
-                          <div className="ad-cell-main">{b.name}</div>
-                          <div className="ad-cell-sub">{b.id} · {b.phone || "No phone"}</div>
+                          <div className="po-cell-main">{b.name}</div>
+                          <div className="po-cell-sub">{b.id} · {b.phone || "No phone"}</div>
                         </div>
                       </div>
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>{b.dept || "Not set"}</td>
                     <td><Chip tone={TYPE_META[b.type].tone}>{TYPE_META[b.type].label}</Chip></td>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      <div className="ad-cell-main" style={{ fontWeight: 600 }}>
+                      <div className="po-cell-main" style={{ fontWeight: 600 }}>
                         {b.preferredDateISO ? relativeDay(b.preferredDateISO) : "No date"}
                       </div>
-                      <div className="ad-cell-sub">
+                      <div className="po-cell-sub">
                         {b.time || "Any time"}
                         {b.preferredDateISO && b.preferredDateISO < today && b.status === "pending" && (
-                          <span style={{ color: "var(--ad-danger)", fontWeight: 600 }}> · date passed</span>
+                          <span style={{ color: "var(--po-danger)", fontWeight: 600 }}> · date passed</span>
                         )}
                       </div>
                     </td>
                     <td><StatusBadge status={b.status} /></td>
                     <td onClick={(e) => e.stopPropagation()}>
-                      <div className="ad-row-actions">
+                      <div className="po-row-actions">
                         {b.status === "pending" && (
-                          <button type="button" className="ad-btn ad-btn--sm ad-btn--success-soft" onClick={() => confirmMany([b])} disabled={busy} aria-label={`Confirm ${b.name}`}>
+                          <button type="button" className="po-btn po-btn--sm po-btn--success-soft" onClick={() => confirmMany([b])} disabled={busy} aria-label={`Confirm ${b.name}`}>
                             <Check size={14} strokeWidth={2.6} />Confirm
                           </button>
                         )}
                         {b.status !== "cancelled" && (
-                          <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setToCancel([b])} disabled={busy}
-                            title="Cancel booking" aria-label={`Cancel ${b.name}'s booking`} style={{ color: "var(--ad-danger)" }}>
+                          <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => setToCancel([b])} disabled={busy}
+                            title="Cancel booking" aria-label={`Cancel ${b.name}'s booking`} style={{ color: "var(--po-danger)" }}>
                             <Ban size={15} />
                           </button>
                         )}
@@ -338,7 +338,7 @@ export default function BookingsPage() {
           </div>
         )}
         {filtered.length > 0 && (
-          <div style={{ padding: "10px 18px", fontSize: 12.5, color: "var(--ad-text-3)", borderTop: "1px solid var(--ad-border)" }}>
+          <div style={{ padding: "10px 18px", fontSize: 12.5, color: "var(--po-text-3)", borderTop: "1px solid var(--po-border)" }}>
             Showing {filtered.length} of {bookings.length} bookings
           </div>
         )}
@@ -348,7 +348,7 @@ export default function BookingsPage() {
       <AnimatePresence>
         {selected.size > 0 && (
           <motion.div
-            className="ad-bulkbar"
+            className="po-bulkbar"
             initial={{ opacity: 0, y: 24, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 24, x: "-50%" }}
@@ -357,14 +357,14 @@ export default function BookingsPage() {
             aria-label="Bulk actions"
           >
             <strong>{selected.size} selected</strong>
-            <span className="ad-bulkbar-sep" />
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" disabled={busy || !selectedList.some((b) => b.status === "pending")} onClick={() => confirmMany(selectedList)}>
+            <span className="po-bulkbar-sep" />
+            <button type="button" className="po-btn po-btn--sm po-btn--gold" disabled={busy || !selectedList.some((b) => b.status === "pending")} onClick={() => confirmMany(selectedList)}>
               <Check size={14} />Confirm
             </button>
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--danger-soft" disabled={busy || !selectedList.some((b) => b.status !== "cancelled")} onClick={() => setToCancel(selectedList)}>
+            <button type="button" className="po-btn po-btn--sm po-btn--danger-soft" disabled={busy || !selectedList.some((b) => b.status !== "cancelled")} onClick={() => setToCancel(selectedList)}>
               <Ban size={14} />Cancel
             </button>
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection">
+            <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection">
               <X size={15} />
             </button>
           </motion.div>
@@ -398,9 +398,9 @@ export default function BookingsPage() {
       />
 
       <style>{`
-        .ad-bk-tile { text-align: left; font: inherit; cursor: pointer; width: 100%; }
-        .ad-bk-tile[data-active="true"] { border-color: var(--tone); box-shadow: 0 0 0 1px var(--tone), var(--ad-shadow-md); }
-        .ad-bk-tile:not([data-active="true"])::after { opacity: 0.35; }
+        .po-bk-tile { text-align: left; font: inherit; cursor: pointer; width: 100%; }
+        .po-bk-tile[data-active="true"] { border-color: var(--tone); box-shadow: 0 0 0 1px var(--tone), var(--po-shadow-md); }
+        .po-bk-tile:not([data-active="true"])::after { opacity: 0.35; }
       `}</style>
     </>
   );
@@ -426,14 +426,14 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
     <AnimatePresence>
       {booking && (
         <motion.div
-          className="ad-overlay ad-drawer-overlay"
+          className="po-overlay po-drawer-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 , pointerEvents: "none" }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.aside
-            className="ad-drawer"
+            className="po-drawer"
             role="dialog"
             aria-modal="true"
             aria-label={`Booking for ${booking.name}`}
@@ -442,49 +442,49 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >
-            <div className="ad-drawer-head">
+            <div className="po-drawer-head">
               <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
                 <Avatar name={booking.name} size="lg" />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 17, fontWeight: 750, color: "var(--ad-text)" }}>{booking.name}</div>
-                  <button type="button" onClick={() => onCopy(booking.id)} className="ad-copy" title="Copy reference">
+                  <div style={{ fontSize: 17, fontWeight: 750, color: "var(--po-text)" }}>{booking.name}</div>
+                  <button type="button" onClick={() => onCopy(booking.id)} className="po-copy" title="Copy reference">
                     {booking.id}<Copy size={12} />
                   </button>
                 </div>
               </div>
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
+              <button type="button" className="po-btn po-btn--ghost po-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
             </div>
 
-            <div className="ad-drawer-body">
+            <div className="po-drawer-body">
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
                 <StatusBadge status={booking.status} />
                 <Chip tone={TYPE_META[booking.type].tone}>{TYPE_META[booking.type].label}</Chip>
               </div>
 
-              <div className="ad-appt-card">
+              <div className="po-appt-card">
                 <CalendarClock size={22} />
                 <div>
-                  <div style={{ fontWeight: 700, color: "var(--ad-text)", fontSize: 15 }}>
+                  <div style={{ fontWeight: 700, color: "var(--po-text)", fontSize: 15 }}>
                     {booking.preferredDateISO
                       ? formatDay(booking.preferredDateISO, { weekday: "long", day: "numeric", month: "long", year: "numeric" })
                       : "No date chosen"}
                   </div>
-                  <div style={{ fontSize: 13, color: "var(--ad-text-2)" }}>
+                  <div style={{ fontSize: 13, color: "var(--po-text-2)" }}>
                     {booking.time || "Any time"}{booking.preferredDateISO ? ` · ${fromNow(booking.preferredDateISO)}` : ""}
                   </div>
                 </div>
               </div>
 
-              <h3 className="ad-drawer-h">Patient</h3>
-              <dl className="ad-dl">
+              <h3 className="po-drawer-h">Patient</h3>
+              <dl className="po-dl">
                 <dt>Phone</dt><dd>{booking.phone || "Not given"}</dd>
                 <dt>Email</dt><dd>{booking.email || "Not given"}</dd>
                 {booking.dateOfBirth && (<><dt>Date of birth</dt><dd>{formatDay(booking.dateOfBirth, { day: "numeric", month: "long", year: "numeric" })}</dd></>)}
                 {booking.gender && (<><dt>Gender</dt><dd style={{ textTransform: "capitalize" }}>{booking.gender}</dd></>)}
               </dl>
 
-              <h3 className="ad-drawer-h">Appointment</h3>
-              <dl className="ad-dl">
+              <h3 className="po-drawer-h">Appointment</h3>
+              <dl className="po-dl">
                 <dt><Stethoscope size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Department</dt><dd>{booking.dept || "Not set"}</dd>
                 <dt><ShieldCheck size={13} style={{ verticalAlign: -2, marginRight: 6 }} />Insurance</dt>
                 <dd>{booking.insurance}{booking.insuranceNumber ? ` · ${booking.insuranceNumber}` : ""}</dd>
@@ -493,31 +493,31 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
 
               {booking.notes && (
                 <>
-                  <h3 className="ad-drawer-h">Notes from the patient</h3>
+                  <h3 className="po-drawer-h">Notes from the patient</h3>
                   {/* Visitor-supplied: rendered as text, never markup. */}
-                  <p className="ad-notes">{booking.notes}</p>
+                  <p className="po-notes">{booking.notes}</p>
                 </>
               )}
 
               <div style={{ display: "flex", gap: 8, marginTop: 22, flexWrap: "wrap" }}>
-                {booking.phone && <a className="ad-btn" href={`tel:${booking.phone.replace(/\s+/g, "")}`}><Phone size={15} />Call</a>}
-                {booking.email && <a className="ad-btn" href={`mailto:${booking.email}?subject=${encodeURIComponent(`Your appointment at St. Elizabeth Catholic Hospital (${booking.id})`)}`}><Mail size={15} />Email</a>}
+                {booking.phone && <a className="po-btn" href={`tel:${booking.phone.replace(/\s+/g, "")}`}><Phone size={15} />Call</a>}
+                {booking.email && <a className="po-btn" href={`mailto:${booking.email}?subject=${encodeURIComponent(`Your appointment at St. Elizabeth Catholic Hospital (${booking.id})`)}`}><Mail size={15} />Email</a>}
               </div>
             </div>
 
-            <div className="ad-drawer-foot">
+            <div className="po-drawer-foot">
               {booking.status !== "cancelled" && (
-                <button type="button" className="ad-btn ad-btn--danger-soft" onClick={() => onCancel(booking)} disabled={busy}>
+                <button type="button" className="po-btn po-btn--danger-soft" onClick={() => onCancel(booking)} disabled={busy}>
                   <Ban size={15} />Cancel booking
                 </button>
               )}
               {booking.status === "pending" && (
-                <button type="button" className="ad-btn ad-btn--primary" onClick={() => onConfirm(booking)} disabled={busy}>
+                <button type="button" className="po-btn po-btn--primary" onClick={() => onConfirm(booking)} disabled={busy}>
                   <Check size={15} strokeWidth={2.6} />Confirm booking
                 </button>
               )}
               {booking.status !== "pending" && (
-                <button type="button" className="ad-btn" onClick={onClose}>Close</button>
+                <button type="button" className="po-btn" onClick={onClose}>Close</button>
               )}
             </div>
           </motion.aside>
@@ -525,11 +525,11 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
       )}
     </AnimatePresence>
       <style>{`
-        .ad-copy { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; color: var(--ad-text-3); cursor: pointer; }
-        .ad-copy:hover { color: var(--ad-brand-ink); }
-        .ad-appt-card { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 12px; background: var(--ad-brand-soft); color: var(--ad-brand-ink); margin-bottom: 8px; }
-        .ad-drawer-h { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ad-text-3); margin: 22px 0 10px; }
-        .ad-notes { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--ad-surface-2); border: 1px solid var(--ad-border); font-size: 13.5px; line-height: 1.65; color: var(--ad-text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+        .po-copy { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; color: var(--po-text-3); cursor: pointer; }
+        .po-copy:hover { color: var(--po-brand-ink); }
+        .po-appt-card { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 12px; background: var(--po-brand-soft); color: var(--po-brand-ink); margin-bottom: 8px; }
+        .po-drawer-h { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); margin: 22px 0 10px; }
+        .po-notes { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--po-surface-2); border: 1px solid var(--po-border); font-size: 13.5px; line-height: 1.65; color: var(--po-text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
       `}</style>
     </>
   );

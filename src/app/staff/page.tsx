@@ -52,17 +52,17 @@ export default function StaffHome() {
           </span>
         }
         actions={canWrite ? (
-          <Link href="/staff/posts/new" className="ad-btn ad-btn--primary"><FilePlus2 size={16} />Write a post</Link>
+          <Link href="/staff/posts/new" className="po-btn po-btn--primary"><FilePlus2 size={16} />Write a post</Link>
         ) : undefined}
       />
 
       {/* Urgent notices nobody should miss. */}
       {urgent.map((n) => (
-        <div key={n.databaseId} className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 12, alignItems: "center" }}>
+        <div key={n.databaseId} className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 12, alignItems: "center" }}>
           <AlertTriangle size={18} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}><strong>Urgent:</strong> {n.title}</span>
-          <Link href="/staff/notices" className="ad-btn ad-btn--sm">Read</Link>
-          <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={() => markNoticeRead(n.databaseId)}>Dismiss</button>
+          <Link href="/staff/notices" className="po-btn po-btn--sm">Read</Link>
+          <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => markNoticeRead(n.databaseId)}>Dismiss</button>
         </div>
       ))}
 
@@ -72,27 +72,27 @@ export default function StaffHome() {
             title="Notice board"
             icon={Megaphone}
             subtitle={noticesLoading ? "Loading…" : unreadNotices.length ? `${unreadNotices.length} new for you` : "You’re up to date"}
-            action={<Link href="/staff/notices" className="ad-card-link">All notices <ArrowRight size={14} /></Link>}
+            action={<Link href="/staff/notices" className="po-card-link">All notices <ArrowRight size={14} /></Link>}
             bodyClassName=""
             style={{ marginBottom: 16 }}
           >
             {noticesLoading ? (
               <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>{[0, 1].map((i) => <Skeleton key={i} h={44} r={10} />)}</div>
             ) : latestNotices.length === 0 ? (
-              <div className="ad-hint" style={{ padding: "0 18px 18px" }}>No notices have been posted yet.</div>
+              <div className="po-hint" style={{ padding: "0 18px 18px" }}>No notices have been posted yet.</div>
             ) : (
               <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
                 {latestNotices.map((n) => (
                   <li key={n.databaseId}>
                     <Link href="/staff/notices" className="sf-row-item">
-                      <span className={`ad-kpi-icon ad-tone-${n.priority === "urgent" ? "danger" : n.priority === "important" ? "gold" : "brand"}`} style={{ width: 36, height: 36 }}>
+                      <span className={`po-kpi-icon po-tone-${n.priority === "urgent" ? "danger" : n.priority === "important" ? "gold" : "brand"}`} style={{ width: 36, height: 36 }}>
                         {n.pinned ? <Pin size={15} /> : <Megaphone size={15} />}
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
-                        <span className="ad-cell-main ad-clamp-1" style={{ display: "block" }}>{n.title}</span>
-                        <span className="ad-cell-sub ad-clamp-1" style={{ display: "block" }}>{n.body || n.authorName}</span>
+                        <span className="po-cell-main po-clamp-1" style={{ display: "block" }}>{n.title}</span>
+                        <span className="po-cell-sub po-clamp-1" style={{ display: "block" }}>{n.body || n.authorName}</span>
                       </span>
-                      {!n.isRead && <span className="ad-badge ad-tone-brand" style={{ textTransform: "none" }}>New</span>}
+                      {!n.isRead && <span className="po-badge po-tone-brand" style={{ textTransform: "none" }}>New</span>}
                     </Link>
                   </li>
                 ))}
@@ -112,7 +112,7 @@ export default function StaffHome() {
         </Card>
       ) : (
         <>
-          <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", marginBottom: 16 }}>
+          <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", marginBottom: 16 }}>
             {([
               { label: "Drafts", n: drafts.length, icon: FilePen, tone: "muted", href: "/staff/posts?status=draft", note: "Only you can see these" },
               { label: canPublish ? "Pending" : "Waiting for review", n: review.length, icon: Hourglass, tone: "warn", href: "/staff/posts?status=pending", note: canPublish ? "Submitted posts" : "With an administrator" },
@@ -121,25 +121,25 @@ export default function StaffHome() {
               const Icon = t.icon;
               return (
                 <Reveal key={t.label} delay={i * 0.05}>
-                  <Link href={t.href} className={`ad-card ad-card--hover ad-kpi ad-tone-${t.tone}`}>
-                    <div className="ad-kpi-top">
-                      <span className="ad-kpi-label">{t.label}</span>
-                      <span className="ad-kpi-icon"><Icon size={17} /></span>
+                  <Link href={t.href} className={`po-card po-card--hover po-kpi po-tone-${t.tone}`}>
+                    <div className="po-kpi-top">
+                      <span className="po-kpi-label">{t.label}</span>
+                      <span className="po-kpi-icon"><Icon size={17} /></span>
                     </div>
-                    <div className="ad-kpi-value">{postsLoading ? <Skeleton w={50} h={30} /> : <CountUp value={t.n} />}</div>
-                    <div className="ad-kpi-foot"><span className="ad-kpi-note">{t.note}</span></div>
+                    <div className="po-kpi-value">{postsLoading ? <Skeleton w={50} h={30} /> : <CountUp value={t.n} />}</div>
+                    <div className="po-kpi-foot"><span className="po-kpi-note">{t.note}</span></div>
                   </Link>
                 </Reveal>
               );
             })}
           </div>
 
-          <div className="ad-grid sf-row">
+          <div className="po-grid sf-row">
             <Reveal delay={0.15}>
               <Card
                 title="Your recent posts"
                 icon={Newspaper}
-                action={<Link href="/staff/posts" className="ad-card-link">All my posts <ArrowRight size={14} /></Link>}
+                action={<Link href="/staff/posts" className="po-card-link">All my posts <ArrowRight size={14} /></Link>}
                 bodyClassName=""
               >
                 {postsLoading ? (
@@ -149,7 +149,7 @@ export default function StaffHome() {
                     icon={PenLine}
                     title="Nothing written yet"
                     text="Share news from your department, a health tip for patients, or an upcoming event."
-                    action={<Link href="/staff/posts/new" className="ad-btn ad-btn--primary"><FilePlus2 size={15} />Write your first post</Link>}
+                    action={<Link href="/staff/posts/new" className="po-btn po-btn--primary"><FilePlus2 size={15} />Write your first post</Link>}
                   />
                 ) : (
                   <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
@@ -157,12 +157,12 @@ export default function StaffHome() {
                       const editable = canPublish || p.status !== "published";
                       const row = (
                         <>
-                          <span className={`ad-kpi-icon ad-tone-${p.status === "published" ? "success" : p.status === "pending" ? "warn" : "muted"}`} style={{ width: 36, height: 36 }}>
+                          <span className={`po-kpi-icon po-tone-${p.status === "published" ? "success" : p.status === "pending" ? "warn" : "muted"}`} style={{ width: 36, height: 36 }}>
                             {p.status === "published" ? <Globe size={16} /> : p.status === "pending" ? <Hourglass size={16} /> : <FilePen size={16} />}
                           </span>
                           <span style={{ flex: 1, minWidth: 0 }}>
-                            <span className="ad-cell-main ad-clamp-1" style={{ display: "block" }}>{p.title}</span>
-                            <span className="ad-cell-sub" style={{ display: "block", textTransform: "capitalize" }}>{p.type} · {p.date || "Undated"}</span>
+                            <span className="po-cell-main po-clamp-1" style={{ display: "block" }}>{p.title}</span>
+                            <span className="po-cell-sub" style={{ display: "block", textTransform: "capitalize" }}>{p.type} · {p.date || "Undated"}</span>
                           </span>
                           <StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} />
                         </>
@@ -188,22 +188,22 @@ export default function StaffHome() {
               <Card title="How publishing works" style={{ height: "100%" }}>
                 <ol className="sf-steps">
                   <li>
-                    <span className="sf-step-icon ad-tone-brand"><PenLine size={16} /></span>
+                    <span className="sf-step-icon po-tone-brand"><PenLine size={16} /></span>
                     <span><strong>Write</strong><small>Draft your post. Save as often as you like. Drafts are private.</small></span>
                   </li>
                   {canPublish ? (
                     <li>
-                      <span className="sf-step-icon ad-tone-success"><Globe size={16} /></span>
+                      <span className="sf-step-icon po-tone-success"><Globe size={16} /></span>
                       <span><strong>Publish</strong><small>Your account can publish your own posts straight to the website.</small></span>
                     </li>
                   ) : (
                     <>
                       <li>
-                        <span className="sf-step-icon ad-tone-warn"><Send size={16} /></span>
+                        <span className="sf-step-icon po-tone-warn"><Send size={16} /></span>
                         <span><strong>Submit for review</strong><small>When it’s ready, submit it. You can still make changes while it waits.</small></span>
                       </li>
                       <li>
-                        <span className="sf-step-icon ad-tone-success"><CheckCircle2 size={16} /></span>
+                        <span className="sf-step-icon po-tone-success"><CheckCircle2 size={16} /></span>
                         <span><strong>An administrator publishes</strong><small>They check it, add a picture if needed, and put it live on the website.</small></span>
                       </li>
                     </>
@@ -219,12 +219,12 @@ export default function StaffHome() {
         .sf-row { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); }
         @media (max-width: 1000px) { .sf-row { grid-template-columns: minmax(0, 1fr); } }
         .sf-row-item { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 10px; text-decoration: none; color: inherit; transition: background .15s; }
-        a.sf-row-item:hover { background: var(--ad-surface-2); }
+        a.sf-row-item:hover { background: var(--po-surface-2); }
         .sf-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; counter-reset: s; }
         .sf-steps li { display: flex; gap: 12px; align-items: flex-start; }
         .sf-step-icon { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; background: var(--tone-soft); color: var(--tone); }
-        .sf-steps strong { display: block; font-size: 13.5px; color: var(--ad-text); }
-        .sf-steps small { display: block; font-size: 12.5px; color: var(--ad-text-3); line-height: 1.5; margin-top: 2px; }
+        .sf-steps strong { display: block; font-size: 13.5px; color: var(--po-text); }
+        .sf-steps small { display: block; font-size: 12.5px; color: var(--po-text-3); line-height: 1.5; margin-top: 2px; }
       `}</style>
     </>
   );

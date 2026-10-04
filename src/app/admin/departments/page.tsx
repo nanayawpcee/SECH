@@ -26,7 +26,7 @@ function PersonSelect({
   const others = preferDept ? employees.filter((e) => e.departmentId !== preferDept) : employees;
   const option = (e: Employee) => <option key={e.databaseId} value={e.databaseId}>{fullName(e, true)}</option>;
   return (
-    <select className="ad-select" value={value || ""} onChange={(e) => onChange(Number(e.target.value) || 0)} aria-label={label}>
+    <select className="po-select" value={value || ""} onChange={(e) => onChange(Number(e.target.value) || 0)} aria-label={label}>
       <option value="">Not set</option>
       {inDept.length > 0 && <optgroup label="In this department">{inDept.map(option)}</optgroup>}
       {others.length > 0 && (preferDept ? <optgroup label="Everyone else">{others.map(option)}</optgroup> : others.map(option))}
@@ -101,48 +101,48 @@ export default function DepartmentsPage() {
         subtitle="Where staff are posted, and who is in charge"
         actions={
           <>
-            <button type="button" className="ad-btn" disabled={!dirty || saving} onClick={() => { setDraft(staff.setup ? structuredClone(staff.setup.structure) : null); setError(""); }}>
+            <button type="button" className="po-btn" disabled={!dirty || saving} onClick={() => { setDraft(staff.setup ? structuredClone(staff.setup.structure) : null); setError(""); }}>
               <RotateCcw size={15} />Discard changes
             </button>
-            <button type="button" className="ad-btn ad-btn--primary" disabled={!dirty || saving} onClick={save}>
-              {saving ? <><Loader2 size={15} className="ad-spin" />Saving…</> : <><Save size={15} />Save changes</>}
+            <button type="button" className="po-btn po-btn--primary" disabled={!dirty || saving} onClick={save}>
+              {saving ? <><Loader2 size={15} className="po-spin" />Saving…</> : <><Save size={15} />Save changes</>}
             </button>
           </>
         }
       />
 
       {staff.needsPlugin && (
-        <div className="ad-alert ad-tone-warn" role="status" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>WordPress needs the SECH Portal plugin version 1.7.0 before departments can be managed.</span>
         </div>
       )}
       {(error || staff.error) && (
-        <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error || staff.error}</span>
         </div>
       )}
       {staff.loaded && !staff.needsPlugin && people.length === 0 && (
-        <div className="ad-alert ad-tone-info" role="note" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-info" role="note" style={{ marginBottom: 16 }}>
           <Users size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>Add staff under <strong>Employees</strong> first; then you can choose in-charges here.</span>
         </div>
       )}
 
       {!staff.loaded ? (
-        <section className="ad-card"><SkeletonRows rows={6} cols={3} /></section>
+        <section className="po-card"><SkeletonRows rows={6} cols={3} /></section>
       ) : !draft ? (
-        <section className="ad-card"><EmptyState icon={Building2} title="Nothing to show yet" /></section>
+        <section className="po-card"><EmptyState icon={Building2} title="Nothing to show yet" /></section>
       ) : (
         <div className="st-stack">
           {draft.departments.map((d) => {
             const count = headcount.byDept.get(d.id) ?? 0;
             const locked = headcount.anyDept.has(d.id);
             return (
-              <section key={d.id} className="ad-card st-dept">
+              <section key={d.id} className="po-card st-dept">
                 <header className="st-dept-head">
                   <span className="st-dept-icon"><Building2 size={18} /></span>
-                  <input className="ad-input st-name-input" value={d.name} onChange={(e) => updateDept(d.id, { name: e.target.value })}
+                  <input className="po-input st-name-input" value={d.name} onChange={(e) => updateDept(d.id, { name: e.target.value })}
                     aria-label="Department name" placeholder="Department name" />
                   <span className="st-count"><Users size={13} />{count}</span>
                   <label className="st-incharge">
@@ -150,7 +150,7 @@ export default function DepartmentsPage() {
                     <PersonSelect value={d.inchargeId} onChange={(id) => updateDept(d.id, { inchargeId: id })} employees={people}
                       label={`In-charge of ${d.name}`} preferDept={d.id} />
                   </label>
-                  <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={locked}
+                  <button type="button" className="po-btn po-btn--ghost po-btn--icon" disabled={locked}
                     title={locked ? "Staff are still posted here" : "Remove department"} aria-label={`Remove ${d.name}`}
                     onClick={() => setDraft((x) => x && { departments: x.departments.filter((y) => y.id !== d.id) })}>
                     <Trash2 size={15} />
@@ -165,14 +165,14 @@ export default function DepartmentsPage() {
                     const uLocked = headcount.anyUnit.has(u.id);
                     return (
                       <div key={u.id} className="st-unit">
-                        <input className="ad-input" value={u.name} onChange={(e) => updateUnit(d.id, u.id, { name: e.target.value })}
+                        <input className="po-input" value={u.name} onChange={(e) => updateUnit(d.id, u.id, { name: e.target.value })}
                           aria-label="Unit name" placeholder="Unit name" />
                         <PersonSelect value={u.inchargeId} onChange={(id) => updateUnit(d.id, u.id, { inchargeId: id, deputyId: id && id === u.deputyId ? 0 : u.deputyId })}
                           employees={people} label={`In-charge of ${u.name}`} preferDept={d.id} />
                         <PersonSelect value={u.deputyId} onChange={(id) => updateUnit(d.id, u.id, { deputyId: id })}
                           employees={people} label={`Deputy of ${u.name}`} preferDept={d.id} exclude={u.inchargeId} />
                         <span className="st-count"><Users size={13} />{headcount.byUnit.get(u.id) ?? 0}</span>
-                        <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon ad-btn--sm" disabled={uLocked}
+                        <button type="button" className="po-btn po-btn--ghost po-btn--icon po-btn--sm" disabled={uLocked}
                           title={uLocked ? "Staff are still posted here" : "Remove unit"} aria-label={`Remove ${u.name}`}
                           onClick={() => updateDept(d.id, { units: d.units.filter((x) => x.id !== u.id) })}>
                           <Trash2 size={14} />
@@ -180,7 +180,7 @@ export default function DepartmentsPage() {
                       </div>
                     );
                   })}
-                  <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost st-add"
+                  <button type="button" className="po-btn po-btn--sm po-btn--ghost st-add"
                     onClick={() => updateDept(d.id, { units: [...d.units, { id: newId("unit"), name: "", inchargeId: 0, deputyId: 0 }] })}>
                     <Plus size={14} />Add unit
                   </button>
@@ -188,7 +188,7 @@ export default function DepartmentsPage() {
               </section>
             );
           })}
-          <button type="button" className="ad-btn st-add-dept"
+          <button type="button" className="po-btn st-add-dept"
             onClick={() => setDraft((x) => x && { departments: [...x.departments, { id: newId("dept"), name: "", inchargeId: 0, units: [] }] })}>
             <Plus size={15} />Add department
           </button>
@@ -198,8 +198,8 @@ export default function DepartmentsPage() {
       {dirty && (
         <div className="st-savebar" role="status">
           <span>You have unsaved changes.</span>
-          <button type="button" className="ad-btn ad-btn--primary ad-btn--sm" onClick={save} disabled={saving}>
-            {saving ? <><Loader2 size={14} className="ad-spin" />Saving…</> : <><Save size={14} />Save changes</>}
+          <button type="button" className="po-btn po-btn--primary po-btn--sm" onClick={save} disabled={saving}>
+            {saving ? <><Loader2 size={14} className="po-spin" />Saving…</> : <><Save size={14} />Save changes</>}
           </button>
         </div>
       )}

@@ -226,7 +226,7 @@ export default function SettingsPage() {
 
       <div className="st-layout">
         {/* Section nav */}
-        <nav className="ad-card st-nav" aria-label="Settings sections">
+        <nav className="po-card st-nav" aria-label="Settings sections">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = tab === t.key;
@@ -245,7 +245,7 @@ export default function SettingsPage() {
 
         <div style={{ minWidth: 0 }}>
           {settingsError && savesToWordPress && (
-            <div className="ad-alert ad-tone-danger" style={{ marginBottom: 16 }}>
+            <div className="po-alert po-tone-danger" style={{ marginBottom: 16 }}>
               <AlertTriangle size={17} />{settingsError}
             </div>
           )}
@@ -260,15 +260,15 @@ export default function SettingsPage() {
                     <>
                       <div className="st-grid">
                         {HOSPITAL_FIELDS.map((f) => (
-                          <label key={f.key} className="ad-field">
-                            <span className="ad-label">{f.label}</span>
-                            <input className="ad-input" value={(settings[f.key] as string) ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} />
+                          <label key={f.key} className="po-field">
+                            <span className="po-label">{f.label}</span>
+                            <input className="po-input" value={(settings[f.key] as string) ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} />
                           </label>
                         ))}
                       </div>
-                      <label className="ad-field" style={{ marginTop: 16 }}>
-                        <span className="ad-label">About the hospital</span>
-                        <textarea className="ad-textarea" rows={4} value={settings.about ?? ""} onChange={(e) => patchSettings({ about: e.target.value })} />
+                      <label className="po-field" style={{ marginTop: 16 }}>
+                        <span className="po-label">About the hospital</span>
+                        <textarea className="po-textarea" rows={4} value={settings.about ?? ""} onChange={(e) => patchSettings({ about: e.target.value })} />
                       </label>
                     </>
                   )}
@@ -284,9 +284,9 @@ export default function SettingsPage() {
                         { label: "Closes", key: "opdClose" as const, placeholder: "16:00" },
                         { label: "Slot length (minutes)", key: "slotLength" as const, placeholder: "30" },
                       ]).map((f) => (
-                        <label key={f.key} className="ad-field">
-                          <span className="ad-label">{f.label}</span>
-                          <input className="ad-input" placeholder={f.placeholder} value={settings[f.key] ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} disabled={settingsLoading} />
+                        <label key={f.key} className="po-field">
+                          <span className="po-label">{f.label}</span>
+                          <input className="po-input" placeholder={f.placeholder} value={settings[f.key] ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} disabled={settingsLoading} />
                         </label>
                       ))}
                     </div>
@@ -303,13 +303,13 @@ export default function SettingsPage() {
                         ))}
                       </AnimatePresence>
                       {settings.departments.length === 0 && !settingsLoading && (
-                        <span className="ad-hint">No departments yet. Add the first below.</span>
+                        <span className="po-hint">No departments yet. Add the first below.</span>
                       )}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <input className="ad-input" value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="Add a department, e.g. Physiotherapy"
+                      <input className="po-input" value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="Add a department, e.g. Physiotherapy"
                         onKeyDown={(e) => { if (e.key === "Enter") submitNewDept(); }} />
-                      <button type="button" className="ad-btn" onClick={submitNewDept} disabled={!newDept.trim()}><Plus size={15} />Add</button>
+                      <button type="button" className="po-btn" onClick={submitNewDept} disabled={!newDept.trim()}><Plus size={15} />Add</button>
                     </div>
                   </Card>
                 </div>
@@ -318,10 +318,10 @@ export default function SettingsPage() {
               {tab === "notifications" && (
                 <Card title="Notifications" subtitle="How the team hears about new activity" bodyClassName="">
                   {NOTIF_DEFS.map((item, i) => (
-                    <div key={item.key} className="st-row" style={{ borderTop: i === 0 ? "1px solid var(--ad-border)" : undefined }}>
+                    <div key={item.key} className="st-row" style={{ borderTop: i === 0 ? "1px solid var(--po-border)" : undefined }}>
                       <div>
-                        <div style={{ fontWeight: 600, color: "var(--ad-text)" }}>{item.label}</div>
-                        <div className="ad-hint">{item.desc}</div>
+                        <div style={{ fontWeight: 600, color: "var(--po-text)" }}>{item.label}</div>
+                        <div className="po-hint">{item.desc}</div>
                       </div>
                       <Switch checked={!!settings.notifications[item.key]} onChange={() => toggleNotif(item.key)} label={item.label} />
                     </div>
@@ -335,16 +335,16 @@ export default function SettingsPage() {
                     title="Team access"
                     subtitle="WordPress accounts that can sign in to this portal"
                     bodyClassName=""
-                    action={<button type="button" className="ad-btn ad-btn--sm" onClick={loadUsers} disabled={usersLoading}><RefreshCw size={14} className={usersLoading ? "ad-spin" : ""} />Refresh</button>}
+                    action={<button type="button" className="po-btn po-btn--sm" onClick={loadUsers} disabled={usersLoading}><RefreshCw size={14} className={usersLoading ? "po-spin" : ""} />Refresh</button>}
                   >
                     {usersLoading && users.length === 0 ? (
                       <div style={{ padding: "0 18px 18px", display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={44} r={10} />)}</div>
                     ) : usersError ? (
                       <EmptyState icon={AlertTriangle} title="Couldn’t load the team" text={usersError}
-                        action={<button type="button" className="ad-btn" onClick={loadUsers}><RefreshCw size={15} />Try again</button>} />
+                        action={<button type="button" className="po-btn" onClick={loadUsers}><RefreshCw size={15} />Try again</button>} />
                     ) : (
-                      <div className="ad-table-wrap">
-                        <table className="ad-table">
+                      <div className="po-table-wrap">
+                        <table className="po-table">
                           <thead><tr><th>Person</th><th>Role</th><th style={{ textAlign: "right" }}>Access</th></tr></thead>
                           <tbody>
                             {users.map((u) => (
@@ -353,31 +353,31 @@ export default function SettingsPage() {
                                   <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
                                     <Avatar name={u.name} />
                                     <div style={{ minWidth: 0 }}>
-                                      <div className="ad-cell-main">
+                                      <div className="po-cell-main">
                                         {u.name} {u.isSelf && <Chip tone="brand">You</Chip>}
-                                        {u.mustChangePassword && <span className="ad-badge ad-tone-warn" style={{ textTransform: "none", marginLeft: 6 }}>Temporary password</span>}
+                                        {u.mustChangePassword && <span className="po-badge po-tone-warn" style={{ textTransform: "none", marginLeft: 6 }}>Temporary password</span>}
                                       </div>
-                                      <div className="ad-cell-sub">{u.email}</div>
+                                      <div className="po-cell-sub">{u.email}</div>
                                     </div>
                                   </div>
                                 </td>
                                 <td style={{ width: 200 }}>
-                                  <select className="ad-select" style={{ height: 34 }} value={u.roleSlug} onChange={(e) => changeRole(u.id, e.target.value)} disabled={u.isSelf}
+                                  <select className="po-select" style={{ height: 34 }} value={u.roleSlug} onChange={(e) => changeRole(u.id, e.target.value)} disabled={u.isSelf}
                                     title={u.isSelf ? "You cannot change your own role" : undefined} aria-label={`Role for ${u.name}`}>
                                     {ASSIGNABLE_ROLES.map((r) => <option key={r.slug} value={r.slug}>{r.label}</option>)}
                                     {!ASSIGNABLE_ROLES.some((r) => r.slug === u.roleSlug) && <option value={u.roleSlug}>{u.role}</option>}
                                   </select>
                                 </td>
                                 <td>
-                                  <div className="ad-row-actions">
+                                  <div className="po-row-actions">
                                     {!u.isSelf && u.roleSlug !== "administrator" && (
-                                      <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={() => setToReset(u)}
+                                      <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToReset(u)}
                                         title="Give them a new temporary password">
                                         <KeySquare size={14} />Reset password
                                       </button>
                                     )}
-                                    <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={() => setToRemove(u)} disabled={u.isSelf}
-                                      title={u.isSelf ? "You cannot remove your own account" : "Remove access"} style={{ color: "var(--ad-danger)" }}>
+                                    <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToRemove(u)} disabled={u.isSelf}
+                                      title={u.isSelf ? "You cannot remove your own account" : "Remove access"} style={{ color: "var(--po-danger)" }}>
                                       <UserMinus size={14} />Remove
                                     </button>
                                   </div>
@@ -408,15 +408,15 @@ export default function SettingsPage() {
                       ? "WordPress emails them a link to choose their own password. You never handle it."
                       : "For staff without reliable email. You get a one-time password to hand over in person; they must replace it when they first sign in."}
                     action={
-                      <div className="ad-seg" role="tablist" aria-label="How to give access">
+                      <div className="po-seg" role="tablist" aria-label="How to give access">
                         {([["email", "Email invite", Mail], ["temporary", "Temporary password", KeySquare]] as const).map(([v, label, Icon]) => (
-                          <button key={v} type="button" role="tab" className="ad-seg-btn" aria-selected={inviteMode === v}
+                          <button key={v} type="button" role="tab" className="po-seg-btn" aria-selected={inviteMode === v}
                             onClick={() => {
                               setInviteMode(v);
                               // Administrators are never created with a temporary password.
                               if (v === "temporary" && !TEMP_PASSWORD_ROLES.includes(invite.role)) setInvite((p) => ({ ...p, role: "contributor" }));
                             }}>
-                            {inviteMode === v && <motion.span layoutId="st-invite-mode" className="ad-seg-pill" />}
+                            {inviteMode === v && <motion.span layoutId="st-invite-mode" className="po-seg-pill" />}
                             <Icon size={14} />{label}
                           </button>
                         ))}
@@ -424,31 +424,31 @@ export default function SettingsPage() {
                     }
                   >
                     <div className="st-invite" data-mode={inviteMode}>
-                      <input className="ad-input" value={invite.name} aria-label="Full name" placeholder="Full name"
+                      <input className="po-input" value={invite.name} aria-label="Full name" placeholder="Full name"
                         onChange={(e) => {
                           const name = e.target.value;
                           setInvite((p) => ({ ...p, name, username: usernameTouched ? p.username : suggestUsername(name) }));
                         }} />
                       {inviteMode === "temporary" && (
-                        <input className="ad-input" value={invite.username} aria-label="Username" placeholder="Username, e.g. ama.mensah"
+                        <input className="po-input" value={invite.username} aria-label="Username" placeholder="Username, e.g. ama.mensah"
                           autoCapitalize="none" spellCheck={false}
                           onChange={(e) => { setUsernameTouched(true); setInvite((p) => ({ ...p, username: e.target.value.toLowerCase() })); }} />
                       )}
-                      <input className="ad-input" type="email" value={invite.email} aria-label="Email address"
+                      <input className="po-input" type="email" value={invite.email} aria-label="Email address"
                         placeholder={inviteMode === "email" ? "Email address" : "Email (optional)"}
                         onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))} />
-                      <select className="ad-select" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} aria-label="Role">
+                      <select className="po-select" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} aria-label="Role">
                         {ASSIGNABLE_ROLES.filter((r) => inviteMode === "email" || TEMP_PASSWORD_ROLES.includes(r.slug))
                           .map((r) => <option key={r.slug} value={r.slug}>{r.label}</option>)}
                       </select>
-                      <button type="button" className="ad-btn ad-btn--primary" onClick={sendInvite}
+                      <button type="button" className="po-btn po-btn--primary" onClick={sendInvite}
                         disabled={inviting || !invite.name.trim() || (inviteMode === "email" ? !invite.email.trim() : !/^[a-z0-9._-]{3,40}$/.test(invite.username))}>
                         {inviteMode === "email" ? <Send size={15} /> : <KeySquare size={15} />}
                         {inviting ? "Working…" : inviteMode === "email" ? "Send invite" : "Create account"}
                       </button>
                     </div>
-                    <p className="ad-hint" style={{ margin: "10px 0 0" }}>
-                      <strong style={{ color: "var(--ad-text-2)" }}>{ASSIGNABLE_ROLES.find((r) => r.slug === invite.role)?.label}:</strong>{" "}
+                    <p className="po-hint" style={{ margin: "10px 0 0" }}>
+                      <strong style={{ color: "var(--po-text-2)" }}>{ASSIGNABLE_ROLES.find((r) => r.slug === invite.role)?.label}:</strong>{" "}
                       {ROLE_LABELS[invite.role]?.description}
                       {inviteMode === "temporary" && " · Administrators can only be added by email invite."}
                     </p>
@@ -470,13 +470,13 @@ export default function SettingsPage() {
                         { label: "New password", key: "next" as const, auto: "new-password" },
                         { label: "Confirm new password", key: "confirm" as const, auto: "new-password" },
                       ]).map((f) => (
-                        <label key={f.key} className="ad-field">
-                          <span className="ad-label">{f.label}</span>
-                          <div className="ad-input-wrap">
-                            <input className="ad-input" style={{ paddingLeft: 12, paddingRight: 40 }} type={showPw ? "text" : "password"} value={pw[f.key]}
+                        <label key={f.key} className="po-field">
+                          <span className="po-label">{f.label}</span>
+                          <div className="po-input-wrap">
+                            <input className="po-input" style={{ paddingLeft: 12, paddingRight: 40 }} type={showPw ? "text" : "password"} value={pw[f.key]}
                               autoComplete={f.auto} onChange={(e) => setPw((p) => ({ ...p, [f.key]: e.target.value }))} />
                             {f.key === "current" && (
-                              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon ad-btn--sm" style={{ position: "absolute", right: 4 }}
+                              <button type="button" className="po-btn po-btn--ghost po-btn--icon po-btn--sm" style={{ position: "absolute", right: 4 }}
                                 onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide passwords" : "Show passwords"}>
                                 {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                               </button>
@@ -486,18 +486,18 @@ export default function SettingsPage() {
                             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
                               <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
                                 {[1, 2, 3, 4, 5].map((n) => (
-                                  <span key={n} className={`ad-tone-${pwStrength.tone}`} style={{ height: 4, borderRadius: 2, background: n <= pwStrength.score ? "var(--tone)" : "var(--ad-surface-3)", transition: "background .2s" }} />
+                                  <span key={n} className={`po-tone-${pwStrength.tone}`} style={{ height: 4, borderRadius: 2, background: n <= pwStrength.score ? "var(--tone)" : "var(--po-surface-3)", transition: "background .2s" }} />
                                 ))}
                               </div>
-                              <span className={`ad-tone-${pwStrength.tone}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--tone)", minWidth: 76, textAlign: "right" }}>{pwStrength.label}</span>
+                              <span className={`po-tone-${pwStrength.tone}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--tone)", minWidth: 76, textAlign: "right" }}>{pwStrength.label}</span>
                             </div>
                           )}
-                          {f.key === "confirm" && mismatch && <span style={{ fontSize: 12, color: "var(--ad-danger)" }}>Doesn’t match the new password</span>}
+                          {f.key === "confirm" && mismatch && <span style={{ fontSize: 12, color: "var(--po-danger)" }}>Doesn’t match the new password</span>}
                         </label>
                       ))}
-                      <p className="ad-hint" style={{ margin: 0 }}>Use at least 12 characters. A short phrase of unrelated words is easy to remember and hard to guess.</p>
+                      <p className="po-hint" style={{ margin: 0 }}>Use at least 12 characters. A short phrase of unrelated words is easy to remember and hard to guess.</p>
                       <div>
-                        <button type="submit" className="ad-btn ad-btn--primary" disabled={changingPw || !pw.current || !pw.next || !pw.confirm || mismatch}>
+                        <button type="submit" className="po-btn po-btn--primary" disabled={changingPw || !pw.current || !pw.next || !pw.confirm || mismatch}>
                           <KeyRound size={15} />{changingPw ? "Updating…" : "Update password"}
                         </button>
                       </div>
@@ -505,7 +505,7 @@ export default function SettingsPage() {
                   </Card>
 
                   <Card title="Two-step sign-in" icon={ShieldCheck}>
-                    <div className="ad-alert ad-tone-info" style={{ alignItems: "flex-start" }}>
+                    <div className="po-alert po-tone-info" style={{ alignItems: "flex-start" }}>
                       <ShieldCheck size={17} style={{ flexShrink: 0, marginTop: 1 }} />
                       <span>
                         Not set up yet. Two-step sign-in is handled by WordPress, so it needs a 2FA plugin installed there
@@ -524,7 +524,7 @@ export default function SettingsPage() {
       <AnimatePresence>
         {settingsDirty && (
           <motion.div
-            className="ad-bulkbar"
+            className="po-bulkbar"
             initial={{ opacity: 0, y: 24, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 24, x: "-50%" }}
@@ -532,14 +532,14 @@ export default function SettingsPage() {
             role="status"
           >
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--ad-gold)" }} />
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--po-gold)" }} />
               Unsaved changes
             </span>
-            <span className="ad-bulkbar-sep" />
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={() => refreshSettings()} disabled={savingSettings}>
+            <span className="po-bulkbar-sep" />
+            <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => refreshSettings()} disabled={savingSettings}>
               <RotateCcw size={14} />Discard
             </button>
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" onClick={saveSettings} disabled={savingSettings}>
+            <button type="button" className="po-btn po-btn--sm po-btn--gold" onClick={saveSettings} disabled={savingSettings}>
               <Save size={14} />{savingSettings ? "Saving…" : "Save changes"}
             </button>
           </motion.div>
@@ -575,27 +575,27 @@ export default function SettingsPage() {
         .st-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
         @media (max-width: 900px) { .st-layout { grid-template-columns: minmax(0, 1fr); } .st-nav { display: flex !important; overflow-x: auto; } .st-nav-hint { display: none !important; } }
         .st-nav { padding: 6px; display: grid; gap: 2px; position: sticky; top: 0; }
-        .st-nav-item { position: relative; isolation: isolate; display: flex; gap: 12px; align-items: center; text-align: left; padding: 10px 12px; border: 0; background: none; border-radius: 10px; cursor: pointer; font: inherit; color: var(--ad-text-2); white-space: nowrap; }
-        .st-nav-item:hover { background: var(--ad-surface-2); }
-        .st-nav-pill { position: absolute; inset: 0; z-index: -1; border-radius: 10px; background: var(--ad-brand-soft); }
-        .st-nav-icon { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--ad-surface-3); color: var(--ad-text-2); flex-shrink: 0; }
-        .st-nav-item[data-active="true"] .st-nav-icon { background: var(--ad-surface); color: var(--ad-brand-ink); }
-        .st-nav-label { display: block; font-weight: 650; font-size: 13.5px; color: var(--ad-text); }
-        .st-nav-hint { display: block; font-size: 12px; color: var(--ad-text-3); }
+        .st-nav-item { position: relative; isolation: isolate; display: flex; gap: 12px; align-items: center; text-align: left; padding: 10px 12px; border: 0; background: none; border-radius: 10px; cursor: pointer; font: inherit; color: var(--po-text-2); white-space: nowrap; }
+        .st-nav-item:hover { background: var(--po-surface-2); }
+        .st-nav-pill { position: absolute; inset: 0; z-index: -1; border-radius: 10px; background: var(--po-brand-soft); }
+        .st-nav-icon { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--po-surface-3); color: var(--po-text-2); flex-shrink: 0; }
+        .st-nav-item[data-active="true"] .st-nav-icon { background: var(--po-surface); color: var(--po-brand-ink); }
+        .st-nav-label { display: block; font-weight: 650; font-size: 13.5px; color: var(--po-text); }
+        .st-nav-hint { display: block; font-size: 12px; color: var(--po-text-3); }
         .st-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
         .st-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         @media (max-width: 640px) { .st-grid, .st-grid--3 { grid-template-columns: minmax(0, 1fr); } }
-        .st-dept { display: inline-flex; align-items: center; gap: 6px; padding: 5px 6px 5px 12px; border-radius: 999px; background: var(--ad-brand-soft); color: var(--ad-brand-ink); font-size: 13px; font-weight: 600; }
+        .st-dept { display: inline-flex; align-items: center; gap: 6px; padding: 5px 6px 5px 12px; border-radius: 999px; background: var(--po-brand-soft); color: var(--po-brand-ink); font-size: 13px; font-weight: 600; }
         .st-dept button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; opacity: .7; }
         .st-dept button:hover { opacity: 1; background: rgba(0,0,0,0.06); }
-        .st-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--ad-border); }
+        .st-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--po-border); }
         .st-row:last-child { border-bottom: 0; }
         .st-roles { display: grid; gap: 2px; }
-        .st-role { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--ad-border); font-size: 13px; }
+        .st-role { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--po-border); font-size: 13px; }
         .st-role:last-child { border-bottom: 0; }
-        .st-role strong { color: var(--ad-text); }
-        .st-role span { color: var(--ad-text-2); }
-        .st-role em { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--ad-text-3); white-space: nowrap; }
+        .st-role strong { color: var(--po-text); }
+        .st-role span { color: var(--po-text-2); }
+        .st-role em { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--po-text-3); white-space: nowrap; }
         @media (max-width: 700px) { .st-role { grid-template-columns: 1fr; gap: 2px; } }
         .st-invite { display: grid; grid-template-columns: 1.2fr 1.5fr 0.9fr auto; gap: 8px; }
         .st-invite[data-mode="temporary"] { grid-template-columns: 1.2fr 1.1fr 1.2fr 0.9fr auto; }
@@ -641,12 +641,12 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
   return (
     <AnimatePresence>
       {credentials && (
-        <motion.div className="ad-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}>
-          <motion.div className="ad-modal" style={{ maxWidth: 480 }} role="dialog" aria-modal="true" aria-label="Temporary sign-in details"
+        <motion.div className="po-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}>
+          <motion.div className="po-modal" style={{ maxWidth: 480 }} role="dialog" aria-modal="true" aria-label="Temporary sign-in details"
             initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
-            <div className="ad-kpi-icon ad-tone-success" style={{ marginBottom: 14 }}><KeySquare size={18} /></div>
-            <h3 className="ad-modal-title">{credentials.reset ? "New temporary password" : "Account created"}</h3>
-            <p className="ad-modal-text" style={{ marginBottom: 14 }}>
+            <div className="po-kpi-icon po-tone-success" style={{ marginBottom: 14 }}><KeySquare size={18} /></div>
+            <h3 className="po-modal-title">{credentials.reset ? "New temporary password" : "Account created"}</h3>
+            <p className="po-modal-text" style={{ marginBottom: 14 }}>
               Give these to <strong>{credentials.name}</strong> in person. <strong>This is the only time the password is shown.</strong> The portal keeps no copy.
             </p>
 
@@ -656,32 +656,32 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
               <span className="st-cred-label">Username</span>
               <div className="st-cred-row">
                 <code>{credentials.username}</code>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => copy(credentials.username, "Username")} aria-label="Copy username"><Copy size={14} /></button>
+                <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => copy(credentials.username, "Username")} aria-label="Copy username"><Copy size={14} /></button>
               </div>
               <span className="st-cred-label">Temporary password</span>
               <div className="st-cred-row">
                 <code className="st-cred-pw">{credentials.password}</code>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => copy(credentials.password, "Password")} aria-label="Copy password"><Copy size={14} /></button>
+                <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => copy(credentials.password, "Password")} aria-label="Copy password"><Copy size={14} /></button>
               </div>
             </div>
 
-            <p className="ad-hint" style={{ margin: "12px 0 18px" }}>
+            <p className="po-hint" style={{ margin: "12px 0 18px" }}>
               Avoid sending it by WhatsApp or SMS where it stays in chat history. They must choose their own password the first time they sign in.
             </p>
-            <div className="ad-modal-actions">
-              <button type="button" className="ad-btn" onClick={printSlip}><Printer size={15} />Print slip</button>
-              <button type="button" className="ad-btn ad-btn--primary" onClick={onDone} autoFocus>I’ve noted it, done</button>
+            <div className="po-modal-actions">
+              <button type="button" className="po-btn" onClick={printSlip}><Printer size={15} />Print slip</button>
+              <button type="button" className="po-btn po-btn--primary" onClick={onDone} autoFocus>I’ve noted it, done</button>
             </div>
           </motion.div>
         </motion.div>
       )}
       <style>{`
-        .st-cred { display: grid; gap: 4px; padding: 14px; border-radius: 12px; background: var(--ad-surface-2); border: 1px solid var(--ad-border); }
-        .st-cred-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ad-text-3); margin-top: 6px; }
+        .st-cred { display: grid; gap: 4px; padding: 14px; border-radius: 12px; background: var(--po-surface-2); border: 1px solid var(--po-border); }
+        .st-cred-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); margin-top: 6px; }
         .st-cred-label:first-child { margin-top: 0; }
-        .st-cred code { font: 600 14px ui-monospace, Menlo, monospace; color: var(--ad-text); overflow-wrap: anywhere; }
+        .st-cred code { font: 600 14px ui-monospace, Menlo, monospace; color: var(--po-text); overflow-wrap: anywhere; }
         .st-cred-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-        .st-cred-pw { font-size: 19px !important; letter-spacing: .04em; color: var(--ad-brand-ink) !important; }
+        .st-cred-pw { font-size: 19px !important; letter-spacing: .04em; color: var(--po-brand-ink) !important; }
       `}</style>
     </AnimatePresence>
   );

@@ -203,39 +203,39 @@ export default function CommentsPage() {
             : `${total} awaiting review${total > comments.length ? ` · showing ${comments.length} at a time` : ""}`
         }
         actions={
-          <button type="button" className="ad-btn" onClick={() => { load(); refreshPendingComments(); }} disabled={loading || busy}>
-            <RefreshCw size={15} className={loading ? "ad-spin" : ""} />Refresh
+          <button type="button" className="po-btn" onClick={() => { load(); refreshPendingComments(); }} disabled={loading || busy}>
+            <RefreshCw size={15} className={loading ? "po-spin" : ""} />Refresh
           </button>
         }
       />
 
       {!loading && withLinks.length >= 5 && (
-        <div className="ad-alert ad-tone-warn" style={{ marginBottom: 16, alignItems: "center" }}>
+        <div className="po-alert po-tone-warn" style={{ marginBottom: 16, alignItems: "center" }}>
           <ShieldAlert size={18} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
             <strong>{withLinks.length} of these {comments.length} contain links</strong>, the usual signature of spam bots.
             Nothing held here has been shown on the website.
           </span>
-          <button type="button" className="ad-btn ad-btn--sm" disabled={busy}
+          <button type="button" className="po-btn po-btn--sm" disabled={busy}
             onClick={() => { setLinksOnly(true); setSelected(new Set(withLinks.map((c) => c.id))); }}>
             <Link2 size={14} />Select all with links
           </button>
         </div>
       )}
 
-      <section className="ad-card" style={{ marginBottom: 16 }}>
-        <div className="ad-toolbar">
-          <div className="ad-input-wrap" style={{ flex: "1 1 260px", maxWidth: 380 }}>
+      <section className="po-card" style={{ marginBottom: 16 }}>
+        <div className="po-toolbar">
+          <div className="po-input-wrap" style={{ flex: "1 1 260px", maxWidth: 380 }}>
             <Search size={15} />
-            <input className="ad-input" placeholder="Search name, email, text or post" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search comments" />
+            <input className="po-input" placeholder="Search name, email, text or post" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search comments" />
           </div>
-          <button type="button" className="ad-btn" aria-pressed={linksOnly} onClick={() => setLinksOnly((v) => !v)}
-            style={linksOnly ? { borderColor: "var(--ad-warn)", color: "var(--ad-warn)", background: "var(--ad-warn-soft)" } : undefined}>
+          <button type="button" className="po-btn" aria-pressed={linksOnly} onClick={() => setLinksOnly((v) => !v)}
+            style={linksOnly ? { borderColor: "var(--po-warn)", color: "var(--po-warn)", background: "var(--po-warn-soft)" } : undefined}>
             <Link2 size={15} />Contains a link{linksOnly ? "" : ` (${withLinks.length})`}
           </button>
           {visible.length > 0 && (
-            <label className="ad-check" style={{ marginLeft: "auto" }}>
-              <input type="checkbox" className="ad-cb"
+            <label className="po-check" style={{ marginLeft: "auto" }}>
+              <input type="checkbox" className="po-cb"
                 checked={visible.every((c) => selected.has(c.id))}
                 onChange={(e) => setSelected(e.target.checked ? new Set(visible.map((c) => c.id)) : new Set())} />
               Select all {visible.length} shown
@@ -245,14 +245,14 @@ export default function CommentsPage() {
       </section>
 
       {error ? (
-        <section className="ad-card">
+        <section className="po-card">
           <EmptyState icon={AlertTriangle} title="Couldn’t load comments" text={error}
-            action={<button type="button" className="ad-btn" onClick={load}><RefreshCw size={15} />Try again</button>} />
+            action={<button type="button" className="po-btn" onClick={load}><RefreshCw size={15} />Try again</button>} />
         </section>
       ) : loading && comments.length === 0 ? (
         <div style={{ display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={130} r={12} />)}</div>
       ) : visible.length === 0 ? (
-        <section className="ad-card">
+        <section className="po-card">
           <EmptyState
             icon={MessageSquare}
             title={comments.length ? "No comments match" : "All caught up"}
@@ -276,36 +276,36 @@ export default function CommentsPage() {
                         <motion.article
                           key={c.id}
                           layout
-                          className="ad-card cmt-card"
+                          className="po-card cmt-card"
                           data-selected={isSel}
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, x: -40, height: 0, marginTop: -10, transition: { duration: 0.22 } }}
                         >
                           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                            <input type="checkbox" className="ad-cb" style={{ marginTop: 10 }} checked={isSel} onChange={() => toggle(c.id)} aria-label={`Select comment by ${c.author}`} />
+                            <input type="checkbox" className="po-cb" style={{ marginTop: 10 }} checked={isSel} onChange={() => toggle(c.id)} aria-label={`Select comment by ${c.author}`} />
                             <Avatar name={c.author} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
                                 {/* Text nodes — visitor-supplied, never markup. */}
-                                <span className="ad-cell-main">{c.author}</span>
-                                <span className="ad-cell-sub">{c.email}</span>
-                                <span className="ad-cell-sub" style={{ marginLeft: "auto" }}>{when(c.date)}</span>
+                                <span className="po-cell-main">{c.author}</span>
+                                <span className="po-cell-sub">{c.email}</span>
+                                <span className="po-cell-sub" style={{ marginLeft: "auto" }}>{when(c.date)}</span>
                               </div>
                               {hasLink && (
                                 <div style={{ marginTop: 6 }}>
-                                  <span className="ad-badge ad-badge--plain ad-tone-warn" style={{ textTransform: "none" }}><Link2 size={12} />Contains a link</span>
+                                  <span className="po-badge po-badge--plain po-tone-warn" style={{ textTransform: "none" }}><Link2 size={12} />Contains a link</span>
                                 </div>
                               )}
                               <p className="cmt-text">{c.content}</p>
                               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                <button type="button" className="ad-btn ad-btn--sm ad-btn--success-soft" disabled={busy} onClick={() => ask("approved", [c.id])}>
+                                <button type="button" className="po-btn po-btn--sm po-btn--success-soft" disabled={busy} onClick={() => ask("approved", [c.id])}>
                                   <Check size={14} strokeWidth={2.6} />Approve
                                 </button>
-                                <button type="button" className="ad-btn ad-btn--sm" disabled={busy} onClick={() => ask("spam", [c.id])}>
+                                <button type="button" className="po-btn po-btn--sm" disabled={busy} onClick={() => ask("spam", [c.id])}>
                                   <ShieldAlert size={14} />Spam
                                 </button>
-                                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" disabled={busy} onClick={() => ask("delete", [c.id])} style={{ color: "var(--ad-danger)" }}>
+                                <button type="button" className="po-btn po-btn--sm po-btn--ghost" disabled={busy} onClick={() => ask("delete", [c.id])} style={{ color: "var(--po-danger)" }}>
                                   <Trash2 size={14} />Delete
                                 </button>
                               </div>
@@ -319,7 +319,7 @@ export default function CommentsPage() {
 
                 {/* The post, pinned beside its comments. */}
                 <aside className="cmt-post">
-                  <div className="ad-card" style={{ overflow: "hidden" }}>
+                  <div className="po-card" style={{ overflow: "hidden" }}>
                     <div className="cmt-post-img">
                       {group.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -329,17 +329,17 @@ export default function CommentsPage() {
                       )}
                     </div>
                     <div style={{ padding: 16 }}>
-                      <div className="ad-menu-label" style={{ padding: 0, marginBottom: 6 }}>Commented post</div>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ad-text)", lineHeight: 1.35 }}>{group.title}</div>
-                      {group.date && <div className="ad-cell-sub" style={{ marginTop: 4 }}>Published {when(group.date, false)}</div>}
-                      {group.excerpt && <p className="ad-clamp-2" style={{ margin: "10px 0 0", fontSize: 12.5, lineHeight: 1.6, color: "var(--ad-text-2)", WebkitLineClamp: 4 } as React.CSSProperties}>{group.excerpt}</p>}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--ad-border)", flexWrap: "wrap" }}>
-                        <label className="ad-check" style={{ fontSize: 12.5 }}>
-                          <input type="checkbox" className="ad-cb" checked={allInGroup} onChange={() => toggleGroup(group)} />
+                      <div className="po-menu-label" style={{ padding: 0, marginBottom: 6 }}>Commented post</div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--po-text)", lineHeight: 1.35 }}>{group.title}</div>
+                      {group.date && <div className="po-cell-sub" style={{ marginTop: 4 }}>Published {when(group.date, false)}</div>}
+                      {group.excerpt && <p className="po-clamp-2" style={{ margin: "10px 0 0", fontSize: 12.5, lineHeight: 1.6, color: "var(--po-text-2)", WebkitLineClamp: 4 } as React.CSSProperties}>{group.excerpt}</p>}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--po-border)", flexWrap: "wrap" }}>
+                        <label className="po-check" style={{ fontSize: 12.5 }}>
+                          <input type="checkbox" className="po-cb" checked={allInGroup} onChange={() => toggleGroup(group)} />
                           {group.items.length} awaiting
                         </label>
                         {group.slug && (
-                          <a href={`/news/${group.slug}`} target="_blank" rel="noopener noreferrer" className="ad-card-link" style={{ marginLeft: "auto" }}>
+                          <a href={`/news/${group.slug}`} target="_blank" rel="noopener noreferrer" className="po-card-link" style={{ marginLeft: "auto" }}>
                             View post <ExternalLink size={13} />
                           </a>
                         )}
@@ -357,7 +357,7 @@ export default function CommentsPage() {
       <AnimatePresence>
         {(selected.size > 0 || busy) && (
           <motion.div
-            className="ad-bulkbar"
+            className="po-bulkbar"
             initial={{ opacity: 0, y: 24, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 24, x: "-50%" }}
@@ -367,20 +367,20 @@ export default function CommentsPage() {
           >
             {busy && progress ? (
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 8px 4px 0", minWidth: 260 }}>
-                <RefreshCw size={15} className="ad-spin" />
+                <RefreshCw size={15} className="po-spin" />
                 <span>Working… {progress.done} of {progress.of}</span>
-                <div className="ad-meter" style={{ flex: 1, background: "rgba(255,255,255,0.12)" }}>
-                  <span style={{ width: `${(progress.done / progress.of) * 100}%`, ["--tone" as string]: "var(--ad-gold)", animation: "none", transition: "width .2s" }} />
+                <div className="po-meter" style={{ flex: 1, background: "rgba(255,255,255,0.12)" }}>
+                  <span style={{ width: `${(progress.done / progress.of) * 100}%`, ["--tone" as string]: "var(--po-gold)", animation: "none", transition: "width .2s" }} />
                 </div>
               </div>
             ) : (
               <>
                 <strong>{selected.size} selected</strong>
-                <span className="ad-bulkbar-sep" />
-                <button type="button" className="ad-btn ad-btn--sm" onClick={() => ask("approved", selectedIds)}><Check size={14} />Approve</button>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" onClick={() => ask("spam", selectedIds)}><ShieldAlert size={14} />Mark as spam</button>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--danger-soft" onClick={() => ask("delete", selectedIds)}><Trash2 size={14} />Delete</button>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection"><X size={15} /></button>
+                <span className="po-bulkbar-sep" />
+                <button type="button" className="po-btn po-btn--sm" onClick={() => ask("approved", selectedIds)}><Check size={14} />Approve</button>
+                <button type="button" className="po-btn po-btn--sm po-btn--gold" onClick={() => ask("spam", selectedIds)}><ShieldAlert size={14} />Mark as spam</button>
+                <button type="button" className="po-btn po-btn--sm po-btn--danger-soft" onClick={() => ask("delete", selectedIds)}><Trash2 size={14} />Delete</button>
+                <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection"><X size={15} /></button>
               </>
             )}
           </motion.div>
@@ -410,22 +410,22 @@ export default function CommentsPage() {
 
       <style>{`
         .cmt-group { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
-        .cmt-group + .cmt-group { border-top: 1px solid var(--ad-border); padding-top: 28px; }
+        .cmt-group + .cmt-group { border-top: 1px solid var(--po-border); padding-top: 28px; }
         .cmt-post { position: sticky; top: 16px; }
         @media (max-width: 1100px) {
           .cmt-group { grid-template-columns: minmax(0, 1fr); }
           .cmt-post { position: static; order: -1; }
         }
         .cmt-card { padding: 14px 16px; overflow: hidden; }
-        .cmt-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--ad-brand-ink); }
+        .cmt-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--po-brand-ink); }
         .cmt-text {
           margin: 10px 0 12px; padding: 10px 12px; border-radius: 10px;
-          background: var(--ad-surface-2); border: 1px solid var(--ad-border);
-          font-size: 13.5px; line-height: 1.65; color: var(--ad-text-2);
+          background: var(--po-surface-2); border: 1px solid var(--po-border);
+          font-size: 13.5px; line-height: 1.65; color: var(--po-text-2);
           white-space: pre-wrap; overflow-wrap: anywhere;
           max-height: 180px; overflow-y: auto;
         }
-        .cmt-post-img { height: 120px; overflow: hidden; background: var(--ad-surface-3); display: grid; place-items: center; color: var(--ad-text-3); }
+        .cmt-post-img { height: 120px; overflow: hidden; background: var(--po-surface-3); display: grid; place-items: center; color: var(--po-text-3); }
         .cmt-post-img img { width: 100%; height: 100% !important; object-fit: cover; display: block; }
       `}</style>
     </>

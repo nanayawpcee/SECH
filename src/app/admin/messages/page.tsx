@@ -168,14 +168,14 @@ export default function MessagesPage() {
         title="Messages"
         subtitle="Sent through the contact form on the website"
         actions={
-          <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
-            <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />Refresh
+          <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
+            <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
           </button>
         }
       />
 
       {needsPlugin && (
-        <div className="ad-alert ad-tone-warn" role="status" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>
             WordPress needs the SECH Portal plugin version 1.5.0 before messages can be saved. Until then the contact
@@ -184,13 +184,13 @@ export default function MessagesPage() {
         </div>
       )}
       {error && (
-        <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
         </div>
       )}
 
       <div className="msg-layout" data-open={open ? "true" : undefined}>
-        <section className="ad-card msg-list-card">
+        <section className="po-card msg-list-card">
           <div className="msg-list-head">
             <Segmented
               id="messages"
@@ -204,9 +204,9 @@ export default function MessagesPage() {
                 { value: "all", label: "All", count: counts.all },
               ]}
             />
-            <div className="ad-input-wrap">
+            <div className="po-input-wrap">
               <Search size={15} />
-              <input className="ad-input" placeholder="Search name, email, phone or text" value={query}
+              <input className="po-input" placeholder="Search name, email, phone or text" value={query}
                 onChange={(e) => setQuery(e.target.value)} aria-label="Search messages" />
             </div>
           </div>
@@ -246,12 +246,12 @@ export default function MessagesPage() {
           )}
         </section>
 
-        <section className="ad-card msg-read" aria-live="polite">
+        <section className="po-card msg-read" aria-live="polite">
           {!open ? (
             <EmptyState icon={MailOpen} title="Select a message" text="Pick a message on the left to read it here." />
           ) : (
             <article className="msg-article">
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--sm msg-back" onClick={() => setOpenId(null)}>
+              <button type="button" className="po-btn po-btn--ghost po-btn--sm msg-back" onClick={() => setOpenId(null)}>
                 <ArrowLeft size={15} />All messages
               </button>
 
@@ -282,22 +282,22 @@ export default function MessagesPage() {
 
               <div className="msg-actions">
                 {open.email && (
-                  <a className="ad-btn ad-btn--primary" href={replyHref(open)} onClick={() => open.status !== "done" && setStatus(open, "read", true)}>
+                  <a className="po-btn po-btn--primary" href={replyHref(open)} onClick={() => open.status !== "done" && setStatus(open, "read", true)}>
                     <Mail size={15} />Reply by email
                   </a>
                 )}
                 {open.phone && (
-                  <a className="ad-btn" href={`tel:${open.phone.replace(/\s+/g, "")}`}><Phone size={15} />Call</a>
+                  <a className="po-btn" href={`tel:${open.phone.replace(/\s+/g, "")}`}><Phone size={15} />Call</a>
                 )}
                 {open.status === "done" ? (
-                  <button type="button" className="ad-btn" onClick={() => setStatus(open, "read")}><RotateCcw size={15} />Reopen</button>
+                  <button type="button" className="po-btn" onClick={() => setStatus(open, "read")}><RotateCcw size={15} />Reopen</button>
                 ) : (
-                  <button type="button" className="ad-btn ad-btn--success-soft" onClick={() => setStatus(open, "done")}><CheckCheck size={15} />Mark done</button>
+                  <button type="button" className="po-btn po-btn--success-soft" onClick={() => setStatus(open, "done")}><CheckCheck size={15} />Mark done</button>
                 )}
                 {open.status !== "new" && open.status !== "done" && (
-                  <button type="button" className="ad-btn ad-btn--ghost" onClick={() => setStatus(open, "new")}><Mail size={15} />Mark unread</button>
+                  <button type="button" className="po-btn po-btn--ghost" onClick={() => setStatus(open, "new")}><Mail size={15} />Mark unread</button>
                 )}
-                <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" style={{ marginLeft: "auto" }}
+                <button type="button" className="po-btn po-btn--ghost po-btn--icon" style={{ marginLeft: "auto" }}
                   onClick={() => setToDelete(open)} aria-label="Delete message" title="Delete">
                   <Trash2 size={15} />
                 </button>

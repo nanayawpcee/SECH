@@ -186,7 +186,7 @@ function Dashboard() {
       />
 
       {/* ── KPIs ─────────────────────────────────────────────────────── */}
-      <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", marginBottom: 16 }}>
+      <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", marginBottom: 16 }}>
         {canBookings && (<>
         <Reveal delay={0}>
           <Kpi
@@ -196,7 +196,7 @@ function Dashboard() {
             label="Appointments today"
             value={stats.todayAppts.length}
             loading={loading}
-            foot={<span className="ad-kpi-note">{stats.next7.length} in the next 7 days</span>}
+            foot={<span className="po-kpi-note">{stats.next7.length} in the next 7 days</span>}
           />
         </Reveal>
         <Reveal delay={0.05}>
@@ -208,7 +208,7 @@ function Dashboard() {
             value={stats.pending.length}
             loading={loading}
             foot={
-              <span className="ad-kpi-note">
+              <span className="po-kpi-note">
                 {stats.oldestPending
                   ? `Oldest waiting ${Math.max(0, diffDays(stats.oldestPending, today))} day${diffDays(stats.oldestPending, today) === 1 ? "" : "s"}`
                   : "Nothing waiting"}
@@ -227,7 +227,7 @@ function Dashboard() {
             foot={
               <>
                 <Trend current={stats.received.length} previous={stats.receivedPrev.length} suffix="vs prior" />
-                <Sparkline values={stats.receivedByDay} color="var(--ad-info)" width={84} height={26} />
+                <Sparkline values={stats.receivedByDay} color="var(--po-info)" width={84} height={26} />
               </>
             }
           />
@@ -242,7 +242,7 @@ function Dashboard() {
               label="Staff posts to review"
               value={awaitingReview}
               loading={postsLoading}
-              foot={<span className="ad-kpi-note">{awaitingReview ? "Submitted by staff writers" : "Nothing waiting"}</span>}
+              foot={<span className="po-kpi-note">{awaitingReview ? "Submitted by staff writers" : "Nothing waiting"}</span>}
             />
           </Reveal>
         )}
@@ -255,7 +255,7 @@ function Dashboard() {
             value={stats.published}
             loading={loading}
             foot={
-              <span className="ad-kpi-note">
+              <span className="po-kpi-note">
                 {stats.drafts} draft{stats.drafts === 1 ? "" : "s"} · {pendingComments} comment{pendingComments === 1 ? "" : "s"} to review
               </span>
             }
@@ -265,16 +265,16 @@ function Dashboard() {
 
       {canBookings && (<>
       {/* ── Trend + status ───────────────────────────────────────────── */}
-      <div className="ad-grid ad-dash-row">
+      <div className="po-grid po-dash-row">
         <Reveal delay={0.2}>
           <Card
             title="Booking activity"
             icon={TrendingUp}
             subtitle={`Requests received and appointments scheduled, ${RANGE_LABEL[range]}`}
             action={
-              <div className="ad-legend">
-                <span><span className="ad-legend-dot" style={{ background: "var(--ad-c1)" }} />Received</span>
-                <span><span className="ad-legend-dot" style={{ background: "var(--ad-c2)" }} />Scheduled</span>
+              <div className="po-legend">
+                <span><span className="po-legend-dot" style={{ background: "var(--po-c1)" }} />Received</span>
+                <span><span className="po-legend-dot" style={{ background: "var(--po-c2)" }} />Scheduled</span>
               </div>
             }
           >
@@ -284,8 +284,8 @@ function Dashboard() {
               <AreaChart
                 labels={chartLabels}
                 series={[
-                  { name: "Received", color: "var(--ad-c1)", values: stats.receivedByDay },
-                  { name: "Scheduled", color: "var(--ad-c2)", values: stats.scheduledByDay },
+                  { name: "Received", color: "var(--po-c1)", values: stats.receivedByDay },
+                  { name: "Scheduled", color: "var(--po-c2)", values: stats.scheduledByDay },
                 ]}
                 formatTip={(i) => formatDay(stats.keys[i], { weekday: "long", day: "numeric", month: "long" })}
               />
@@ -302,26 +302,26 @@ function Dashboard() {
                 <Donut
                   centerLabel="requests"
                   slices={[
-                    { label: "Confirmed", value: stats.statusSplit.confirmed, color: "var(--ad-success)" },
-                    { label: "Pending", value: stats.statusSplit.pending, color: "var(--ad-c2)" },
-                    { label: "Cancelled", value: stats.statusSplit.cancelled, color: "var(--ad-c4)" },
+                    { label: "Confirmed", value: stats.statusSplit.confirmed, color: "var(--po-success)" },
+                    { label: "Pending", value: stats.statusSplit.pending, color: "var(--po-c2)" },
+                    { label: "Cancelled", value: stats.statusSplit.cancelled, color: "var(--po-c4)" },
                   ]}
                 />
                 <div style={{ width: "100%", display: "grid", gap: 8 }}>
                   {([
-                    ["Confirmed", stats.statusSplit.confirmed, "var(--ad-success)", "confirmed"],
-                    ["Pending", stats.statusSplit.pending, "var(--ad-c2)", "pending"],
-                    ["Cancelled", stats.statusSplit.cancelled, "var(--ad-c4)", "cancelled"],
+                    ["Confirmed", stats.statusSplit.confirmed, "var(--po-success)", "confirmed"],
+                    ["Pending", stats.statusSplit.pending, "var(--po-c2)", "pending"],
+                    ["Cancelled", stats.statusSplit.cancelled, "var(--po-c4)", "cancelled"],
                   ] as const).map(([label, n, color, status]) => (
                     <Link
                       key={label}
                       href={`/admin/bookings?status=${status}`}
-                      className="ad-menu-item"
+                      className="po-menu-item"
                       style={{ padding: "7px 8px" }}
                     >
-                      <span className="ad-legend-dot" style={{ background: color, margin: 0 }} />
+                      <span className="po-legend-dot" style={{ background: color, margin: 0 }} />
                       <span style={{ flex: 1 }}>{label}</span>
-                      <strong style={{ color: "var(--ad-text)" }}>{n}</strong>
+                      <strong style={{ color: "var(--po-text)" }}>{n}</strong>
                     </Link>
                   ))}
                 </div>
@@ -332,13 +332,13 @@ function Dashboard() {
       </div>
 
       {/* ── Upcoming + departments ───────────────────────────────────── */}
-      <div className="ad-grid ad-dash-row" style={{ marginTop: 16 }}>
+      <div className="po-grid po-dash-row" style={{ marginTop: 16 }}>
         <Reveal delay={0.3}>
           <Card
             title="Upcoming appointments"
             icon={CalendarDays}
             subtitle="Next 7 days, excluding cancellations"
-            action={<Link href="/admin/calendar" className="ad-card-link">Calendar <ArrowRight size={14} /></Link>}
+            action={<Link href="/admin/calendar" className="po-card-link">Calendar <ArrowRight size={14} /></Link>}
             bodyClassName=""
           >
             {loading ? (
@@ -350,15 +350,15 @@ function Dashboard() {
             ) : (
               <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
                 {stats.next7.slice(0, 7).map((b) => (
-                  <li key={b.databaseId} className="ad-upcoming">
-                    <div className="ad-upcoming-date">
+                  <li key={b.databaseId} className="po-upcoming">
+                    <div className="po-upcoming-date">
                       <span>{formatDay(b.preferredDateISO, { weekday: "short" })}</span>
                       <strong>{formatDay(b.preferredDateISO, { day: "numeric" })}</strong>
                     </div>
                     <Avatar name={b.name} size="sm" />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="ad-cell-main" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.name}</div>
-                      <div className="ad-cell-sub" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div className="po-cell-main" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.name}</div>
+                      <div className="po-cell-sub" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Stethoscope size={12} />{b.dept || "No department"}</span>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Clock size={12} />{relativeDay(b.preferredDateISO)}{b.time ? `, ${b.time}` : ""}</span>
                       </div>
@@ -366,7 +366,7 @@ function Dashboard() {
                     {b.status === "pending" ? (
                       <button
                         type="button"
-                        className="ad-btn ad-btn--sm ad-btn--success-soft"
+                        className="po-btn po-btn--sm po-btn--success-soft"
                         onClick={() => onConfirm(b.databaseId)}
                         disabled={confirming === b.databaseId}
                       >
@@ -394,11 +394,11 @@ function Dashboard() {
                 {stats.depts.map(([dept, n], i) => (
                   <div key={dept}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
-                      <span style={{ color: "var(--ad-text-2)", fontWeight: 600 }}>{dept}</span>
-                      <span style={{ color: "var(--ad-text)", fontWeight: 700 }}>{n}</span>
+                      <span style={{ color: "var(--po-text-2)", fontWeight: 600 }}>{dept}</span>
+                      <span style={{ color: "var(--po-text)", fontWeight: 700 }}>{n}</span>
                     </div>
-                    <div className="ad-meter">
-                      <span style={{ width: `${(n / maxDept) * 100}%`, ["--tone" as string]: `var(--ad-c${(i % 6) + 1})`, animationDelay: `${i * 0.06}s` }} />
+                    <div className="po-meter">
+                      <span style={{ width: `${(n / maxDept) * 100}%`, ["--tone" as string]: `var(--po-c${(i % 6) + 1})`, animationDelay: `${i * 0.06}s` }} />
                     </div>
                   </div>
                 ))}
@@ -411,29 +411,29 @@ function Dashboard() {
       </>)}
 
       {/* ── Content + shortcuts ──────────────────────────────────────── */}
-      <div className="ad-grid ad-dash-row" style={{ marginTop: canBookings ? 16 : 0 }}>
+      <div className="po-grid po-dash-row" style={{ marginTop: canBookings ? 16 : 0 }}>
         <Reveal delay={0.4}>
           <Card
             title="Latest posts"
             icon={Newspaper}
-            action={<Link href="/admin/posts" className="ad-card-link">All posts <ArrowRight size={14} /></Link>}
+            action={<Link href="/admin/posts" className="po-card-link">All posts <ArrowRight size={14} /></Link>}
             bodyClassName=""
           >
             {loading ? (
               <div style={{ padding: "0 18px 18px", display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={40} r={10} />)}</div>
             ) : posts.length === 0 ? (
-              <EmptyState icon={Newspaper} title="No posts yet" action={<Link href="/admin/posts/new" className="ad-btn ad-btn--primary"><FilePlus2 size={15} />Write the first one</Link>} />
+              <EmptyState icon={Newspaper} title="No posts yet" action={<Link href="/admin/posts/new" className="po-btn po-btn--primary"><FilePlus2 size={15} />Write the first one</Link>} />
             ) : (
               <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
                 {posts.slice(0, 5).map((p) => (
                   <li key={p.id}>
-                    <Link href={`/admin/posts/${p.id}/edit`} className="ad-upcoming" style={{ textDecoration: "none" }}>
-                      <span className={`ad-kpi-icon ad-tone-${p.status === "published" ? "brand" : "muted"}`} style={{ width: 36, height: 36 }}>
+                    <Link href={`/admin/posts/${p.id}/edit`} className="po-upcoming" style={{ textDecoration: "none" }}>
+                      <span className={`po-kpi-icon po-tone-${p.status === "published" ? "brand" : "muted"}`} style={{ width: 36, height: 36 }}>
                         {p.status === "published" ? <Newspaper size={16} /> : <FilePen size={16} />}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="ad-cell-main" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
-                        <div className="ad-cell-sub" style={{ textTransform: "capitalize" }}>{p.type} · {p.date || "Undated"}</div>
+                        <div className="po-cell-main" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+                        <div className="po-cell-sub" style={{ textTransform: "capitalize" }}>{p.type} · {p.date || "Undated"}</div>
                       </div>
                       <StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} />
                     </Link>
@@ -463,32 +463,32 @@ function Dashboard() {
       </div>
 
       <style>{`
-        .ad-dash-row { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
-        @media (max-width: 1100px) { .ad-dash-row { grid-template-columns: minmax(0, 1fr); } }
-        .ad-upcoming {
+        .po-dash-row { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
+        @media (max-width: 1100px) { .po-dash-row { grid-template-columns: minmax(0, 1fr); } }
+        .po-upcoming {
           display: flex; align-items: center; gap: 12px;
           padding: 10px 8px; border-radius: 10px;
           transition: background .15s;
         }
-        .ad-upcoming:hover { background: var(--ad-surface-2); }
-        .ad-upcoming-date {
+        .po-upcoming:hover { background: var(--po-surface-2); }
+        .po-upcoming-date {
           width: 44px; flex-shrink: 0; text-align: center;
           border-radius: 10px; padding: 5px 0;
-          background: var(--ad-surface-3);
+          background: var(--po-surface-3);
           line-height: 1.1;
         }
-        .ad-upcoming-date span { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ad-text-3); }
-        .ad-upcoming-date strong { display: block; font-size: 17px; color: var(--ad-text); }
-        .ad-quick {
+        .po-upcoming-date span { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--po-text-3); }
+        .po-upcoming-date strong { display: block; font-size: 17px; color: var(--po-text); }
+        .po-quick {
           display: flex; align-items: center; gap: 12px;
           padding: 12px; border-radius: 12px;
-          border: 1px solid var(--ad-border);
+          border: 1px solid var(--po-border);
           text-decoration: none; color: inherit;
           transition: border-color .15s, background .15s, transform .15s;
         }
-        .ad-quick:hover { border-color: var(--ad-border-strong); background: var(--ad-surface-2); transform: translateX(2px); }
-        .ad-quick:hover .ad-quick-arrow { transform: translateX(3px); color: var(--ad-brand-ink); }
-        .ad-quick-arrow { margin-left: auto; color: var(--ad-text-3); transition: transform .15s, color .15s; }
+        .po-quick:hover { border-color: var(--po-border-strong); background: var(--po-surface-2); transform: translateX(2px); }
+        .po-quick:hover .po-quick-arrow { transform: translateX(3px); color: var(--po-brand-ink); }
+        .po-quick-arrow { margin-left: auto; color: var(--po-text-3); transition: transform .15s, color .15s; }
       `}</style>
     </>
   );
@@ -506,13 +506,13 @@ function Kpi({
   loading: boolean;
 }) {
   return (
-    <Link href={href} className={`ad-card ad-card--hover ad-kpi ad-tone-${tone}`}>
-      <div className="ad-kpi-top">
-        <span className="ad-kpi-label">{label}</span>
-        <span className="ad-kpi-icon"><Icon size={17} /></span>
+    <Link href={href} className={`po-card po-card--hover po-kpi po-tone-${tone}`}>
+      <div className="po-kpi-top">
+        <span className="po-kpi-label">{label}</span>
+        <span className="po-kpi-icon"><Icon size={17} /></span>
       </div>
-      <div className="ad-kpi-value">{loading ? <Skeleton w={60} h={30} /> : <CountUp value={value} />}</div>
-      <div className="ad-kpi-foot">{loading ? <Skeleton w="70%" h={12} /> : foot}</div>
+      <div className="po-kpi-value">{loading ? <Skeleton w={60} h={30} /> : <CountUp value={value} />}</div>
+      <div className="po-kpi-foot">{loading ? <Skeleton w="70%" h={12} /> : foot}</div>
     </Link>
   );
 }
@@ -521,13 +521,13 @@ function QuickAction({ href, icon: Icon, tone, title, text }: {
   href: string; icon: typeof Inbox; tone: string; title: string; text: string;
 }) {
   return (
-    <Link href={href} className="ad-quick">
-      <span className={`ad-kpi-icon ad-tone-${tone}`}><Icon size={17} /></span>
+    <Link href={href} className="po-quick">
+      <span className={`po-kpi-icon po-tone-${tone}`}><Icon size={17} /></span>
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: "block", fontWeight: 700, fontSize: 13.5, color: "var(--ad-text)" }}>{title}</span>
-        <span style={{ display: "block", fontSize: 12, color: "var(--ad-text-3)" }}>{text}</span>
+        <span style={{ display: "block", fontWeight: 700, fontSize: 13.5, color: "var(--po-text)" }}>{title}</span>
+        <span style={{ display: "block", fontSize: 12, color: "var(--po-text-3)" }}>{text}</span>
       </span>
-      <ArrowRight size={16} className="ad-quick-arrow" />
+      <ArrowRight size={16} className="po-quick-arrow" />
     </Link>
   );
 }

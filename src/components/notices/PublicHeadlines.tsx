@@ -73,7 +73,7 @@ export function PublicHeadlines({ headlines, focusId }: { headlines: NoticeHeadl
             <strong>Full notices are for hospital staff.</strong>
             <span>Sign in with your staff account to read the details.</span>
           </div>
-          <Link href={focus ? readHref(focus.databaseId) : "/admin/login?next=%2Fstaff%2Fnotices"} className="ad-btn ad-btn--primary">Sign in<ArrowRight size={16} /></Link>
+          <Link href={focus ? readHref(focus.databaseId) : "/admin/login?next=%2Fstaff%2Fnotices"} className="po-btn po-btn--primary">Sign in<ArrowRight size={16} /></Link>
         </div>
 
         <div className="pn-foot">
@@ -88,12 +88,12 @@ function Headline({ h, large }: { h: NoticeHeadline; large?: boolean }) {
   const tone = PRIORITY_TONE[h.priority] ?? "brand";
   const cat = NOTICE_CATEGORIES.find((c) => c.value === h.category)?.label ?? "General";
   return (
-    <Link href={readHref(h.databaseId)} className={`pn-card ad-tone-${tone}`} data-large={!!large} data-priority={h.priority}>
+    <Link href={readHref(h.databaseId)} className={`pn-card po-tone-${tone}`} data-large={!!large} data-priority={h.priority}>
       <div className="pn-tags">
         {h.pinned && <span className="pn-pin"><Pin size={12} />Pinned</span>}
-        <span className="ad-badge ad-badge--plain ad-tone-muted" style={{ textTransform: "none" }}>{cat}</span>
+        <span className="po-badge po-badge--plain po-tone-muted" style={{ textTransform: "none" }}>{cat}</span>
         {h.priority !== "normal" && (
-          <span className={`ad-badge ad-tone-${tone}`} style={{ textTransform: "none" }}>
+          <span className={`po-badge po-tone-${tone}`} style={{ textTransform: "none" }}>
             {h.priority === "urgent" && <AlertTriangle size={12} />}{h.priority === "urgent" ? "Urgent" : "Important"}
           </span>
         )}

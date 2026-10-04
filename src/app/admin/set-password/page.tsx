@@ -57,7 +57,7 @@ export default function SetPasswordPage() {
   const firstName = admin.name.split(" ")[0] || "there";
 
   return (
-    <div className="ad-root sp-root">
+    <div className="po-root sp-root">
       <motion.form
         className="sp-card"
         onSubmit={submit}
@@ -75,7 +75,7 @@ export default function SetPasswordPage() {
         </p>
 
         {error && (
-          <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 14 }}>
+          <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 14 }}>
             <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
           </div>
         )}
@@ -84,72 +84,72 @@ export default function SetPasswordPage() {
         <input type="text" name="username" autoComplete="username" value={admin.email || admin.name} readOnly hidden />
 
         <div style={{ display: "grid", gap: 14 }}>
-          <label className="ad-field">
-            <span className="ad-label">Temporary password</span>
-            <div className="ad-input-wrap">
+          <label className="po-field">
+            <span className="po-label">Temporary password</span>
+            <div className="po-input-wrap">
               <KeyRound size={16} />
-              <input className="ad-input sp-input" type={show ? "text" : "password"} value={current}
+              <input className="po-input sp-input" type={show ? "text" : "password"} value={current}
                 onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" autoFocus
                 placeholder="The one you were given" style={{ paddingRight: 44 }} />
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon ad-btn--sm" style={{ position: "absolute", right: 6 }}
+              <button type="button" className="po-btn po-btn--ghost po-btn--icon po-btn--sm" style={{ position: "absolute", right: 6 }}
                 onClick={() => setShow((v) => !v)} aria-label={show ? "Hide passwords" : "Show passwords"}>
                 {show ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </label>
 
-          <label className="ad-field">
-            <span className="ad-label">New password</span>
-            <input className="ad-input sp-input" type={show ? "text" : "password"} value={next}
+          <label className="po-field">
+            <span className="po-label">New password</span>
+            <input className="po-input sp-input" type={show ? "text" : "password"} value={next}
               onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
             {next && (
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 2 }}>
                 <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <span key={n} className={`ad-tone-${s.tone}`}
-                      style={{ height: 4, borderRadius: 2, background: n <= s.score ? "var(--tone)" : "var(--ad-surface-3)", transition: "background .2s" }} />
+                    <span key={n} className={`po-tone-${s.tone}`}
+                      style={{ height: 4, borderRadius: 2, background: n <= s.score ? "var(--tone)" : "var(--po-surface-3)", transition: "background .2s" }} />
                   ))}
                 </div>
-                <span className={`ad-tone-${s.tone}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--tone)", minWidth: 76, textAlign: "right" }}>{s.label}</span>
+                <span className={`po-tone-${s.tone}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--tone)", minWidth: 76, textAlign: "right" }}>{s.label}</span>
               </div>
             )}
-            {reused && <span style={{ fontSize: 12, color: "var(--ad-danger)" }}>Choose something different from the temporary password</span>}
+            {reused && <span style={{ fontSize: 12, color: "var(--po-danger)" }}>Choose something different from the temporary password</span>}
           </label>
 
-          <label className="ad-field">
-            <span className="ad-label">Confirm new password</span>
-            <input className="ad-input sp-input" type={show ? "text" : "password"} value={confirm}
+          <label className="po-field">
+            <span className="po-label">Confirm new password</span>
+            <input className="po-input sp-input" type={show ? "text" : "password"} value={confirm}
               onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
-            {mismatch && <span style={{ fontSize: 12, color: "var(--ad-danger)" }}>Doesn’t match</span>}
+            {mismatch && <span style={{ fontSize: 12, color: "var(--po-danger)" }}>Doesn’t match</span>}
           </label>
 
-          <p className="ad-hint" style={{ margin: 0 }}>
+          <p className="po-hint" style={{ margin: 0 }}>
             At least 12 characters. A short phrase of unrelated words, like “mango river lantern 42”, is easy to remember and hard to guess.
           </p>
 
-          <button type="submit" className="ad-btn ad-btn--primary sp-submit" disabled={!ready || saving}>
-            {saving ? <><Loader2 size={17} className="ad-spin" />Saving…</> : <>Set my password<ArrowRight size={17} /></>}
+          <button type="submit" className="po-btn po-btn--primary sp-submit" disabled={!ready || saving}>
+            {saving ? <><Loader2 size={17} className="po-spin" />Saving…</> : <>Set my password<ArrowRight size={17} /></>}
           </button>
         </div>
 
         <div className="sp-foot">
           <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}><ShieldCheck size={15} />Signed in as {admin.name}</span>
-          <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost" onClick={logout}><LogOut size={14} />Not you?</button>
+          <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={logout}><LogOut size={14} />Not you?</button>
         </div>
       </motion.form>
 
       <style>{`
         .sp-root { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px;
-          background: radial-gradient(circle at 80% 0%, rgba(232,184,75,0.12), transparent 45%), var(--ad-bg); }
-        .sp-card { width: 100%; max-width: 440px !important; background: var(--ad-surface); border: 1px solid var(--ad-border);
+          background: radial-gradient(circle at 80% 0%, rgba(232,184,75,0.12), transparent 45%), var(--po-bg); }
+        .sp-card { width: 100%; max-width: 440px !important; background: var(--po-surface); border: 1px solid var(--po-border);
           border-radius: 20px; padding: 34px 32px 22px; box-shadow: 0 24px 60px -24px rgba(6,30,23,0.25); }
         .sp-logo { width: 52px; height: 52px !important; border-radius: 50%; display: block; margin-bottom: 16px; }
-        .sp-title { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--ad-text); }
-        .sp-sub { margin: 8px 0 22px; font-size: 14px; line-height: 1.6; color: var(--ad-text-3); }
+        .sp-title { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--po-text); }
+        .sp-sub { margin: 8px 0 22px; font-size: 14px; line-height: 1.6; color: var(--po-text-3); }
         .sp-input { height: 44px; font-size: 14.5px; }
         .sp-submit { height: 46px; font-size: 14.5px; margin-top: 4px; }
         .sp-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-          margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--ad-border); font-size: 12.5px; color: var(--ad-text-3); }
+          margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--po-border); font-size: 12.5px; color: var(--po-text-3); }
         @media (max-width: 480px) { .sp-card { padding: 26px 20px 18px; } }
       `}</style>
     </div>

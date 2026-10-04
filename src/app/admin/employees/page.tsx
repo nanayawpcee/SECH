@@ -160,13 +160,13 @@ export default function EmployeesPage() {
         subtitle="Staff records, postings and ranks"
         actions={
           <>
-            <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
-              <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />Refresh
+            <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
+              <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
             </button>
-            <button type="button" className="ad-btn" onClick={exportCSV} disabled={!filtered.length}>
+            <button type="button" className="po-btn" onClick={exportCSV} disabled={!filtered.length}>
               <Download size={15} />Export
             </button>
-            <button type="button" className="ad-btn ad-btn--primary" onClick={() => setCreating(true)} disabled={!setup}>
+            <button type="button" className="po-btn po-btn--primary" onClick={() => setCreating(true)} disabled={!setup}>
               <UserPlus size={15} />Add staff member
             </button>
           </>
@@ -174,55 +174,55 @@ export default function EmployeesPage() {
       />
 
       {staff.needsPlugin && (
-        <div className="ad-alert ad-tone-warn" role="status" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>WordPress needs the SECH Portal plugin version 1.7.0 before staff records can be kept.</span>
         </div>
       )}
       {staff.error && (
-        <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{staff.error}</span>
         </div>
       )}
 
-      <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", marginBottom: 16 }}>
+      <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", marginBottom: 16 }}>
         {TILES.map((t) => {
           const Icon = t.icon;
           const active = focus === t.key;
           return (
-            <button key={t.key} type="button" className={`ad-card ad-card--hover ad-kpi ad-tone-${t.tone} ad-bk-tile`}
+            <button key={t.key} type="button" className={`po-card po-card--hover po-kpi po-tone-${t.tone} po-bk-tile`}
               data-active={active} aria-pressed={active} onClick={() => setFocus(active && t.key !== "all" ? "all" : t.key)}>
-              <div className="ad-kpi-top">
-                <span className="ad-kpi-label">{t.label}</span>
-                <span className="ad-kpi-icon"><Icon size={17} /></span>
+              <div className="po-kpi-top">
+                <span className="po-kpi-label">{t.label}</span>
+                <span className="po-kpi-icon"><Icon size={17} /></span>
               </div>
-              <div className="ad-kpi-value">{counts[t.key]}</div>
+              <div className="po-kpi-value">{counts[t.key]}</div>
             </button>
           );
         })}
       </div>
 
-      <section className="ad-card">
-        <div className="ad-toolbar">
-          <div className="ad-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
+      <section className="po-card">
+        <div className="po-toolbar">
+          <div className="po-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="ad-input" placeholder="Name, staff no., phone, PIN" value={query}
+            <input className="po-input" placeholder="Name, staff no., phone, PIN" value={query}
               onChange={(e) => setQuery(e.target.value)} aria-label="Search staff" />
           </div>
-          <select className="ad-select" style={{ width: 200 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
+          <select className="po-select" style={{ width: 200 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
             <option value="all">All departments</option>
             {setup?.structure.departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
-          <select className="ad-select" style={{ width: 200 }} value={cadre} onChange={(e) => setCadre(e.target.value)} aria-label="Cadre">
+          <select className="po-select" style={{ width: 200 }} value={cadre} onChange={(e) => setCadre(e.target.value)} aria-label="Cadre">
             <option value="all">All cadres</option>
             {setup?.ranks.cadres.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select className="ad-select" style={{ width: 170 }} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status">
+          <select className="po-select" style={{ width: 170 }} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status">
             <option value="current">Current staff</option>
             <option value="all">Everyone, incl. left</option>
             {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
-          {filtersOn && <button type="button" className="ad-btn ad-btn--ghost" onClick={clearFilters}><X size={15} />Clear</button>}
+          {filtersOn && <button type="button" className="po-btn po-btn--ghost" onClick={clearFilters}><X size={15} />Clear</button>}
         </div>
 
         {!staff.loaded ? (
@@ -234,15 +234,15 @@ export default function EmployeesPage() {
             text={employees.length ? "Try widening the filters." : "Add your first staff member, or set up departments and ranks first."}
             action={
               employees.length ? (
-                <button type="button" className="ad-btn" onClick={clearFilters}><X size={15} />Clear filters</button>
+                <button type="button" className="po-btn" onClick={clearFilters}><X size={15} />Clear filters</button>
               ) : setup ? (
-                <button type="button" className="ad-btn ad-btn--primary" onClick={() => setCreating(true)}><UserPlus size={15} />Add staff member</button>
+                <button type="button" className="po-btn po-btn--primary" onClick={() => setCreating(true)}><UserPlus size={15} />Add staff member</button>
               ) : undefined
             }
           />
         ) : (
-          <div className="ad-table-wrap">
-            <table className="ad-table">
+          <div className="po-table-wrap">
+            <table className="po-table">
               <thead>
                 <tr>
                   <th>Staff member</th>
@@ -266,8 +266,8 @@ export default function EmployeesPage() {
                         <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
                           <Avatar name={fullName(e)} />
                           <div style={{ minWidth: 0 }}>
-                            <div className="ad-cell-main">{fullName(e, true)}</div>
-                            <div className="ad-cell-sub">
+                            <div className="po-cell-main">{fullName(e, true)}</div>
+                            <div className="po-cell-sub">
                               {[e.staffNumber, employmentLabel(e.employmentType)].filter(Boolean).join(" · ")}
                               {e.status !== "active" && <> · <Chip tone={STATUS_TONE[e.status] ?? "muted"}>{statusLabel(e.status)}</Chip></>}
                             </div>
@@ -275,12 +275,12 @@ export default function EmployeesPage() {
                         </div>
                       </td>
                       <td>
-                        <div className="ad-cell-main" style={{ fontWeight: 600 }}>{rank?.name ?? "No rank"}</div>
-                        <div className="ad-cell-sub">{index.cadres.get(e.cadreId ?? "")?.name ?? ""}</div>
+                        <div className="po-cell-main" style={{ fontWeight: 600 }}>{rank?.name ?? "No rank"}</div>
+                        <div className="po-cell-sub">{index.cadres.get(e.cadreId ?? "")?.name ?? ""}</div>
                       </td>
                       <td>
-                        <div className="ad-cell-main" style={{ fontWeight: 600 }}>{unit?.name ?? deptName ?? "Not assigned"}</div>
-                        <div className="ad-cell-sub">{unit ? deptName : ""}</div>
+                        <div className="po-cell-main" style={{ fontWeight: 600 }}>{unit?.name ?? deptName ?? "Not assigned"}</div>
+                        <div className="po-cell-sub">{unit ? deptName : ""}</div>
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -291,10 +291,10 @@ export default function EmployeesPage() {
                       <td style={{ whiteSpace: "nowrap" }}>
                         {lic === "expired" ? <Chip tone="danger">Expired</Chip>
                           : lic === "soon" ? <Chip tone="warn">Renew by {formatDate(e.licenceExpiry)}</Chip>
-                          : lic === "ok" ? <span className="ad-cell-sub">Until {formatDate(e.licenceExpiry)}</span>
-                          : <span className="ad-cell-sub">None</span>}
+                          : lic === "ok" ? <span className="po-cell-sub">Until {formatDate(e.licenceExpiry)}</span>
+                          : <span className="po-cell-sub">None</span>}
                       </td>
-                      <td style={{ textAlign: "right", color: "var(--ad-text-3)" }}><ChevronRight size={16} /></td>
+                      <td style={{ textAlign: "right", color: "var(--po-text-3)" }}><ChevronRight size={16} /></td>
                     </tr>
                   );
                 })}

@@ -165,13 +165,13 @@ export default function NewsletterPage() {
         subtitle="People who signed up from the website footer"
         actions={
           <>
-            <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
-              <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />Refresh
+            <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
+              <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
             </button>
-            <button type="button" className="ad-btn" onClick={copyEmails} disabled={!mailable.length}>
+            <button type="button" className="po-btn" onClick={copyEmails} disabled={!mailable.length}>
               <Copy size={15} />Copy emails
             </button>
-            <button type="button" className="ad-btn ad-btn--primary" onClick={exportCSV} disabled={!mailable.length}>
+            <button type="button" className="po-btn po-btn--primary" onClick={exportCSV} disabled={!mailable.length}>
               <Download size={15} />Export mailing list
             </button>
           </>
@@ -179,7 +179,7 @@ export default function NewsletterPage() {
       />
 
       {needsPlugin && (
-        <div className="ad-alert ad-tone-warn" role="status" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>
             WordPress needs the SECH Portal plugin version 1.4.0 before sign-ups can be saved. Until then the footer
@@ -188,14 +188,14 @@ export default function NewsletterPage() {
         </div>
       )}
       {error && (
-        <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 16 }}>
+        <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
         </div>
       )}
 
       <NewsletterIssueCard />
 
-      <div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
+      <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
         {TILES.map((t) => {
           const Icon = t.icon;
           const active = filter === t.key;
@@ -203,29 +203,29 @@ export default function NewsletterPage() {
             <button
               key={t.key}
               type="button"
-              className={`ad-card ad-card--hover ad-kpi ad-tone-${t.tone} ad-bk-tile`}
+              className={`po-card po-card--hover po-kpi po-tone-${t.tone} po-bk-tile`}
               data-active={active}
               aria-pressed={active}
               onClick={() => setFilter(t.key)}
             >
-              <div className="ad-kpi-top">
-                <span className="ad-kpi-label">{t.label}</span>
-                <span className="ad-kpi-icon"><Icon size={17} /></span>
+              <div className="po-kpi-top">
+                <span className="po-kpi-label">{t.label}</span>
+                <span className="po-kpi-icon"><Icon size={17} /></span>
               </div>
-              <div className="ad-kpi-value">{counts[t.key]}</div>
+              <div className="po-kpi-value">{counts[t.key]}</div>
             </button>
           );
         })}
       </div>
 
-      <section className="ad-card">
-        <div className="ad-toolbar">
-          <div className="ad-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
+      <section className="po-card">
+        <div className="po-toolbar">
+          <div className="po-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="ad-input" placeholder="Search email or name" value={query}
+            <input className="po-input" placeholder="Search email or name" value={query}
               onChange={(e) => setQuery(e.target.value)} aria-label="Search subscribers" />
           </div>
-          <p className="ad-hint" style={{ margin: 0, marginLeft: "auto" }}>
+          <p className="po-hint" style={{ margin: 0, marginLeft: "auto" }}>
             Exports include each person’s unsubscribe link. Put it at the bottom of every email.
           </p>
         </div>
@@ -239,8 +239,8 @@ export default function NewsletterPage() {
             text={query ? "Try a different search." : "Sign-ups from the newsletter form at the bottom of every page appear here."}
           />
         ) : (
-          <div className="ad-table-wrap">
-            <table className="ad-table">
+          <div className="po-table-wrap">
+            <table className="po-table">
               <thead>
                 <tr>
                   <th>Email</th>
@@ -254,8 +254,8 @@ export default function NewsletterPage() {
                 {filtered.map((s) => (
                   <tr key={s.databaseId}>
                     <td>
-                      <div className="ad-cell-main">{s.email}</div>
-                      {s.name && <div className="ad-cell-sub">{s.name}</div>}
+                      <div className="po-cell-main">{s.email}</div>
+                      {s.name && <div className="po-cell-sub">{s.name}</div>}
                     </td>
                     <td>
                       <Chip tone={s.status === "subscribed" ? "success" : "muted"}>
@@ -266,12 +266,12 @@ export default function NewsletterPage() {
                     <td style={{ whiteSpace: "nowrap" }}>{formatDate(s.unsubscribedAt)}</td>
                     <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                       {s.status === "subscribed" && (
-                        <button type="button" className="ad-btn ad-btn--ghost ad-btn--sm" onClick={() => unsubscribe(s)}
+                        <button type="button" className="po-btn po-btn--ghost po-btn--sm" onClick={() => unsubscribe(s)}
                           title="Stop sending them emails">
                           <MailX size={15} />Unsubscribe
                         </button>
                       )}
-                      <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon ad-btn--sm"
+                      <button type="button" className="po-btn po-btn--ghost po-btn--icon po-btn--sm"
                         onClick={() => setToDelete(s)} aria-label={`Erase ${s.email}`} title="Erase completely">
                         <Trash2 size={15} />
                       </button>

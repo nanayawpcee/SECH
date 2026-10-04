@@ -104,7 +104,7 @@ export function AreaChart({
   };
 
   return (
-    <div className="ad-chart" ref={ref}>
+    <div className="po-chart" ref={ref}>
       <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img"
         aria-label={`Chart of ${series.map((s) => s.name).join(" and ")} over ${n} periods`}>
         <defs>
@@ -118,14 +118,14 @@ export function AreaChart({
 
         {ticks.map((t) => (
           <g key={t}>
-            <line className="ad-chart-grid" x1={pad.left} x2={w - pad.right} y1={y(t)} y2={y(t)} strokeDasharray={t === 0 ? undefined : "3 4"} />
-            <text className="ad-chart-axis" x={pad.left - 8} y={y(t)} dy="0.32em" textAnchor="end">{t}</text>
+            <line className="po-chart-grid" x1={pad.left} x2={w - pad.right} y1={y(t)} y2={y(t)} strokeDasharray={t === 0 ? undefined : "3 4"} />
+            <text className="po-chart-axis" x={pad.left - 8} y={y(t)} dy="0.32em" textAnchor="end">{t}</text>
           </g>
         ))}
 
         {labels.map((l, i) =>
           i % every === 0 || i === n - 1 ? (
-            <text key={i} className="ad-chart-axis" x={x(i)} y={h - 8} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}>
+            <text key={i} className="po-chart-axis" x={x(i)} y={h - 8} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}>
               {l}
             </text>
           ) : null,
@@ -161,9 +161,9 @@ export function AreaChart({
 
         {hover !== null && (
           <g pointerEvents="none">
-            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={floor} stroke="var(--ad-border-strong)" strokeWidth={1} />
+            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={floor} stroke="var(--po-border-strong)" strokeWidth={1} />
             {series.map((s) => (
-              <circle key={s.name} cx={x(hover)} cy={y(s.values[hover] ?? 0)} r={4.5} fill="var(--ad-surface)" stroke={s.color} strokeWidth={2.5} />
+              <circle key={s.name} cx={x(hover)} cy={y(s.values[hover] ?? 0)} r={4.5} fill="var(--po-surface)" stroke={s.color} strokeWidth={2.5} />
             ))}
           </g>
         )}
@@ -178,11 +178,11 @@ export function AreaChart({
       </svg>
 
       {hover !== null && (
-        <div className="ad-chart-tip" style={{ left: x(hover), top: Math.min(...series.map((s) => y(s.values[hover] ?? 0))) }}>
+        <div className="po-chart-tip" style={{ left: x(hover), top: Math.min(...series.map((s) => y(s.values[hover] ?? 0))) }}>
           <div style={{ opacity: 0.7, marginBottom: 4 }}>{formatTip ? formatTip(hover) : labels[hover]}</div>
           {series.map((s) => (
             <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="ad-legend-dot" style={{ background: s.color, margin: 0 }} />
+              <span className="po-legend-dot" style={{ background: s.color, margin: 0 }} />
               <span style={{ opacity: 0.8 }}>{s.name}</span>
               <strong style={{ marginLeft: "auto", paddingLeft: 12, fontSize: 13, display: "inline" }}>{s.values[hover] ?? 0}</strong>
             </div>
@@ -235,7 +235,7 @@ export function Donut({
     <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img"
         aria-label={slices.map((s) => `${s.label}: ${s.value}`).join(", ")}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ad-surface-3)" strokeWidth={thickness} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--po-surface-3)" strokeWidth={thickness} />
         <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
           {arcs.map((a, i) =>
             a.len > 0 ? (
@@ -261,14 +261,14 @@ export function Donut({
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center", pointerEvents: "none" }}>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 750, letterSpacing: "-0.03em", color: "var(--ad-text)", lineHeight: 1 }}>
+          <div style={{ fontSize: 28, fontWeight: 750, letterSpacing: "-0.03em", color: "var(--po-text)", lineHeight: 1 }}>
             {shown ? shown.value : total}
           </div>
-          <div style={{ fontSize: 11.5, color: "var(--ad-text-3)", marginTop: 4, fontWeight: 600 }}>
+          <div style={{ fontSize: 11.5, color: "var(--po-text-3)", marginTop: 4, fontWeight: 600 }}>
             {shown ? shown.label : centerLabel}
           </div>
           {shown && total > 0 && (
-            <div style={{ fontSize: 11, color: "var(--ad-text-3)" }}>{Math.round((shown.value / total) * 100)}%</div>
+            <div style={{ fontSize: 11, color: "var(--po-text-3)" }}>{Math.round((shown.value / total) * 100)}%</div>
           )}
         </div>
       </div>

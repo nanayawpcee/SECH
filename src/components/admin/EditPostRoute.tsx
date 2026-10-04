@@ -28,12 +28,12 @@ export function EditPostRoute({ base }: { base: "/admin/posts" | "/staff/posts" 
 
   if (!post) {
     return (
-      <section className="ad-card">
+      <section className="po-card">
         <EmptyState
           icon={FileQuestion}
           title="Post not found"
           text="It may have been deleted, or the link is out of date."
-          action={<Link href={base} className="ad-btn"><ArrowLeft size={15} />Back to posts</Link>}
+          action={<Link href={base} className="po-btn"><ArrowLeft size={15} />Back to posts</Link>}
         />
       </section>
     );

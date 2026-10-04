@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function NoticesLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`ad-root ${adminFont.variable}`} style={{ minHeight: "100vh" }}>
+    <div className={`po-root ${adminFont.variable}`} style={{ minHeight: "100vh" }}>
       {children}
     </div>
   );

@@ -189,11 +189,11 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
         }
         actions={
           <>
-            <button type="button" className="ad-btn" onClick={refresh} disabled={refreshing}>
-              <RefreshCw size={15} className={refreshing ? "ad-spin" : ""} />
+            <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
+              <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />
               Refresh
             </button>
-            <Link href={`${base}/new`} className="ad-btn ad-btn--primary">
+            <Link href={`${base}/new`} className="po-btn po-btn--primary">
               <FilePlus2 size={16} />
               New post
             </Link>
@@ -201,9 +201,9 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
         }
       />
 
-      <section className="ad-card">
+      <section className="po-card">
         {/* Toolbar */}
-        <div className="ad-toolbar">
+        <div className="po-toolbar">
           <Segmented<StatusFilter>
             id="posts-status"
             ariaLabel="Filter by status"
@@ -216,26 +216,26 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
               { value: "draft", label: "Drafts", count: counts.draft },
             ]}
           />
-          <select className="ad-select" style={{ width: 170 }} value={type} onChange={(e) => setType(e.target.value as TypeFilter)} aria-label="Filter by type">
+          <select className="po-select" style={{ width: 170 }} value={type} onChange={(e) => setType(e.target.value as TypeFilter)} aria-label="Filter by type">
             <option value="all">All types</option>
             {TYPES.map((t) => <option key={t} value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
           </select>
-          <div className="ad-input-wrap" style={{ flex: "1 1 220px", maxWidth: 340 }}>
+          <div className="po-input-wrap" style={{ flex: "1 1 220px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="ad-input" placeholder="Search title, excerpt or author" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search posts" />
+            <input className="po-input" placeholder="Search title, excerpt or author" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search posts" />
           </div>
-          <div className="ad-seg" style={{ marginLeft: "auto" }} role="group" aria-label="Layout">
-            <button type="button" className="ad-seg-btn" aria-pressed={view === "table"} onClick={() => chooseView("table")} title="Table">
-              {view === "table" && <motion.span layoutId="posts-view" className="ad-seg-pill" />}
+          <div className="po-seg" style={{ marginLeft: "auto" }} role="group" aria-label="Layout">
+            <button type="button" className="po-seg-btn" aria-pressed={view === "table"} onClick={() => chooseView("table")} title="Table">
+              {view === "table" && <motion.span layoutId="posts-view" className="po-seg-pill" />}
               <List size={15} />
             </button>
-            <button type="button" className="ad-seg-btn" aria-pressed={view === "grid"} onClick={() => chooseView("grid")} title="Cards">
-              {view === "grid" && <motion.span layoutId="posts-view" className="ad-seg-pill" />}
+            <button type="button" className="po-seg-btn" aria-pressed={view === "grid"} onClick={() => chooseView("grid")} title="Cards">
+              {view === "grid" && <motion.span layoutId="posts-view" className="po-seg-pill" />}
               <LayoutGrid size={15} />
             </button>
           </div>
         </div>
-        <hr className="ad-divider" />
+        <hr className="po-divider" />
 
         {postsLoading && posts.length === 0 ? (
           <SkeletonRows rows={6} cols={5} />
@@ -244,7 +244,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
             icon={AlertTriangle}
             title="Couldn’t load posts"
             text={postsError}
-            action={<button type="button" className="ad-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>}
+            action={<button type="button" className="po-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>}
           />
         ) : filtered.length === 0 ? (
           <EmptyState
@@ -253,21 +253,21 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
             text={posts.length ? "Try a different filter or search term." : "Publish news, blogs, events and announcements for the website."}
             action={
               posts.length ? (
-                <button type="button" className="ad-btn" onClick={() => { setQuery(""); setStatus("all"); setType("all"); }}>
+                <button type="button" className="po-btn" onClick={() => { setQuery(""); setStatus("all"); setType("all"); }}>
                   <X size={15} />Clear filters
                 </button>
               ) : (
-                <Link href={`${base}/new`} className="ad-btn ad-btn--primary"><FilePlus2 size={15} />Write a post</Link>
+                <Link href={`${base}/new`} className="po-btn po-btn--primary"><FilePlus2 size={15} />Write a post</Link>
               )
             }
           />
         ) : view === "table" ? (
-          <div className="ad-table-wrap">
-            <table className="ad-table">
+          <div className="po-table-wrap">
+            <table className="po-table">
               <thead>
                 <tr>
                   <th style={{ width: 44 }}>
-                    <input type="checkbox" className="ad-cb" checked={allVisibleSelected} onChange={toggleAll} aria-label="Select all visible posts" />
+                    <input type="checkbox" className="po-cb" checked={allVisibleSelected} onChange={toggleAll} aria-label="Select all visible posts" />
                   </th>
                   <th>Post</th>
                   <th>Type</th>
@@ -281,14 +281,14 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                 {filtered.map((p) => (
                   <tr key={p.id} data-selected={selected.has(p.id)}>
                     <td>
-                      <input type="checkbox" className="ad-cb" checked={selected.has(p.id)} onChange={() => toggle(p.id)} aria-label={`Select ${p.title}`} />
+                      <input type="checkbox" className="po-cb" checked={selected.has(p.id)} onChange={() => toggle(p.id)} aria-label={`Select ${p.title}`} />
                     </td>
                     <td style={{ maxWidth: 420 }}>
                       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                         <Thumb post={p} size={46} />
                         <div style={{ minWidth: 0 }}>
-                          <Link href={`${base}/${p.id}/edit`} className="ad-cell-main ad-post-link">{p.title}</Link>
-                          <div className="ad-cell-sub ad-clamp-1">{p.excerpt || "No excerpt"}</div>
+                          <Link href={`${base}/${p.id}/edit`} className="po-cell-main po-post-link">{p.title}</Link>
+                          <div className="po-cell-sub po-clamp-1">{p.excerpt || "No excerpt"}</div>
                         </div>
                       </div>
                     </td>
@@ -298,7 +298,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} />
-                        <span title={p.commentsOpen ? "Comments open" : "Comments closed"} style={{ color: "var(--ad-text-3)", display: "inline-flex" }}>
+                        <span title={p.commentsOpen ? "Comments open" : "Comments closed"} style={{ color: "var(--po-text-3)", display: "inline-flex" }}>
                           {p.commentsOpen ? <MessageSquare size={14} /> : <MessageSquareOff size={14} />}
                         </span>
                       </div>
@@ -312,11 +312,11 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
             </table>
           </div>
         ) : (
-          <div className="ad-post-grid">
+          <div className="po-post-grid">
             {filtered.map((p, i) => (
               <motion.article
                 key={p.id}
-                className="ad-card ad-card--hover ad-post-card"
+                className="po-card po-card--hover po-post-card"
                 data-selected={selected.has(p.id)}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -326,24 +326,24 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                   <Thumb post={p} size="cover" />
                   <input
                     type="checkbox"
-                    className="ad-cb ad-post-card-cb"
+                    className="po-cb po-post-card-cb"
                     checked={selected.has(p.id)}
                     onChange={() => toggle(p.id)}
                     aria-label={`Select ${p.title}`}
                   />
-                  <span className="ad-post-card-status"><StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} /></span>
+                  <span className="po-post-card-status"><StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} /></span>
                 </div>
                 <div style={{ padding: "14px 16px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <Chip tone={TYPE_TONE[p.type]}>{p.type}</Chip>
-                    <span className="ad-cell-sub">{p.date || "Undated"}</span>
+                    <span className="po-cell-sub">{p.date || "Undated"}</span>
                   </div>
-                  <Link href={`${base}/${p.id}/edit`} className="ad-post-link" style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.35 }}>{p.title}</Link>
-                  <p className="ad-clamp-2" style={{ margin: 0, fontSize: 13, color: "var(--ad-text-3)" }}>{p.excerpt || "No excerpt"}</p>
+                  <Link href={`${base}/${p.id}/edit`} className="po-post-link" style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.35 }}>{p.title}</Link>
+                  <p className="po-clamp-2" style={{ margin: 0, fontSize: 13, color: "var(--po-text-3)" }}>{p.excerpt || "No excerpt"}</p>
                 </div>
-                <hr className="ad-divider" />
+                <hr className="po-divider" />
                 <div style={{ padding: "8px 10px", display: "flex", alignItems: "center" }}>
-                  <span className="ad-cell-sub" style={{ paddingLeft: 6 }}>{p.author}</span>
+                  <span className="po-cell-sub" style={{ paddingLeft: 6 }}>{p.author}</span>
                   <div style={{ marginLeft: "auto" }}>
                     <RowActions post={p} base={base} canPublish={canPublish} onStatus={(next) => setStatusFor([p], next)} onDelete={() => setToDelete([p])} busy={busy} />
                   </div>
@@ -358,7 +358,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
       <AnimatePresence>
         {selected.size > 0 && (
           <motion.div
-            className="ad-bulkbar"
+            className="po-bulkbar"
             initial={{ opacity: 0, y: 24, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: 24, x: "-50%" }}
@@ -367,29 +367,29 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
             aria-label="Bulk actions"
           >
             <strong>{selected.size} selected</strong>
-            <span className="ad-bulkbar-sep" />
+            <span className="po-bulkbar-sep" />
             {canPublish ? (
               <>
-                <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" disabled={busy} onClick={() => setStatusFor(selectedPosts, "published")}>
+                <button type="button" className="po-btn po-btn--sm po-btn--gold" disabled={busy} onClick={() => setStatusFor(selectedPosts, "published")}>
                   <Eye size={14} />Publish
                 </button>
-                <button type="button" className="ad-btn ad-btn--sm" disabled={busy} onClick={() => setStatusFor(selectedPosts, "draft")}>
+                <button type="button" className="po-btn po-btn--sm" disabled={busy} onClick={() => setStatusFor(selectedPosts, "draft")}>
                   <EyeOff size={14} />Move to drafts
                 </button>
               </>
             ) : (
-              <button type="button" className="ad-btn ad-btn--sm ad-btn--gold" disabled={busy || !selectedPosts.some((p) => p.status === "draft")}
+              <button type="button" className="po-btn po-btn--sm po-btn--gold" disabled={busy || !selectedPosts.some((p) => p.status === "draft")}
                 onClick={() => setStatusFor(selectedPosts.filter((p) => p.status === "draft"), "pending")}>
                 <Send size={14} />Submit for review
               </button>
             )}
             {/* Live posts can only be removed by someone who can publish. */}
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--danger-soft"
+            <button type="button" className="po-btn po-btn--sm po-btn--danger-soft"
               disabled={busy || (!canPublish && !selectedPosts.some((p) => p.status !== "published"))}
               onClick={() => setToDelete(canPublish ? selectedPosts : selectedPosts.filter((p) => p.status !== "published"))}>
               <Trash2 size={14} />Delete
             </button>
-            <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection">
+            <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => setSelected(new Set())} aria-label="Clear selection">
               <X size={15} />
             </button>
           </motion.div>
@@ -414,18 +414,18 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
       />
 
       <style>{`
-        .ad-post-link { color: var(--ad-text); text-decoration: none; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .ad-post-card .ad-post-link { white-space: normal; }
-        .ad-post-link:hover { color: var(--ad-brand-ink); }
-        .ad-post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 16px; padding: 16px; }
-        .ad-post-card { display: flex; flex-direction: column; overflow: hidden; }
-        .ad-post-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--ad-brand-ink); }
-        .ad-post-card-status { position: absolute; right: 10px; top: 10px; }
+        .po-post-link { color: var(--po-text); text-decoration: none; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .po-post-card .po-post-link { white-space: normal; }
+        .po-post-link:hover { color: var(--po-brand-ink); }
+        .po-post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 16px; padding: 16px; }
+        .po-post-card { display: flex; flex-direction: column; overflow: hidden; }
+        .po-post-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--po-brand-ink); }
+        .po-post-card-status { position: absolute; right: 10px; top: 10px; }
         /* Over a photo the soft badge tint vanishes; give it a solid backing. */
-        .ad-post-card-status .ad-badge { background: var(--ad-surface); box-shadow: var(--ad-shadow-md); }
-        .ad-post-card-cb { position: absolute; left: 10px; top: 10px; width: 18px; height: 18px; }
-        .ad-thumb { flex-shrink: 0; border-radius: 10px; overflow: hidden; background: var(--ad-surface-3); display: grid; place-items: center; color: var(--ad-text-3); }
-        .ad-thumb img { width: 100%; height: 100% !important; object-fit: cover; display: block; }
+        .po-post-card-status .po-badge { background: var(--po-surface); box-shadow: var(--po-shadow-md); }
+        .po-post-card-cb { position: absolute; left: 10px; top: 10px; width: 18px; height: 18px; }
+        .po-thumb { flex-shrink: 0; border-radius: 10px; overflow: hidden; background: var(--po-surface-3); display: grid; place-items: center; color: var(--po-text-3); }
+        .po-thumb img { width: 100%; height: 100% !important; object-fit: cover; display: block; }
       `}</style>
     </>
   );
@@ -435,7 +435,7 @@ function Thumb({ post, size }: { post: AdminPost; size: number | "cover" }) {
   const style: React.CSSProperties =
     size === "cover" ? { width: "100%", height: 150, borderRadius: 0 } : { width: size, height: size };
   return (
-    <div className="ad-thumb" style={style}>
+    <div className="po-thumb" style={style}>
       {post.featuredImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={post.featuredImageUrl} alt="" loading="lazy" />
@@ -458,38 +458,38 @@ function RowActions({ post, base, canPublish, onStatus, onDelete, busy }: {
   // A staff writer can no longer change a post once it is live.
   const editable = canPublish || !published;
   return (
-    <div className="ad-row-actions">
+    <div className="po-row-actions">
       {editable && (
-        <Link href={`${base}/${post.id}/edit`} className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" title="Edit" aria-label={`Edit ${post.title}`}>
+        <Link href={`${base}/${post.id}/edit`} className="po-btn po-btn--sm po-btn--ghost po-btn--icon" title="Edit" aria-label={`Edit ${post.title}`}>
           <PenLine size={15} />
         </Link>
       )}
       {canPublish ? (
         post.status === "pending" ? (
-          <button type="button" className="ad-btn ad-btn--sm ad-btn--success-soft" onClick={() => onStatus("published")} disabled={busy}
+          <button type="button" className="po-btn po-btn--sm po-btn--success-soft" onClick={() => onStatus("published")} disabled={busy}
             title="Approve and publish" aria-label={`Approve and publish ${post.title}`}>
             <Check size={14} strokeWidth={2.6} />Approve
           </button>
         ) : (
-          <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => onStatus(published ? "draft" : "published")} disabled={busy}
+          <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => onStatus(published ? "draft" : "published")} disabled={busy}
             title={published ? "Move to drafts" : "Publish"} aria-label={published ? `Unpublish ${post.title}` : `Publish ${post.title}`}>
             {published ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         )
       ) : post.status === "draft" ? (
-        <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={() => onStatus("pending")} disabled={busy}
+        <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => onStatus("pending")} disabled={busy}
           title="Submit for review" aria-label={`Submit ${post.title} for review`}>
           <Send size={15} />
         </button>
       ) : null}
       {published && post.slug && (
-        <a href={`/news/${post.slug}`} target="_blank" rel="noopener noreferrer" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" title="View on website" aria-label={`View ${post.title} on the website`}>
+        <a href={`/news/${post.slug}`} target="_blank" rel="noopener noreferrer" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" title="View on website" aria-label={`View ${post.title} on the website`}>
           <ExternalLink size={15} />
         </a>
       )}
       {editable && (
-        <button type="button" className="ad-btn ad-btn--sm ad-btn--ghost ad-btn--icon" onClick={onDelete} disabled={busy}
-          title="Delete" aria-label={`Delete ${post.title}`} style={{ color: "var(--ad-danger)" }}>
+        <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={onDelete} disabled={busy}
+          title="Delete" aria-label={`Delete ${post.title}`} style={{ color: "var(--po-danger)" }}>
           <Trash2 size={15} />
         </button>
       )}

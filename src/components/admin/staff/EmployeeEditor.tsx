@@ -114,14 +114,14 @@ export function EmployeeEditor({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="ad-overlay ad-drawer-overlay"
+          className="po-overlay po-drawer-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, pointerEvents: "none" }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.aside
-            className="ad-drawer st-drawer"
+            className="po-drawer st-drawer"
             role="dialog"
             aria-modal="true"
             aria-label={employee ? `Edit ${name}` : "Add a staff member"}
@@ -130,44 +130,44 @@ export function EmployeeEditor({
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >
-            <div className="ad-drawer-head">
+            <div className="po-drawer-head">
               <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
                 <Avatar name={name} size="lg" />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 17, fontWeight: 750, color: "var(--ad-text)" }}>{name}</div>
-                  <div className="ad-cell-sub">{employee ? "Edit staff record" : "Add a staff member"}</div>
+                  <div style={{ fontSize: 17, fontWeight: 750, color: "var(--po-text)" }}>{name}</div>
+                  <div className="po-cell-sub">{employee ? "Edit staff record" : "Add a staff member"}</div>
                 </div>
               </div>
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
+              <button type="button" className="po-btn po-btn--ghost po-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
             </div>
 
-            <form className="ad-drawer-body st-form" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
+            <form className="po-drawer-body st-form" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
               <h3 className="st-h">Name</h3>
               <div className="st-grid st-grid--name">
-                <label className="ad-field">
-                  <span className="ad-label">Title</span>
-                  <select className="ad-select" value={form.title} onChange={(e) => set("title", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Title</span>
+                  <select className="po-select" value={form.title} onChange={(e) => set("title", e.target.value)}>
                     <option value="">None</option>
                     {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">First name *</span>
-                  <input className="ad-input" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} autoFocus={!employee} />
+                <label className="po-field">
+                  <span className="po-label">First name *</span>
+                  <input className="po-input" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} autoFocus={!employee} />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Surname *</span>
-                  <input className="ad-input" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Surname *</span>
+                  <input className="po-input" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} />
                 </label>
               </div>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Other names</span>
-                  <input className="ad-input" value={form.otherNames} onChange={(e) => set("otherNames", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Other names</span>
+                  <input className="po-input" value={form.otherNames} onChange={(e) => set("otherNames", e.target.value)} />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Gender</span>
-                  <select className="ad-select" value={form.gender} onChange={(e) => set("gender", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Gender</span>
+                  <select className="po-select" value={form.gender} onChange={(e) => set("gender", e.target.value)}>
                     <option value="">Not recorded</option>
                     <option value="female">Female</option>
                     <option value="male">Male</option>
@@ -177,25 +177,25 @@ export function EmployeeEditor({
 
               <h3 className="st-h">Employment</h3>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Employment type</span>
-                  <select className="ad-select" value={form.employmentType} onChange={(e) => set("employmentType", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Employment type</span>
+                  <select className="po-select" value={form.employmentType} onChange={(e) => set("employmentType", e.target.value)}>
                     {EMPLOYMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Status</span>
-                  <select className="ad-select" value={form.status} onChange={(e) => set("status", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Status</span>
+                  <select className="po-select" value={form.status} onChange={(e) => set("status", e.target.value)}>
                     {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Hospital staff number</span>
-                  <input className="ad-input" value={form.staffNumber} onChange={(e) => set("staffNumber", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Hospital staff number</span>
+                  <input className="po-input" value={form.staffNumber} onChange={(e) => set("staffNumber", e.target.value)} />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Management position</span>
-                  <select className="ad-select" value={form.positionId} onChange={(e) => set("positionId", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Management position</span>
+                  <select className="po-select" value={form.positionId} onChange={(e) => set("positionId", e.target.value)}>
                     <option value="">None</option>
                     {setup.ranks.positions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
@@ -207,76 +207,76 @@ export function EmployeeEditor({
 
               <h3 className="st-h">Posting and rank</h3>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Department</span>
-                  <select className="ad-select" value={form.departmentId}
+                <label className="po-field">
+                  <span className="po-label">Department</span>
+                  <select className="po-select" value={form.departmentId}
                     onChange={(e) => setForm((f) => ({ ...f, departmentId: e.target.value, unitId: "" }))}>
                     <option value="">Not assigned</option>
                     {setup.structure.departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Unit / ward</span>
-                  <select className="ad-select" value={form.unitId} onChange={(e) => set("unitId", e.target.value)} disabled={!dept}>
+                <label className="po-field">
+                  <span className="po-label">Unit / ward</span>
+                  <select className="po-select" value={form.unitId} onChange={(e) => set("unitId", e.target.value)} disabled={!dept}>
                     <option value="">{dept ? "Whole department" : "Choose a department first"}</option>
                     {dept?.units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Cadre</span>
-                  <select className="ad-select" value={form.cadreId}
+                <label className="po-field">
+                  <span className="po-label">Cadre</span>
+                  <select className="po-select" value={form.cadreId}
                     onChange={(e) => setForm((f) => ({ ...f, cadreId: e.target.value, rankId: "" }))}>
                     <option value="">Not assigned</option>
                     {setup.ranks.cadres.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Rank</span>
-                  <select className="ad-select" value={form.rankId} onChange={(e) => set("rankId", e.target.value)} disabled={!cadre}>
+                <label className="po-field">
+                  <span className="po-label">Rank</span>
+                  <select className="po-select" value={form.rankId} onChange={(e) => set("rankId", e.target.value)} disabled={!cadre}>
                     <option value="">{cadre ? "No rank yet" : "Choose a cadre first"}</option>
                     {cadre?.ranks.map((r) => <option key={r.id} value={r.id}>{r.name}{r.level ? ` (${r.level})` : ""}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Date of first appointment</span>
-                  <input className="ad-input" type="date" value={form.dateFirstAppointment} onChange={(e) => set("dateFirstAppointment", e.target.value)} />
-                  {inService !== null && <span className="ad-hint">{inService} year{inService === 1 ? "" : "s"} in service</span>}
+                <label className="po-field">
+                  <span className="po-label">Date of first appointment</span>
+                  <input className="po-input" type="date" value={form.dateFirstAppointment} onChange={(e) => set("dateFirstAppointment", e.target.value)} />
+                  {inService !== null && <span className="po-hint">{inService} year{inService === 1 ? "" : "s"} in service</span>}
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Date of current rank</span>
-                  <input className="ad-input" type="date" value={form.dateCurrentRank} onChange={(e) => set("dateCurrentRank", e.target.value)} />
-                  {inRank !== null && <span className="ad-hint">{inRank} year{inRank === 1 ? "" : "s"} on this rank</span>}
+                <label className="po-field">
+                  <span className="po-label">Date of current rank</span>
+                  <input className="po-input" type="date" value={form.dateCurrentRank} onChange={(e) => set("dateCurrentRank", e.target.value)} />
+                  {inRank !== null && <span className="po-hint">{inRank} year{inRank === 1 ? "" : "s"} on this rank</span>}
                 </label>
               </div>
 
               <h3 className="st-h">Contact</h3>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Phone</span>
-                  <input className="ad-input" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Phone</span>
+                  <input className="po-input" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Email</span>
-                  <input className="ad-input" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Email</span>
+                  <input className="po-input" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
                 </label>
               </div>
 
               <h3 className="st-h">Professional licence</h3>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Council</span>
-                  <select className="ad-select" value={form.licenceBody} onChange={(e) => set("licenceBody", e.target.value)}>
+                <label className="po-field">
+                  <span className="po-label">Council</span>
+                  <select className="po-select" value={form.licenceBody} onChange={(e) => set("licenceBody", e.target.value)}>
                     <option value="">None / not yet</option>
                     {LICENCE_BODIES.map((b) => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">PIN / licence number</span>
-                  <input className="ad-input" value={form.licencePin} onChange={(e) => set("licencePin", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">PIN / licence number</span>
+                  <input className="po-input" value={form.licencePin} onChange={(e) => set("licencePin", e.target.value)} />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">Expiry date</span>
-                  <input className="ad-input" type="date" value={form.licenceExpiry} onChange={(e) => set("licenceExpiry", e.target.value)} />
+                <label className="po-field">
+                  <span className="po-label">Expiry date</span>
+                  <input className="po-input" type="date" value={form.licenceExpiry} onChange={(e) => set("licenceExpiry", e.target.value)} />
                   {licence === "expired" && <span className="st-warn">Expired</span>}
                   {licence === "soon" && <span className="st-warn">Expires within 60 days</span>}
                 </label>
@@ -284,49 +284,49 @@ export function EmployeeEditor({
 
               <h3 className="st-h">Payroll</h3>
               <div className="st-grid">
-                <label className="ad-field">
-                  <span className="ad-label">Controller (CAGD) staff ID</span>
-                  <input className="ad-input" value={form.cagdStaffId} onChange={(e) => set("cagdStaffId", e.target.value)} autoComplete="off" />
+                <label className="po-field">
+                  <span className="po-label">Controller (CAGD) staff ID</span>
+                  <input className="po-input" value={form.cagdStaffId} onChange={(e) => set("cagdStaffId", e.target.value)} autoComplete="off" />
                 </label>
-                <label className="ad-field">
-                  <span className="ad-label">SSNIT number</span>
-                  <input className="ad-input" value={form.ssnit} onChange={(e) => set("ssnit", e.target.value)} autoComplete="off" />
+                <label className="po-field">
+                  <span className="po-label">SSNIT number</span>
+                  <input className="po-input" value={form.ssnit} onChange={(e) => set("ssnit", e.target.value)} autoComplete="off" />
                 </label>
               </div>
 
               <h3 className="st-h">Portal login</h3>
-              <label className="ad-field">
-                <span className="ad-label">Linked account</span>
-                <select className="ad-select" value={form.userId} onChange={(e) => set("userId", e.target.value)}>
+              <label className="po-field">
+                <span className="po-label">Linked account</span>
+                <select className="po-select" value={form.userId} onChange={(e) => set("userId", e.target.value)}>
                   <option value="">Not linked</option>
                   {portalUsers.filter((u) => !takenUserIds.has(u.databaseId)).map((u) => (
                     <option key={u.databaseId} value={u.databaseId}>{u.name}{u.email ? ` (${u.email})` : ""}</option>
                   ))}
                 </select>
-                <span className="ad-hint">Optional. Lets this person see their own roster once rosters are built.</span>
+                <span className="po-hint">Optional. Lets this person see their own roster once rosters are built.</span>
               </label>
 
               <h3 className="st-h">Notes</h3>
-              <textarea className="ad-input" rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000}
+              <textarea className="po-input" rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000}
                 style={{ resize: "vertical", minHeight: 80 }} aria-label="Notes" />
 
               {error && (
-                <div className="ad-alert ad-tone-danger" role="alert" style={{ marginTop: 16 }}>
+                <div className="po-alert po-tone-danger" role="alert" style={{ marginTop: 16 }}>
                   <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} /><span>{error}</span>
                 </div>
               )}
               <button type="submit" hidden />
             </form>
 
-            <div className="ad-drawer-foot">
+            <div className="po-drawer-foot">
               {employee && (
-                <button type="button" className="ad-btn ad-btn--ghost" style={{ marginRight: "auto", color: "var(--ad-danger)" }} onClick={() => onDelete(employee)}>
+                <button type="button" className="po-btn po-btn--ghost" style={{ marginRight: "auto", color: "var(--po-danger)" }} onClick={() => onDelete(employee)}>
                   <Trash2 size={15} />Delete
                 </button>
               )}
-              <button type="button" className="ad-btn" onClick={onClose} disabled={saving}>Cancel</button>
-              <button type="button" className="ad-btn ad-btn--primary" onClick={save} disabled={saving}>
-                {saving ? <><Loader2 size={15} className="ad-spin" />Saving…</> : employee ? "Save changes" : "Add staff member"}
+              <button type="button" className="po-btn" onClick={onClose} disabled={saving}>Cancel</button>
+              <button type="button" className="po-btn po-btn--primary" onClick={save} disabled={saving}>
+                {saving ? <><Loader2 size={15} className="po-spin" />Saving…</> : employee ? "Save changes" : "Add staff member"}
               </button>
             </div>
           </motion.aside>

@@ -74,7 +74,7 @@ export default function AdminLoginPage() {
   if (loading) return null;
 
   return (
-    <div className="ad-root lg-root">
+    <div className="po-root lg-root">
       {/* ── Brand panel ─────────────────────────────────────────────── */}
       <aside className="lg-brand">
         <svg className="lg-pattern" aria-hidden="true" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
@@ -155,19 +155,19 @@ export default function AdminLoginPage() {
           <p className="lg-sub">Staff and administrators sign in here with their hospital account.</p>
 
           {error && (
-            <div className="ad-alert ad-tone-danger" role="alert" style={{ marginBottom: 16 }}>
+            <div className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 16 }}>
               <AlertTriangle size={17} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} noValidate style={{ display: "grid", gap: 16 }}>
-            <label className="ad-field">
-              <span className="ad-label">Username or email</span>
-              <div className="ad-input-wrap">
+            <label className="po-field">
+              <span className="po-label">Username or email</span>
+              <div className="po-input-wrap">
                 <UserRound size={16} />
                 <input
-                  className="ad-input lg-input"
+                  className="po-input lg-input"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   autoComplete="username"
@@ -179,12 +179,12 @@ export default function AdminLoginPage() {
               </div>
             </label>
 
-            <label className="ad-field">
-              <span className="ad-label">Password</span>
-              <div className="ad-input-wrap">
+            <label className="po-field">
+              <span className="po-label">Password</span>
+              <div className="po-input-wrap">
                 <Lock size={16} />
                 <input
-                  className="ad-input lg-input"
+                  className="po-input lg-input"
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -195,7 +195,7 @@ export default function AdminLoginPage() {
                 />
                 <button
                   type="button"
-                  className="ad-btn ad-btn--ghost ad-btn--icon ad-btn--sm"
+                  className="po-btn po-btn--ghost po-btn--icon po-btn--sm"
                   style={{ position: "absolute", right: 6 }}
                   onClick={() => setShowPass((v) => !v)}
                   aria-label={showPass ? "Hide password" : "Show password"}
@@ -204,14 +204,14 @@ export default function AdminLoginPage() {
                 </button>
               </div>
               {capsLock && (
-                <span style={{ fontSize: 12, color: "var(--ad-warn)", display: "inline-flex", gap: 6, alignItems: "center" }}>
+                <span style={{ fontSize: 12, color: "var(--po-warn)", display: "inline-flex", gap: 6, alignItems: "center" }}>
                   <AlertTriangle size={13} />Caps Lock is on
                 </span>
               )}
             </label>
 
-            <button type="submit" className="ad-btn ad-btn--primary lg-submit" disabled={submitting}>
-              {submitting ? <><Loader2 size={17} className="ad-spin" />Signing in…</> : <>Sign in<ArrowRight size={17} /></>}
+            <button type="submit" className="po-btn po-btn--primary lg-submit" disabled={submitting}>
+              {submitting ? <><Loader2 size={17} className="po-spin" />Signing in…</> : <>Sign in<ArrowRight size={17} /></>}
             </button>
           </form>
 
@@ -225,7 +225,7 @@ export default function AdminLoginPage() {
       </main>
 
       <style>{`
-        .lg-root { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--ad-bg); }
+        .lg-root { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--po-bg); }
         .lg-brand { position: relative; overflow: hidden; background: linear-gradient(155deg, #0A4F3C 0%, #073A2D 45%, #041A14 100%); color: #fff; }
         .lg-pattern { position: absolute; inset: 0; width: 100%; height: 100%; color: #fff; }
         .lg-brand-inner { position: relative; height: 100%; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; padding: 40px 56px; }
@@ -242,16 +242,16 @@ export default function AdminLoginPage() {
         .lg-features small { display: block; font-size: 13px; color: rgba(255,255,255,0.62); line-height: 1.5; }
         .lg-motto { margin: 0; font-family: var(--font-lora), Georgia, serif; font-style: italic; color: rgba(232,184,75,0.85); font-size: 15px; }
         .lg-main { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; }
-        .lg-back { position: absolute; top: 28px; right: 28px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; color: var(--ad-text-3); text-decoration: none; }
-        .lg-back:hover { color: var(--ad-brand-ink); }
-        .lg-card { width: 100%; max-width: 420px !important; background: var(--ad-surface); border: 1px solid var(--ad-border); border-radius: 20px; padding: 36px 34px 28px; box-shadow: 0 24px 60px -24px rgba(6,30,23,0.25); }
-        .lg-card-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--ad-brand-soft); color: var(--ad-brand-ink); margin-bottom: 18px; }
-        .lg-title { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--ad-text); }
-        .lg-sub { margin: 6px 0 22px; color: var(--ad-text-3); font-size: 14px; }
+        .lg-back { position: absolute; top: 28px; right: 28px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; color: var(--po-text-3); text-decoration: none; }
+        .lg-back:hover { color: var(--po-brand-ink); }
+        .lg-card { width: 100%; max-width: 420px !important; background: var(--po-surface); border: 1px solid var(--po-border); border-radius: 20px; padding: 36px 34px 28px; box-shadow: 0 24px 60px -24px rgba(6,30,23,0.25); }
+        .lg-card-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--po-brand-soft); color: var(--po-brand-ink); margin-bottom: 18px; }
+        .lg-title { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--po-text); }
+        .lg-sub { margin: 6px 0 22px; color: var(--po-text-3); font-size: 14px; }
         .lg-input { height: 44px; font-size: 14.5px; }
         .lg-submit { height: 46px; font-size: 14.5px; margin-top: 4px; }
-        .lg-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--ad-border); font-size: 12.5px; color: var(--ad-text-3); line-height: 1.5; }
-        .lg-foot { margin: 28px 0 0; font-size: 12px; color: var(--ad-text-3); }
+        .lg-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--po-border); font-size: 12.5px; color: var(--po-text-3); line-height: 1.5; }
+        .lg-foot { margin: 28px 0 0; font-size: 12px; color: var(--po-text-3); }
         @media (max-width: 900px) {
           .lg-root { grid-template-columns: minmax(0, 1fr); }
           .lg-brand-inner { min-height: 0; padding: 28px 24px 32px; gap: 24px; }

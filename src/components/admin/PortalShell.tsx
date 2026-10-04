@@ -153,9 +153,9 @@ function permForPath(pathname: string): Perm | null {
 }
 
 const TOAST_ICON: Record<ToastKind, { icon: typeof CheckCircle2; tone: string }> = {
-  success: { icon: CheckCircle2, tone: "ad-tone-success" },
-  warn: { icon: AlertTriangle, tone: "ad-tone-warn" },
-  danger: { icon: XCircle, tone: "ad-tone-danger" },
+  success: { icon: CheckCircle2, tone: "po-tone-success" },
+  warn: { icon: AlertTriangle, tone: "po-tone-warn" },
+  danger: { icon: XCircle, tone: "po-tone-danger" },
 };
 
 function crumbsFor(pathname: string, labels: Record<string, string>) {
@@ -236,10 +236,10 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
         style={{ minHeight: "100vh", background: "linear-gradient(160deg, #073A2D, #041A14)", display: "grid", placeItems: "center" }}>
         <div style={{ display: "grid", placeItems: "center", gap: 18 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo.png" alt="" style={{ width: 56, height: 56, borderRadius: "50%", animation: "ad-breathe 1.6s ease-in-out infinite" }} />
+          <img src="/images/logo.png" alt="" style={{ width: 56, height: 56, borderRadius: "50%", animation: "po-breathe 1.6s ease-in-out infinite" }} />
           <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, fontFamily: "var(--font-admin), system-ui" }}>Loading the portal…</div>
         </div>
-        <style>{`@keyframes ad-breathe { 0%,100% { transform: scale(1); opacity: .85 } 50% { transform: scale(1.06); opacity: 1 } }`}</style>
+        <style>{`@keyframes po-breathe { 0%,100% { transform: scale(1); opacity: .85 } 50% { transform: scale(1.06); opacity: 1 } }`}</style>
       </div>
     );
   }
@@ -274,37 +274,37 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   const newPostAllowed = can(perms, "posts.write");
 
   return (
-    <div className={`ad-root ${adminFont.variable}`}>
-      <div className="ad-shell" data-collapsed={sidebarCollapsed}
-        style={{ ["--ad-side-w" as string]: sidebarCollapsed ? "76px" : "252px" }}>
+    <div className={`po-root ${adminFont.variable}`}>
+      <div className="po-shell" data-collapsed={sidebarCollapsed}
+        style={{ ["--po-side-w" as string]: sidebarCollapsed ? "76px" : "252px" }}>
         {/* ── Sidebar ── */}
-        <aside className="ad-sidebar" aria-label={isAdmin ? "Admin navigation" : "Staff navigation"}>
-          <div className="ad-brand">
+        <aside className="po-sidebar" aria-label={isAdmin ? "Admin navigation" : "Staff navigation"}>
+          <div className="po-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/logo.png" alt="St. Elizabeth Catholic Hospital" />
             {!sidebarCollapsed && (
               <div style={{ minWidth: 0 }}>
-                <div className="ad-brand-name">{cfg.title}</div>
-                <div className="ad-brand-sub">{cfg.subtitle}</div>
+                <div className="po-brand-name">{cfg.title}</div>
+                <div className="po-brand-sub">{cfg.subtitle}</div>
               </div>
             )}
-            <button type="button" className="ad-collapse-btn" onClick={toggleSidebar}
+            <button type="button" className="po-collapse-btn" onClick={toggleSidebar}
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
               {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             </button>
           </div>
 
           {isAdmin && (
-            <button type="button" className="ad-side-search" onClick={() => setPaletteOpen(true)} data-tip="Search  ⌘K">
+            <button type="button" className="po-side-search" onClick={() => setPaletteOpen(true)} data-tip="Search  ⌘K">
               <Search size={15} />
-              {!sidebarCollapsed && (<>Quick search<span className="ad-kbd">⌘K</span></>)}
+              {!sidebarCollapsed && (<>Quick search<span className="po-kbd">⌘K</span></>)}
             </button>
           )}
 
-          <nav className="ad-nav">
+          <nav className="po-nav">
             {nav.map((group) => (
               <div key={group.section}>
-                {!sidebarCollapsed ? <div className="ad-nav-section">{group.section}</div> : <div style={{ height: 10 }} />}
+                {!sidebarCollapsed ? <div className="po-nav-section">{group.section}</div> : <div style={{ height: 10 }} />}
                 {group.items.map((item) => {
                   const active = item.neverActive
                     ? false
@@ -315,18 +315,18 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
                   const badge = item.badgeKey ? counts[item.badgeKey] : 0;
                   const Icon = item.icon;
                   return (
-                    <Link key={item.href} href={item.href} onClick={onNavClick(item.href)} className="ad-nav-item"
+                    <Link key={item.href} href={item.href} onClick={onNavClick(item.href)} className="po-nav-item"
                       data-active={active} data-tip={sidebarCollapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}>
                       {active && (
-                        <motion.span layoutId={`ad-nav-pill-${variant}`} className="ad-nav-pill"
+                        <motion.span layoutId={`po-nav-pill-${variant}`} className="po-nav-pill"
                           transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 36 }} />
                       )}
                       <Icon size={18} strokeWidth={active ? 2.3 : 2} />
-                      {!sidebarCollapsed && <span className="ad-nav-label">{item.label}</span>}
+                      {!sidebarCollapsed && <span className="po-nav-label">{item.label}</span>}
                       {badge > 0 && (sidebarCollapsed
-                        ? <span className="ad-nav-badge ad-nav-badge--dot" aria-label={`${badge} waiting`} />
-                        : <span className="ad-nav-badge">{badge > 99 ? "99+" : badge}</span>)}
+                        ? <span className="po-nav-badge po-nav-badge--dot" aria-label={`${badge} waiting`} />
+                        : <span className="po-nav-badge">{badge > 99 ? "99+" : badge}</span>)}
                     </Link>
                   );
                 })}
@@ -334,18 +334,18 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
             ))}
           </nav>
 
-          <div className="ad-side-foot">
+          <div className="po-side-foot">
             {/* Cross-links between the two areas, for people who can use both. */}
             {isAdmin ? (
-              <Link href="/staff" className="ad-side-link" data-tip={sidebarCollapsed ? "Staff area" : undefined}>
+              <Link href="/staff" className="po-side-link" data-tip={sidebarCollapsed ? "Staff area" : undefined}>
                 <UsersRound size={15} />{!sidebarCollapsed && "Staff area"}
               </Link>
             ) : can(perms, "portal.admin") ? (
-              <Link href="/admin" className="ad-side-link" data-tip={sidebarCollapsed ? "Admin console" : undefined}>
+              <Link href="/admin" className="po-side-link" data-tip={sidebarCollapsed ? "Admin console" : undefined}>
                 <ShieldCheck size={15} />{!sidebarCollapsed && "Admin console"}
               </Link>
             ) : null}
-            <Link href="/" className="ad-side-link" data-tip={sidebarCollapsed ? "View website" : undefined} target="_blank">
+            <Link href="/" className="po-side-link" data-tip={sidebarCollapsed ? "View website" : undefined} target="_blank">
               <ExternalLink size={15} />{!sidebarCollapsed && "View website"}
             </Link>
             <div style={{
@@ -357,7 +357,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
               {!sidebarCollapsed && (
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ color: "#fff", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{admin.name}</div>
-                  <div style={{ color: "var(--ad-side-text-dim)", fontSize: 11 }}>{admin.role}</div>
+                  <div style={{ color: "var(--po-side-text-dim)", fontSize: 11 }}>{admin.role}</div>
                 </div>
               )}
               <button type="button" onClick={logout} aria-label="Sign out" data-tip={sidebarCollapsed ? "Sign out" : undefined} title="Sign out"
@@ -369,9 +369,9 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
         </aside>
 
         {/* ── Main column ── */}
-        <div className="ad-main">
-          <header className="ad-topbar">
-            <nav className="ad-crumbs" aria-label="Breadcrumb">
+        <div className="po-main">
+          <header className="po-topbar">
+            <nav className="po-crumbs" aria-label="Breadcrumb">
               {crumbs.map((c, i) => i === crumbs.length - 1 ? (
                 <span key={c.href} aria-current="page">{c.label}</span>
               ) : (
@@ -383,20 +383,20 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
             </nav>
 
             {isAdmin ? (
-              <button type="button" className="ad-topbar-search" onClick={() => setPaletteOpen(true)} aria-label="Search">
+              <button type="button" className="po-topbar-search" onClick={() => setPaletteOpen(true)} aria-label="Search">
                 <Search size={15} />
-                <span className="ad-search-label">Search patients, posts, pages…</span>
-                <span className="ad-kbd">⌘K</span>
+                <span className="po-search-label">Search patients, posts, pages…</span>
+                <span className="po-kbd">⌘K</span>
               </button>
             ) : (
               <span style={{ marginLeft: "auto" }} />
             )}
 
-            <div className="ad-topbar-actions">
+            <div className="po-topbar-actions">
               {newPostAllowed && (
-                <Link href={cfg.newPost} onClick={onNavClick(cfg.newPost)} className="ad-btn ad-btn--primary" aria-label="New post">
+                <Link href={cfg.newPost} onClick={onNavClick(cfg.newPost)} className="po-btn po-btn--primary" aria-label="New post">
                   <Plus size={16} strokeWidth={2.5} />
-                  <span className="ad-search-label">{isAdmin ? "New post" : "Write a post"}</span>
+                  <span className="po-search-label">{isAdmin ? "New post" : "Write a post"}</span>
                 </Link>
               )}
               {isAdmin && <NotificationBell />}
@@ -404,19 +404,19 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
             </div>
           </header>
 
-          <div className="ad-scroll" ref={scrollRef}>
-            <motion.main key={pathname} className="ad-page"
+          <div className="po-scroll" ref={scrollRef}>
+            <motion.main key={pathname} className="po-page"
               initial={reduceMotion ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}>
               {blocked ? (
-                <section className="ad-card">
-                  <div className="ad-empty">
-                    <div className="ad-empty-icon"><ShieldX size={24} strokeWidth={1.8} /></div>
-                    <div className="ad-empty-title">You don’t have access to this page</div>
-                    <div className="ad-empty-text">Your account ({admin.role}) can’t open this section. If you need it, ask an administrator.</div>
+                <section className="po-card">
+                  <div className="po-empty">
+                    <div className="po-empty-icon"><ShieldX size={24} strokeWidth={1.8} /></div>
+                    <div className="po-empty-title">You don’t have access to this page</div>
+                    <div className="po-empty-text">Your account ({admin.role}) can’t open this section. If you need it, ask an administrator.</div>
                     <div style={{ marginTop: 10 }}>
-                      <Link href={cfg.root} className="ad-btn">Go to {isAdmin ? "the dashboard" : "staff home"}</Link>
+                      <Link href={cfg.root} className="po-btn">Go to {isAdmin ? "the dashboard" : "staff home"}</Link>
                     </div>
                   </div>
                 </section>
@@ -431,16 +431,16 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
       {/* ── Unsaved-changes guard ── */}
       <AnimatePresence>
         {guardTarget && (
-          <motion.div className="ad-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}
+          <motion.div className="po-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}
             onMouseDown={(e) => { if (e.target === e.currentTarget) cancelLeave(); }}>
-            <motion.div className="ad-modal" role="alertdialog" aria-modal="true" aria-labelledby="ad-guard-title"
+            <motion.div className="po-modal" role="alertdialog" aria-modal="true" aria-labelledby="po-guard-title"
               initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
-              <div className="ad-kpi-icon ad-tone-warn" style={{ marginBottom: 14 }}><AlertTriangle size={18} /></div>
-              <h3 className="ad-modal-title" id="ad-guard-title">Discard unsaved changes?</h3>
-              <p className="ad-modal-text">You have unsaved edits to this post. Leaving now will discard them.</p>
-              <div className="ad-modal-actions">
-                <button type="button" className="ad-btn" onClick={cancelLeave} autoFocus>Keep editing</button>
-                <button type="button" className="ad-btn ad-btn--danger" onClick={handleDiscard}>Discard changes</button>
+              <div className="po-kpi-icon po-tone-warn" style={{ marginBottom: 14 }}><AlertTriangle size={18} /></div>
+              <h3 className="po-modal-title" id="po-guard-title">Discard unsaved changes?</h3>
+              <p className="po-modal-text">You have unsaved edits to this post. Leaving now will discard them.</p>
+              <div className="po-modal-actions">
+                <button type="button" className="po-btn" onClick={cancelLeave} autoFocus>Keep editing</button>
+                <button type="button" className="po-btn po-btn--danger" onClick={handleDiscard}>Discard changes</button>
               </div>
             </motion.div>
           </motion.div>
@@ -448,15 +448,15 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
       </AnimatePresence>
 
       {/* ── Toast ── */}
-      <div className="ad-toast-stack" aria-live="polite">
+      <div className="po-toast-stack" aria-live="polite">
         <AnimatePresence>
           {poppingToast && (() => {
             const { icon: Icon, tone } = TOAST_ICON[poppingToast.kind];
             return (
-              <motion.div key={poppingToast.id} className="ad-toast"
+              <motion.div key={poppingToast.id} className="po-toast"
                 initial={{ opacity: 0, y: 16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 24 }}
                 transition={{ type: "spring", stiffness: 420, damping: 32 }}>
-                <span className={`ad-toast-icon ${tone}`} style={{ background: "var(--tone-soft)", color: "var(--tone)" }}><Icon size={15} /></span>
+                <span className={`po-toast-icon ${tone}`} style={{ background: "var(--tone-soft)", color: "var(--tone)" }}><Icon size={15} /></span>
                 {poppingToast.msg}
               </motion.div>
             );

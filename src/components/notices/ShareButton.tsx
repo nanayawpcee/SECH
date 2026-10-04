@@ -17,7 +17,7 @@ export function ShareButton({ focusTitle }: { focusTitle: string | null }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button type="button" className="ad-btn ad-btn--ghost" onClick={share}>
+    <button type="button" className="po-btn po-btn--ghost" onClick={share}>
       {copied ? <Check size={16} /> : <Share2 size={16} />}{copied ? "Link copied" : "Share this board"}
     </button>
   );

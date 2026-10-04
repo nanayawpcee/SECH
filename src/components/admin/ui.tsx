@@ -27,12 +27,12 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="ad-page-head">
+    <header className="po-page-head">
       <div style={{ minWidth: 0 }}>
-        <h1 className="ad-page-title">{title}</h1>
-        {subtitle && <p className="ad-page-sub">{subtitle}</p>}
+        <h1 className="po-page-title">{title}</h1>
+        {subtitle && <p className="po-page-sub">{subtitle}</p>}
       </div>
-      {actions && <div className="ad-page-actions">{actions}</div>}
+      {actions && <div className="po-page-actions">{actions}</div>}
     </header>
   );
 }
@@ -46,7 +46,7 @@ export function Card({
   action,
   children,
   className = "",
-  bodyClassName = "ad-card-body",
+  bodyClassName = "po-card-body",
   style,
 }: {
   title?: ReactNode;
@@ -59,17 +59,17 @@ export function Card({
   style?: React.CSSProperties;
 }) {
   return (
-    <section className={`ad-card ${className}`} style={style}>
+    <section className={`po-card ${className}`} style={style}>
       {(title || action) && (
-        <div className="ad-card-head">
+        <div className="po-card-head">
           <div style={{ minWidth: 0 }}>
             {title && (
-              <h2 className="ad-card-title">
-                {Icon && <Icon size={16} strokeWidth={2.2} style={{ color: "var(--ad-text-3)" }} />}
+              <h2 className="po-card-title">
+                {Icon && <Icon size={16} strokeWidth={2.2} style={{ color: "var(--po-text-3)" }} />}
                 {title}
               </h2>
             )}
-            {subtitle && <p className="ad-card-sub">{subtitle}</p>}
+            {subtitle && <p className="po-card-sub">{subtitle}</p>}
           </div>
           {action}
         </div>
@@ -95,11 +95,11 @@ const STATUS_TONE: Record<string, Tone> = {
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
   const tone = STATUS_TONE[status] ?? "muted";
-  return <span className={`ad-badge ad-tone-${tone}`}>{label ?? status}</span>;
+  return <span className={`po-badge po-tone-${tone}`}>{label ?? status}</span>;
 }
 
 export function Chip({ tone = "muted", children }: { tone?: Tone; children: ReactNode }) {
-  return <span className={`ad-badge ad-badge--plain ad-tone-${tone}`}>{children}</span>;
+  return <span className={`po-badge po-badge--plain po-tone-${tone}`}>{children}</span>;
 }
 
 /* ── Avatar (initials, colour picked stably from the name) ──────────────── */
@@ -117,7 +117,7 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
   for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   const tone = AVATAR_TONES[hash % AVATAR_TONES.length];
   return (
-    <span className={`ad-avatar ad-tone-${tone} ${size !== "md" ? `ad-avatar--${size}` : ""}`} aria-hidden="true">
+    <span className={`po-avatar po-tone-${tone} ${size !== "md" ? `po-avatar--${size}` : ""}`} aria-hidden="true">
       {initialsOf(name)}
     </span>
   );
@@ -140,7 +140,7 @@ export function Segmented<T extends string>({
   ariaLabel: string;
 }) {
   return (
-    <div className="ad-seg" role="tablist" aria-label={ariaLabel}>
+    <div className="po-seg" role="tablist" aria-label={ariaLabel}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -149,18 +149,18 @@ export function Segmented<T extends string>({
             type="button"
             role="tab"
             aria-selected={active}
-            className="ad-seg-btn"
+            className="po-seg-btn"
             onClick={() => onChange(o.value)}
           >
             {active && (
               <motion.span
                 layoutId={`seg-${id}`}
-                className="ad-seg-pill"
+                className="po-seg-pill"
                 transition={{ type: "spring", stiffness: 500, damping: 38 }}
               />
             )}
             {o.label}
-            {o.count !== undefined && <span className="ad-seg-count">{o.count}</span>}
+            {o.count !== undefined && <span className="po-seg-count">{o.count}</span>}
           </button>
         );
       })}
@@ -205,19 +205,19 @@ export function Trend({ current, previous, suffix = "vs last period" }: {
   suffix?: string;
 }) {
   if (previous === 0 && current === 0) {
-    return <span className="ad-trend ad-trend--flat"><Minus size={13} /> No change</span>;
+    return <span className="po-trend po-trend--flat"><Minus size={13} /> No change</span>;
   }
   if (previous === 0) {
-    return <span className="ad-trend ad-trend--up"><ArrowUpRight size={14} /> New <span style={{ fontWeight: 500, color: "var(--ad-text-3)" }}>{suffix}</span></span>;
+    return <span className="po-trend po-trend--up"><ArrowUpRight size={14} /> New <span style={{ fontWeight: 500, color: "var(--po-text-3)" }}>{suffix}</span></span>;
   }
   const pct = Math.round(((current - previous) / previous) * 100);
   const dir = pct > 0 ? "up" : pct < 0 ? "down" : "flat";
   const Icon = dir === "up" ? ArrowUpRight : dir === "down" ? ArrowDownRight : Minus;
   return (
-    <span className={`ad-trend ad-trend--${dir}`}>
+    <span className={`po-trend po-trend--${dir}`}>
       <Icon size={14} />
       {Math.abs(pct)}%
-      <span style={{ fontWeight: 500, color: "var(--ad-text-3)" }}>{suffix}</span>
+      <span style={{ fontWeight: 500, color: "var(--po-text-3)" }}>{suffix}</span>
     </span>
   );
 }
@@ -236,10 +236,10 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="ad-empty">
-      <div className="ad-empty-icon"><Icon size={24} strokeWidth={1.8} /></div>
-      <div className="ad-empty-title">{title}</div>
-      {text && <div className="ad-empty-text">{text}</div>}
+    <div className="po-empty">
+      <div className="po-empty-icon"><Icon size={24} strokeWidth={1.8} /></div>
+      <div className="po-empty-title">{title}</div>
+      {text && <div className="po-empty-text">{text}</div>}
       {action && <div style={{ marginTop: 10 }}>{action}</div>}
     </div>
   );
@@ -248,7 +248,7 @@ export function EmptyState({
 export function Skeleton({ w = "100%", h = 14, r = 8, style }: {
   w?: number | string; h?: number | string; r?: number; style?: React.CSSProperties;
 }) {
-  return <span className="ad-skel" style={{ display: "block", width: w, height: h, borderRadius: r, ...style }} />;
+  return <span className="po-skel" style={{ display: "block", width: w, height: h, borderRadius: r, ...style }} />;
 }
 
 export function SkeletonRows({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
@@ -273,10 +273,10 @@ export function Switch({ checked, onChange, label }: {
   label: string;
 }) {
   return (
-    <label className="ad-switch">
+    <label className="po-switch">
       <input type="checkbox" role="switch" checked={checked} aria-label={label} onChange={(e) => onChange(e.target.checked)} />
-      <span className="ad-switch-track" />
-      <span className="ad-switch-thumb" />
+      <span className="po-switch-track" />
+      <span className="po-switch-thumb" />
     </label>
   );
 }
@@ -334,14 +334,14 @@ export function ConfirmDialog({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="ad-overlay"
+          className="po-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 , pointerEvents: "none" }}
           onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
         >
           <motion.div
-            className="ad-modal"
+            className="po-modal"
             role="alertdialog"
             aria-modal="true"
             aria-label={title}
@@ -350,16 +350,16 @@ export function ConfirmDialog({
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.18 }}
           >
-            <div className={`ad-kpi-icon ad-tone-${tone === "danger" ? "danger" : "brand"}`} style={{ marginBottom: 14 }}>
+            <div className={`po-kpi-icon po-tone-${tone === "danger" ? "danger" : "brand"}`} style={{ marginBottom: 14 }}>
               <Icon size={18} />
             </div>
-            <h3 className="ad-modal-title">{title}</h3>
-            <div className="ad-modal-text">{text}</div>
-            <div className="ad-modal-actions">
-              <button type="button" className="ad-btn" onClick={onCancel} autoFocus disabled={busy}>Cancel</button>
+            <h3 className="po-modal-title">{title}</h3>
+            <div className="po-modal-text">{text}</div>
+            <div className="po-modal-actions">
+              <button type="button" className="po-btn" onClick={onCancel} autoFocus disabled={busy}>Cancel</button>
               <button
                 type="button"
-                className={`ad-btn ${tone === "danger" ? "ad-btn--danger" : "ad-btn--primary"}`}
+                className={`po-btn ${tone === "danger" ? "po-btn--danger" : "po-btn--primary"}`}
                 onClick={onConfirm}
                 disabled={busy}
               >

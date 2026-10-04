@@ -174,7 +174,7 @@ export function CommandPalette({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="ad-overlay ad-cmdk-overlay"
+          className="po-overlay po-cmdk-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 , pointerEvents: "none" }}
@@ -182,7 +182,7 @@ export function CommandPalette({
           onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            className="ad-cmdk"
+            className="po-cmdk"
             role="dialog"
             aria-modal="true"
             aria-label="Search and commands"
@@ -192,27 +192,27 @@ export function CommandPalette({
             transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
             onKeyDown={onKeyDown}
           >
-            <div className="ad-cmdk-input-row">
+            <div className="po-cmdk-input-row">
               <Search size={18} />
               <input
                 ref={inputRef}
-                className="ad-cmdk-input"
+                className="po-cmdk-input"
                 placeholder="Search pages, posts, patients, or type a command…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 role="combobox"
                 aria-expanded="true"
-                aria-controls="ad-cmdk-list"
+                aria-controls="po-cmdk-list"
                 aria-activedescendant={results[active] ? `cmd-${results[active].id}` : undefined}
               />
-              <span className="ad-kbd">Esc</span>
+              <span className="po-kbd">Esc</span>
             </div>
 
-            <div className="ad-cmdk-list" id="ad-cmdk-list" role="listbox" ref={listRef}>
+            <div className="po-cmdk-list" id="po-cmdk-list" role="listbox" ref={listRef}>
               {results.length === 0 ? (
-                <div className="ad-empty" style={{ padding: "32px 16px" }}>
-                  <div className="ad-empty-title">No matches</div>
-                  <div className="ad-empty-text">Try a patient name, booking reference or post title.</div>
+                <div className="po-empty" style={{ padding: "32px 16px" }}>
+                  <div className="po-empty-title">No matches</div>
+                  <div className="po-empty-text">Try a patient name, booking reference or post title.</div>
                 </div>
               ) : (
                 results.map((cmd, i) => {
@@ -221,23 +221,23 @@ export function CommandPalette({
                   const Icon = cmd.icon;
                   return (
                     <div key={cmd.id}>
-                      {header && <div className="ad-cmdk-group">{header}</div>}
+                      {header && <div className="po-cmdk-group">{header}</div>}
                       <div
                         id={`cmd-${cmd.id}`}
                         role="option"
                         aria-selected={i === active}
                         data-active={i === active}
                         data-index={i}
-                        className="ad-cmdk-item"
+                        className="po-cmdk-item"
                         onMouseMove={() => setActive(i)}
                         onClick={() => cmd.run()}
                       >
-                        <span className="ad-cmdk-item-icon"><Icon size={16} /></span>
-                        <span className="ad-cmdk-item-text">
-                          <span className="ad-cmdk-item-title" style={{ display: "block" }}>{cmd.title}</span>
-                          {cmd.sub && <span className="ad-cmdk-item-sub" style={{ display: "block" }}>{cmd.sub}</span>}
+                        <span className="po-cmdk-item-icon"><Icon size={16} /></span>
+                        <span className="po-cmdk-item-text">
+                          <span className="po-cmdk-item-title" style={{ display: "block" }}>{cmd.title}</span>
+                          {cmd.sub && <span className="po-cmdk-item-sub" style={{ display: "block" }}>{cmd.sub}</span>}
                         </span>
-                        {i === active && <CornerDownLeft size={15} style={{ color: "var(--ad-text-3)" }} />}
+                        {i === active && <CornerDownLeft size={15} style={{ color: "var(--po-text-3)" }} />}
                       </div>
                     </div>
                   );
@@ -245,10 +245,10 @@ export function CommandPalette({
               )}
             </div>
 
-            <div className="ad-cmdk-foot">
-              <span><span className="ad-kbd">↑</span><span className="ad-kbd">↓</span> Navigate</span>
-              <span><span className="ad-kbd">Enter</span> Open</span>
-              <span style={{ marginLeft: "auto" }}><span className="ad-kbd">⌘</span><span className="ad-kbd">K</span> Toggle</span>
+            <div className="po-cmdk-foot">
+              <span><span className="po-kbd">↑</span><span className="po-kbd">↓</span> Navigate</span>
+              <span><span className="po-kbd">Enter</span> Open</span>
+              <span style={{ marginLeft: "auto" }}><span className="po-kbd">⌘</span><span className="po-kbd">K</span> Toggle</span>
             </div>
           </motion.div>
         </motion.div>
