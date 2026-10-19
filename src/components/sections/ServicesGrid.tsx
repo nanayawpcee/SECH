@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SERVICES } from "@/lib/data";
 import { AnimateIn } from "@/components/ui/AnimateIn";
+import { useScrollRail } from "@/components/ui/useScrollRail";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
 
 interface Props {
@@ -18,38 +19,8 @@ export function ServicesGrid({ preview = false }: Props) {
   const displayed = preview ? SERVICES.slice(0, 4) : SERVICES;
 
   // On tablets the cards become a swipeable row (see .services-grid in
-  // globals.css). The arrows only show in that mode; these track whether
-  // there is anything further to scroll to in each direction.
-  const railRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-
-  const updateArrows = useCallback(() => {
-    const el = railRef.current;
-    if (!el) return;
-    setCanPrev(el.scrollLeft > 4);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    const el = railRef.current;
-    if (!el) return;
-    updateArrows();
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    const ro = new ResizeObserver(updateArrows);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", updateArrows);
-      ro.disconnect();
-    };
-  }, [updateArrows]);
-
-  const step = (dir: 1 | -1) => {
-    const el = railRef.current;
-    const card = el?.querySelector<HTMLElement>(".service-cell");
-    if (!el || !card) return;
-    el.scrollBy({ left: dir * (card.offsetWidth + 20), behavior: "smooth" });
-  };
+  // globals.css), with arrows.
+  const { railRef, canPrev, canNext, step } = useScrollRail(".service-cell");
 
   return (
     <section id="services" className="services-section">

@@ -9,6 +9,7 @@ import {
   looksLikeEmail,
   type PublicComment,
 } from "@/lib/wp-comments";
+import { checkComment } from "@/lib/comment-spam";
 
 export const dynamic = "force-dynamic";
 
@@ -81,15 +82,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const key = process.env.SECH_BOOKING_KEY;
-    if (!key) {
-      console.error("SECH_BOOKING_KEY is not set, so comments cannot be submitted.");
-      return NextResponse.json(
-        { error: "Comments are temporarily unavailable." },
-        { status: 503 },
-      );
-    }
-
     const body = await request.json();
 
     // Honeypot: a field hidden from people, irresistible to form-filling bots.
@@ -126,6 +118,28 @@ export async function POST(request: Request) {
     }
     if (content.length < MIN_COMMENT) {
       return NextResponse.json({ error: "Please write a comment." }, { status: 400 });
+    }
+
+    // Links are refused with a reason a person can act on; advertising is
+    // dropped but answered like any other comment, so bots learn nothing.
+    const verdict = checkComment({ author, content });
+    if (verdict.action === "reject") {
+      return NextResponse.json({ error: verdict.message }, { status: 400 });
+    }
+    if (verdict.action === "discard") {
+      console.info(`[comments] dropped as spam on post ${postId}: ${verdict.reasons.join("; ")}`);
+      return NextResponse.json({ success: true, pending: true });
+    }
+
+    // Checked last, so every check above also runs on a machine without the
+    // key (local development), just like the contact form.
+    const key = process.env.SECH_BOOKING_KEY;
+    if (!key) {
+      console.error("SECH_BOOKING_KEY is not set, so comments cannot be submitted.");
+      return NextResponse.json(
+        { error: "Comments are temporarily unavailable." },
+        { status: 503 },
+      );
     }
 
     await wpGraphQL<{ createComment: { success: boolean } }>(

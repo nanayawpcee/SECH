@@ -5,7 +5,9 @@
  *   node scripts/import-posts.mjs <posts.json> [options]
  *
  * It signs in exactly as the admin console does, then for each post uploads
- * the featured image (/api/media) and creates the post (/api/posts). Going
+ * the featured image (/api/media) and creates the post (/api/posts), then
+ * uploads any "gallery" photos and attaches them for the article's slider
+ * (/api/posts/:id/gallery, SECH Portal plugin 1.9.0). Going
  * through the site's routes rather than straight to WordPress means type ->
  * category and comments on/off are handled identically to the editor.
  *
@@ -151,8 +153,11 @@ async function signIn() {
   return body.user?.name ?? user;
 }
 
+const IMAGE_TYPES = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp" };
+
 async function uploadImage(absPath) {
-  const blob = await openAsBlob(absPath, { type: "image/jpeg" });
+  const type = IMAGE_TYPES[path.extname(absPath).toLowerCase()] ?? "image/jpeg";
+  const blob = await openAsBlob(absPath, { type });
   const form = new FormData();
   form.append("file", blob, path.basename(absPath));
   const { response, body } = await api("/api/media", { method: "POST", body: form });
@@ -177,6 +182,10 @@ for (const p of selected) {
   if (!p.title?.trim()) problems.push(`#${p.n}: missing title`);
   if (p.featuredImage && !existsSync(path.resolve(baseDir, p.featuredImage)))
     problems.push(`#${p.n}: image not found — ${p.featuredImage}`);
+  if (p.gallery !== undefined && !Array.isArray(p.gallery)) problems.push(`#${p.n}: "gallery" must be a list of image paths`);
+  for (const g of Array.isArray(p.gallery) ? p.gallery : [])
+    if (!existsSync(path.resolve(baseDir, g))) problems.push(`#${p.n}: gallery image not found — ${g}`);
+  if ((p.gallery?.length ?? 0) > 20) problems.push(`#${p.n}: a gallery holds up to 20 photos`);
 }
 if (problems.length) {
   console.error("Fix these before importing:\n  " + problems.join("\n  "));
@@ -208,7 +217,8 @@ for (const p of selected) {
   }
 
   if (!APPLY) {
-    console.log(`  would create  ${label}\n           ${p.type}, comments ${p.commentsOpen === false ? "off" : "on"}, image: ${p.featuredImage ?? "none"}`);
+    const extra = p.gallery?.length ? `, + ${p.gallery.length} gallery photo${p.gallery.length === 1 ? "" : "s"}` : "";
+    console.log(`  would create  ${label}\n           ${p.type}, comments ${p.commentsOpen === false ? "off" : "on"}, image: ${p.featuredImage ?? "none"}${extra}`);
     continue;
   }
 
@@ -241,7 +251,33 @@ for (const p of selected) {
     });
     if (!response.ok || !body.post) throw new Error(body.error ?? `create returned ${response.status}`);
 
-    const note = body.warning ? `${imageNote}; ${body.warning}` : imageNote;
+    // Gallery photos, after the post exists. Like the featured image, a
+    // failure here is reported but never loses the post.
+    let galleryNote = "";
+    if (p.gallery?.length) {
+      const ids = [];
+      const failedPhotos = [];
+      for (const g of p.gallery) {
+        try {
+          ids.push(await uploadImage(path.resolve(baseDir, g)));
+        } catch (err) {
+          failedPhotos.push(`${g} (${err.message})`);
+        }
+      }
+      if (ids.length) {
+        const { response: gRes, body: gBody } = await api(`/api/posts/${body.post.databaseId}/gallery`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaIds: ids }),
+        });
+        galleryNote = gRes.ok
+          ? `, gallery ${ids.length} photo${ids.length === 1 ? "" : "s"}`
+          : `, GALLERY NOT ATTACHED (${gBody.error ?? gRes.status}); add the photos in the editor`;
+      }
+      if (failedPhotos.length) galleryNote += `, GALLERY UPLOADS FAILED: ${failedPhotos.join("; ")}`;
+    }
+
+    const note = (body.warning ? `${imageNote}; ${body.warning}` : imageNote) + galleryNote;
     console.log(`  created  ${label}\n           id ${body.post.databaseId}, /news/${body.post.slug}, ${note}`);
     log.push({ n: p.n, title: p.title, result: "created", id: body.post.databaseId, slug: body.post.slug, featuredImageId, note });
     existing.set(normaliseTitle(p.title), { id: body.post.databaseId, title: p.title, status: body.post.status });

@@ -1003,7 +1003,37 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-root .st-warn { font-size: 12px; font-weight: 700; color: var(--po-danger); }
 @media (max-width: 560px) {
   .po-root .st-grid, .po-root .st-grid--name { grid-template-columns: minmax(0, 1fr); }
+  .po-root .st-grid--name .po-field { grid-column: auto !important; }
 }
+
+/* Doctors directory editor (dr-) */
+.po-root .dr-publish { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid var(--po-border); border-radius: 12px; background: var(--po-surface-2); }
+.po-root .dr-publish strong { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--po-text); margin-bottom: 2px; }
+.po-root .dr-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.po-root .dr-pill, .po-root .dr-day {
+  border: 1px solid var(--po-border); background: var(--po-surface); color: var(--po-text-2);
+  font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.po-root .dr-pill { padding: 6px 11px; border-radius: 999px; }
+.po-root .dr-pill[aria-pressed="false"]:hover:not(:disabled),
+.po-root .dr-day[aria-pressed="false"]:hover { border-color: var(--po-brand); color: var(--po-brand); }
+.po-root .dr-pill[aria-pressed="true"], .po-root .dr-day[aria-pressed="true"] { background: var(--po-brand); border-color: var(--po-brand); color: #fff; }
+/* Selected: stay white-on-green when hovered, just a shade deeper. */
+.po-root .dr-pill[aria-pressed="true"]:hover, .po-root .dr-day[aria-pressed="true"]:hover { background: var(--po-brand-hover); border-color: var(--po-brand-hover); color: #fff; }
+.po-root .dr-pill:disabled { opacity: .45; cursor: not-allowed; }
+.po-root .dr-pill:focus-visible, .po-root .dr-day:focus-visible { outline: none; box-shadow: var(--po-ring); }
+.po-root .dr-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.po-root .dr-day { height: 38px; border-radius: 10px; }
+.po-root .dr-photo { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: start; }
+.po-root .dr-photo-frame {
+  position: relative; width: 120px; aspect-ratio: 6 / 5; border-radius: 12px; overflow: hidden;
+  display: grid; place-items: center; background: linear-gradient(160deg, #0D5C46, #063328); color: #F2D48A;
+  font-size: 26px; font-weight: 700; letter-spacing: .05em;
+}
+.po-root .dr-photo-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.po-root .dr-photo-busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .45); color: #fff; }
+.po-root .dr-thumb { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
 .po-root .st-stack { display: grid; gap: 14px; padding-bottom: 70px; }
 .po-root .st-cadres { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 14px; align-items: start; }
@@ -1046,3 +1076,26 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-root .st-rank { grid-template-columns: 26px minmax(0, 1fr) auto; }
   .po-root .st-level { grid-column: 2 / 3; }
 }
+
+/* Post editor: photo gallery (pg-) */
+.po-root .pg-grid { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.po-root .pg-tile { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--po-surface-2); border: 1px solid var(--po-border); display: grid; place-items: center; }
+.po-root .pg-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.po-root .pg-tile--busy img { opacity: .45; }
+.po-root .pg-busy { position: relative; color: var(--po-text); }
+.po-root .pg-num { position: absolute; top: 5px; left: 5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; display: grid; place-items: center; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; }
+.po-root .pg-actions { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 4px; padding: 5px; background: linear-gradient(transparent, rgba(0,0,0,.55)); opacity: 0; transition: opacity .15s; }
+.po-root .pg-tile:hover .pg-actions, .po-root .pg-tile:focus-within .pg-actions { opacity: 1; }
+@media (hover: none) { .po-root .pg-actions { opacity: 1; } }
+.po-root .pg-actions button { width: 26px; height: 26px; border-radius: 8px; border: 0; display: grid; place-items: center; background: rgba(255,255,255,.92); color: #1a1a1a; cursor: pointer; }
+.po-root .pg-actions button:hover:not(:disabled) { background: #fff; color: var(--po-brand); }
+.po-root .pg-actions button[data-danger]:hover { color: var(--po-danger); }
+.po-root .pg-actions button:disabled { opacity: .4; cursor: default; }
+.po-root .pg-actions button:focus-visible { outline: none; box-shadow: var(--po-ring); }
+.po-root .pg-drop { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border: 1.5px dashed var(--po-border-strong); border-radius: 12px; background: var(--po-surface-2); color: var(--po-text-3); cursor: pointer; transition: border-color .15s, background .15s; }
+.po-root .pg-drop[data-over] { border-color: var(--po-brand-ink); background: var(--po-brand-soft); }
+.po-root .pg-drop[aria-disabled="true"] { cursor: default; opacity: .7; }
+.po-root .pg-drop:focus-visible { outline: none; box-shadow: var(--po-ring); }
+.po-root .pg-drop span { display: grid; gap: 2px; }
+.po-root .pg-drop strong { color: var(--po-text); font-size: 13.5px; }
+.po-root .pg-drop small { font-size: 12px; }

@@ -397,7 +397,9 @@ export interface TeamMember {
   role: string;
   dept: string;
   initials: string;
-  image: string;
+  /** A real photo of this person. Leave it out until one is supplied: the
+   *  card shows their initials, never a stock photo of someone else. */
+  image?: string;
   /** Omit any of these and the card falls back to the hospital's own line. */
   linkedin?: string;
   email?: string;
@@ -410,39 +412,48 @@ export const TEAM: TeamMember[] = [
     role: "Hospital Manager",
     dept: "Administration",
     initials: "GLQ",
-    image:
-      "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    linkedin: "https://linkedin.com/in/kwame",
+    image: "/images/team/georgina-quayson.jpg",
     id: 1,
   },
   {
-    name: "Dr. Kofi Kofo Boakye",
-    role: "AG. Medical Director",
-    dept: "General Medicine",
-    initials: "KKB",
-    image:
-      "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    linkedin: "https://linkedin.com/in/kwame",
+    name: "Dr. Daniel Gyawu Anning",
+    role: "Ag. Medical Director",
+    dept: "Clinical Services",
+    initials: "DGA",
+    image: "/images/team/daniel-anning.jpg",
     id: 2,
   },
   {
     name: "Mrs. Gladys Bediako",
     role: "Nurse Manager",
-    dept: "Administration",
+    dept: "Nursing",
     initials: "GB",
-    image:
-      "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    linkedin: "https://linkedin.com/in/kwame",
+    // Her own photo; the office background was retouched (Higgsfield, Oct 2026).
+    image: "/images/team/gladys-bediako.jpg",
     id: 3,
   },
   {
-    name: "Rev.Fr. Mathew Kumi",
-    role: "Chaplain ",
-    dept: "Administration",
+    name: "Mr. Festus Eli Agbodzie",
+    role: "Accountant",
+    dept: "Finance",
+    initials: "FEA",
+    image: "/images/team/festus-agbodzie.jpg",
+    id: 5,
+  },
+  {
+    name: "Pharm. Clement Opoku",
+    role: "Pharmacist",
+    dept: "Pharmacy",
+    initials: "CO",
+    image: "/images/team/clement-opoku.jpg",
+    id: 6,
+  },
+  {
+    name: "Rev. Fr. Mathew Kumi",
+    role: "Chaplain",
+    dept: "Chaplaincy",
     initials: "MK",
-    image:
-      "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80",
-    linkedin: "https://linkedin.com/in/kwame",
+    image: "/images/team/mathew-kumi.jpg",
     id: 4,
   },
 ];

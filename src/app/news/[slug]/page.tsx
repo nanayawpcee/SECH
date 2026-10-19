@@ -8,6 +8,7 @@ import { ArrowLeft, CalendarDays, ChevronRight, Clock, Stethoscope } from "lucid
 import { BookButton } from "@/components/ui/BookButton";
 import { CommentSection } from "@/components/ui/CommentSection";
 import { ArticleShare } from "@/components/news/ArticleShare";
+import { ArticleGallery } from "@/components/news/ArticleGallery";
 import { CategoryChip, NewsCard } from "@/components/news/NewsCard";
 import { getNewsArticle, getNewsItems } from "@/lib/news-data";
 import { formatNewsDate } from "@/lib/news";
@@ -21,8 +22,9 @@ interface Props {
 
 // WP content is rendered raw via dangerouslySetInnerHTML below — strip
 // scripts/event handlers/js: URIs before it ever reaches the client.
-// img/figure/figcaption are dropped rather than allowed-then-hidden, since
-// the featured image is already shown separately above the article body.
+// img/figure/figcaption are dropped rather than allowed-then-hidden: the
+// featured image, the gallery and any photos embedded in the text are all
+// shown in the slider above the article body instead.
 function sanitizeArticleContent(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: [
@@ -43,11 +45,11 @@ function sanitizeArticleContent(html: string): string {
 }
 
 export async function generateStaticParams() {
-  // An empty list is a valid answer: nothing is prerendered and each article is
-  // rendered on first request instead. That keeps a CMS outage from failing the
-  // build — which is what "Failed to collect page data for /news/[slug]" was.
-  const posts = await getNewsItems(20);
-  return posts.map((post) => ({ slug: post.slug }));
+  // Nothing is prerendered: each story is rendered on its first visit and
+  // then cached. Prerendering fetched every recent story at once during the
+  // build, and the WordPress host answers such bursts with 508 "resource
+  // limit reached", which baked "not found" pages into the build.
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -95,7 +97,7 @@ export default async function ArticlePage({ params }: Props) {
     headline: article.title.slice(0, 110),
     description: article.excerpt || undefined,
     datePublished: article.date,
-    image: [article.image ? article.image.src : absoluteUrl(DEFAULT_SHARE_IMAGE.url)],
+    image: article.photos.length ? article.photos.slice(0, 6).map((p) => p.src) : [absoluteUrl(DEFAULT_SHARE_IMAGE.url)],
     articleSection: article.category,
     author: { "@type": "Organization", name: SITE.name, url: absoluteUrl("/") },
     publisher: {
@@ -133,7 +135,9 @@ export default async function ArticlePage({ params }: Props) {
       </header>
 
       <div className="nw-container nw-article-wrap">
-        {article.image && (
+        {article.photos.length > 1 ? (
+          <ArticleGallery photos={article.photos} title={article.title} />
+        ) : article.image && (
           <figure className="nw-article-figure" data-portrait={portrait || undefined}>
             <Image
               src={article.image.src}

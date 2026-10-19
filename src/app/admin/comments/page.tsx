@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
 import { Avatar, ConfirmDialog, EmptyState, PageHeader, Skeleton } from "@/components/admin/ui";
+import { checkComment } from "@/lib/comment-spam";
 
 interface PendingComment {
   id: number;
@@ -271,6 +272,9 @@ export default function CommentsPage() {
                   <AnimatePresence initial={false}>
                     {group.items.map((c) => {
                       const hasLink = LINK_RE.test(c.content);
+                      // Same filter that now stops spam on arrival; flags any
+                      // that reached the queue before it was added.
+                      const spam = checkComment({ author: c.author, content: c.content }).action === "discard";
                       const isSel = selected.has(c.id);
                       return (
                         <motion.article
@@ -292,9 +296,14 @@ export default function CommentsPage() {
                                 <span className="po-cell-sub">{c.email}</span>
                                 <span className="po-cell-sub" style={{ marginLeft: "auto" }}>{when(c.date)}</span>
                               </div>
-                              {hasLink && (
-                                <div style={{ marginTop: 6 }}>
-                                  <span className="po-badge po-badge--plain po-tone-warn" style={{ textTransform: "none" }}><Link2 size={12} />Contains a link</span>
+                              {(hasLink || spam) && (
+                                <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                  {spam && (
+                                    <span className="po-badge po-badge--plain po-tone-danger" style={{ textTransform: "none" }} title="Advertising or keyword stuffing. Safe to delete.">
+                                      <ShieldAlert size={12} />Likely spam
+                                    </span>
+                                  )}
+                                  {hasLink && <span className="po-badge po-badge--plain po-tone-warn" style={{ textTransform: "none" }}><Link2 size={12} />Contains a link</span>}
                                 </div>
                               )}
                               <p className="cmt-text">{c.content}</p>

@@ -187,7 +187,7 @@ export function AboutSection() {
             >
               Our multidisciplinary team of physicians, nurses, and allied
               health professionals bring skill, empathy, and faith to every
-              patient encounter・From routine outpatient visits to complex
+              patient encounter, from routine outpatient visits to complex
               surgical procedures.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>

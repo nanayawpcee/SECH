@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Search,
   Settings,
+  Stethoscope,
   Sun,
   UserRound,
 } from "lucide-react";
@@ -83,6 +84,7 @@ export function CommandPalette({
       { id: "p-departments", group: "Pages", title: "Departments and units", perm: "staff.manage", icon: LayoutGrid, keywords: "wards units in-charge", run: go("/admin/departments") },
       { id: "p-ranks", group: "Pages", title: "Ranks and positions", perm: "staff.manage", icon: FileText, keywords: "grades cadres scheme of service", run: go("/admin/ranks") },
       { id: "p-messages", group: "Pages", title: "Messages", perm: "messages", icon: Inbox, keywords: "contact inbox enquiries complaints", run: go("/admin/messages") },
+      { id: "p-doctors", group: "Pages", title: "Doctors", perm: "doctors.manage", icon: Stethoscope, keywords: "specialists physicians profiles consultants", run: go("/admin/doctors") },
       { id: "p-newsletter", group: "Pages", title: "Newsletter", perm: "newsletter", icon: Mail, keywords: "subscribers mailing list email", run: go("/admin/newsletter") },
       { id: "p-bookings", group: "Pages", title: "All Bookings", perm: "bookings", icon: ClipboardList, keywords: "appointments patients", run: go("/admin/bookings") },
       { id: "p-cal", group: "Pages", title: "Calendar", perm: "bookings", icon: CalendarDays, keywords: "schedule appointments", run: go("/admin/calendar") },

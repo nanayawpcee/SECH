@@ -1,0 +1,276 @@
+/* Doctors and specialists: /doctors and the specialists strip on each
+   service page. Prefix dc-. Cards share the team cards' look. */
+
+.dc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 280px);
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+@media (max-width: 375px) {
+  .dc-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.dc-card {
+  scroll-margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1.5px solid #E2EBE7;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.dc-card:hover,
+.dc-card:focus-within,
+.dc-card:target {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+/* Arriving from a service page's "Full profile" link. */
+.dc-card:target { box-shadow: 0 0 0 3px var(--accent), var(--shadow-hover); }
+
+.dc-photo {
+  position: relative;
+  flex-shrink: 0;
+  aspect-ratio: 6 / 5;
+  overflow: hidden;
+  background: var(--primary-dark);
+}
+
+.dc-photo img { transition: transform 0.5s ease; }
+.dc-card:hover .dc-photo img { transform: scale(1.04); }
+
+.dc-monogram {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.6px) 0 0 / 14px 14px,
+    radial-gradient(circle at 25% 15%, rgba(232, 184, 75, 0.24), transparent 55%),
+    linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.dc-monogram span {
+  display: grid;
+  place-items: center;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid rgba(232, 184, 75, 0.6);
+  background: rgba(6, 51, 40, 0.35);
+  box-shadow: 0 0 0 8px rgba(232, 184, 75, 0.08);
+  color: var(--accent-light);
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.dc-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.dc-body::before {
+  content: '';
+  width: 32px;
+  height: 3px;
+  margin-bottom: 0.85rem;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.dc-card:hover .dc-body::before { width: 56px; }
+
+.dc-name {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-dark);
+}
+
+.dc-specialty {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+.dc-clinic {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0.85rem 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--light-green);
+  color: var(--text-mid);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.dc-clinic svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
+.dc-clinic strong { color: var(--text-dark); }
+
+.dc-bio {
+  margin: 0.85rem 0 0;
+  color: var(--text-mid);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.dc-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dc-service:hover { background: var(--primary-light); color: #fff; }
+.dc-service svg { transition: transform 0.2s; }
+.dc-service:hover svg { transform: translateX(2px); }
+.dc-service:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.dc-service--ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid #D6E8DF;
+}
+
+.dc-service--ghost:hover { background: var(--light-green); color: var(--primary); }
+
+/* /doctors page */
+.dc-page { background: #F7F9F7; padding: 4rem 0 5rem; }
+.dc-container { width: 100%; max-width: 1240px !important; margin: 0 auto; padding: 0 2rem; }
+.dc-intro { max-width: 680px; margin: 0 auto 2.5rem; text-align: center; color: var(--text-mid); line-height: 1.7; }
+
+.dc-empty {
+  max-width: 640px !important; /* beats the global div { max-width: 100% !important } */
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #DCEAE3;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.dc-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--light-green);
+  color: var(--primary);
+}
+
+.dc-empty h2 { margin: 0; font-family: var(--font-serif); font-size: 1.5rem; font-weight: 800; color: var(--text-dark); }
+.dc-empty p { margin: 0; color: var(--text-mid); line-height: 1.65; }
+
+.dc-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
+
+.dc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dc-btn:hover { background: var(--primary-light); color: #fff; }
+.dc-btn--ghost { background: transparent; color: var(--primary); }
+.dc-btn--ghost:hover { background: #fff; color: var(--primary); }
+.dc-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.dc-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-top: 3rem;
+  padding: 1.6rem 1.8rem;
+  border-radius: 18px;
+  background: var(--light-green);
+}
+
+.dc-cta h2 { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.35rem; font-weight: 800; color: var(--text-dark); }
+.dc-cta p { margin: 0; color: var(--text-mid); }
+
+/* Specialists strip on a service page */
+.dc-strip { padding: 4rem 2rem; background: #F7F9F7; }
+.dc-strip-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 1240px;
+  margin: 0 auto 2rem;
+}
+.dc-strip-head h2 { margin: 0; }
+.dc-strip-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.dc-strip-all:hover { color: var(--primary-light); }
+
+@media (max-width: 640px) {
+  .dc-page { padding: 2.5rem 0 3.5rem; }
+  .dc-container { padding: 0 16px; }
+  .dc-strip { padding: 3rem 16px; }
+  .dc-cta { padding: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-card, .dc-photo img, .dc-body::before, .dc-service svg { transition: none; }
+  .dc-card:hover, .dc-card:focus-within, .dc-card:target { transform: none; }
+}

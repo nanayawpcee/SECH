@@ -26,7 +26,9 @@ export type Perm =
   /** Contact-form messages — can include complaints and personal details. */
   | "messages"
   /** Employee records, departments/units, ranks. Administrators and HR officers. */
-  | "staff.manage";
+  | "staff.manage"
+  /** Public doctor and specialist profiles. Content managers and administrators. */
+  | "doctors.manage";
 
 /** WordPress capability → portal permission. */
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
@@ -43,6 +45,8 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   newsletter: (c) => c.has("manage_options"),
   messages: (c) => c.has("manage_options"),
   "staff.manage": (c) => c.has("sech_manage_staff"),
+  // Matches the plugin's check for the doctors directory (SECH_DOCTOR_CAP).
+  "doctors.manage": (c) => c.has("edit_others_posts"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {

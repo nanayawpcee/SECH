@@ -777,157 +777,282 @@ iframe {
    Team Section - Hover-only Overlay with Icons
    ========================================================================== */
 .team-section {
-  padding: 5.5rem 2rem;
+  --team-pad: 2rem;
+  padding: 5.5rem var(--team-pad);
   background: #fff;
+}
+
+@media (max-width: 640px) {
+  .team-section {
+    --team-pad: 1rem;
+    padding: 4rem var(--team-pad);
+  }
+}
+
+/* Team cards behave exactly like the homepage service cards (.services-grid):
+   one fixed card size at every screen width; 4 in a row when they fit, a
+   swipeable row with arrows on tablets and larger phones, and one per row,
+   full width, on phones 375px wide and narrower. */
+.team-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  container-type: inline-size;
 }
 
 .team-custom-grid {
+  --team-card-w: 300px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2.5rem;
+  /* 4 a row, or 3 when that makes even rows (TeamGrid sets --team-cols). */
+  grid-template-columns: repeat(var(--team-cols, 4), var(--team-card-w));
+  justify-content: center;
+  gap: 1.25rem;
+  width: 100%;
   margin-top: 3rem;
 }
 
-.team-card-wrapper {
-  display: flex;
-  flex-direction: column;
+/* 4 cards need 4 x 300 + 3 x 20 = 1260px; 2 need 620px. */
+@container (max-width: 1259px) {
+  .team-custom-grid { grid-template-columns: repeat(2, var(--team-card-w)); }
+}
+@container (max-width: 619px) {
+  .team-custom-grid { grid-template-columns: var(--team-card-w); }
+}
+@container (min-width: 344px) and (max-width: 1259px) {
+  .team-custom-grid {
+    display: flex;
+    justify-content: flex-start;
+    width: auto;
+    max-width: none !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* Room for the card shadow, which a scroll box would clip, and a bleed
+       past the section's right padding. */
+    margin: 0 calc(-1 * var(--team-pad)) -28px 0;
+    padding: 12px var(--team-pad) 28px 2px;
+  }
+  .team-custom-grid::-webkit-scrollbar { display: none; }
+  .team-cell { flex: 0 0 var(--team-card-w); scroll-snap-align: start; }
+  .team-container .team-rail-nav { display: flex; }
+}
+@container (max-width: 343px) {
+  .team-custom-grid { --team-card-w: 100cqi; }
+}
+@supports not (container-type: inline-size) {
+  @media (max-width: 1323px) { .team-custom-grid { grid-template-columns: repeat(2, var(--team-card-w)); } }
+  @media (max-width: 683px) { .team-custom-grid { grid-template-columns: var(--team-card-w); } }
 }
 
-.team-card-display {
+/* Arrow buttons share the services rail's button style (.services-rail-btn). */
+.team-rail-nav {
+  display: none;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: -2.75rem 0 0;
+  /* Pulled up beside the heading, whose animation wrapper would otherwise
+     sit on top and swallow clicks. Only the buttons take clicks, so the row
+     never blocks the heading area. */
   position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 4.5;
-  border-radius: 2rem;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  isolation: isolate;
+  z-index: 3;
+  pointer-events: none;
 }
 
-.team-card-display img {
-  z-index: 1;
+.team-rail-nav button { pointer-events: auto; }
+
+.team-custom-grid:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
-/* Overlay - Hidden by default, slides up on hover */
-.team-card-overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  /* Sized by its content, not a fixed slice of the card: a 20% strip was
-     shorter than the icon row + label, so the label spilled past the card's
-     clipped bottom edge. Extra bottom padding keeps descenders clear of the
-     2rem corner curve. translateY(100%) still hides it fully off-card. */
-  height: auto;
-  min-height: 20%;
+.team-cell {
+  width: var(--team-card-w);
+  max-width: var(--team-card-w) !important;
+}
+
+/* Leadership card: photo (or monogram) on top, then name, role and contact
+   buttons. Same border, corners and hover lift as the service cards, and the
+   contact buttons are always visible, so they work on touch screens too. */
+.team-card {
+  position: relative;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1.1rem 0 1.35rem;
-  transform: translateY(100%);
-  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 5;
+  background: #fff;
+  border: 1.5px solid #E2EBE7;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-/* The sheet that slides up over the photo. Deep brand green with a gold
-   hairline, echoing the site header and footer, and a soft upward shadow so it
-   reads as lifting off the image rather than painted onto it. The bottom
-   corners are clipped by the card itself. */
-.team-card-overlay::before {
-  content: '';
+.team-card:hover,
+.team-card:focus-within {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+.team-photo {
+  position: relative;
+  flex-shrink: 0;
+  aspect-ratio: 6 / 5;
+  overflow: hidden;
+  background: var(--primary-dark);
+}
+
+.team-photo img {
+  transition: transform 0.5s ease;
+}
+
+.team-card:hover .team-photo img {
+  transform: scale(1.04);
+}
+
+/* Stand-in until a member's real photo is supplied. */
+.team-monogram {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(6, 51, 40, 0.94) 0%,
-    var(--primary-dark) 100%
-  );
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-top: 2px solid var(--accent);
-  border-radius: 1.5rem 1.5rem 0 0;
-  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.28);
-  z-index: 1;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.6px) 0 0 / 14px 14px,
+    radial-gradient(circle at 25% 15%, rgba(232, 184, 75, 0.24), transparent 55%),
+    linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
 
-.team-card-display:hover .team-card-overlay {
-  transform: translateY(0);
-  /* Slides up into view */
-}
-
-/* Icons & Text */
-.team-social-row {
-  display: flex;
-  gap: 0.9rem;
-  margin-bottom: 0.8rem;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.4s ease 0.1s;
-  z-index: 10;
-  position: relative;
-}
-
-.team-card-display:hover .team-social-row {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.team-social-icon {
-  width: 46px;
-  height: 46px;
-  background: #fff;
+.team-monogram span {
+  display: grid;
+  place-items: center;
+  width: 40%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1a1a1a;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
-  z-index: 11;
-  position: relative;
-}
-
-/* Gold on hover rather than green — a green circle would sink into the
-   green sheet beneath it. */
-.team-social-icon:hover {
-  transform: scale(1.15);
-  background: var(--accent);
-  color: var(--primary-dark);
-}
-
-.team-follow-text {
-  font-weight: 700;
+  border: 2px solid rgba(232, 184, 75, 0.6);
+  background: rgba(6, 51, 40, 0.35);
+  box-shadow: 0 0 0 8px rgba(232, 184, 75, 0.08);
   color: var(--accent-light);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: transform 0.4s ease;
+}
+
+.team-card:hover .team-monogram span {
+  transform: scale(1.05);
+}
+
+.team-dept {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--primary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0;
-  transition: opacity 0.4s ease 0.15s;
-  z-index: 10;
-  position: relative;
 }
 
-.team-card-display:hover .team-follow-text {
-  opacity: 1;
+.team-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.25rem 1.25rem;
 }
 
-/* Meta Info */
-.team-meta-info {
-  margin-top: 1.25rem;
-  padding-left: 0.25rem;
+/* Gold accent bar that stretches on hover. */
+.team-body::before {
+  content: '';
+  width: 32px;
+  height: 3px;
+  margin-bottom: 0.85rem;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
 }
 
+.team-card:hover .team-body::before {
+  width: 56px;
+}
+
+/* Names reserve two lines on every card, so the cards stay one size whether
+   a name wraps or not. */
 .team-member-name {
-  font-size: 1.22rem;
-  font-weight: 800;
+  margin: 0 0 0.3rem;
+  min-height: 2.6em;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
   color: var(--text-dark);
-  margin-bottom: 0.3rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .team-member-role {
-  font-size: 0.88rem;
-  color: var(--text-light);
-  font-weight: 500;
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+.team-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 1.1rem;
+}
+
+.team-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid #D6E8DF;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.team-action:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.team-action:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.team-action--icon {
+  flex: 0 0 40px;
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-card,
+  .team-photo img,
+  .team-monogram span,
+  .team-body::before {
+    transition: none;
+  }
+  .team-card:hover,
+  .team-card:focus-within {
+    transform: none;
+  }
 }
 
 /* Hide sidebar layout adjustments for mobile screens */
@@ -1266,6 +1391,54 @@ iframe {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2)
 }
 
+/* The 24-hour emergency line: red outline and a softly glowing red siren.
+   A brighter red than the site's banner red, so it holds up on the dark
+   green hero. */
+.hero-emergency {
+  --hero-red: #FF5A5F;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 28px;
+  background: rgba(255, 90, 95, 0.08);
+  color: #fff;
+  border: 1.5px solid var(--hero-red);
+  border-radius: 4px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 14px rgba(255, 90, 95, 0.25);
+  transition: background 0.2s, box-shadow 0.2s
+}
+
+.hero-emergency:hover {
+  background: rgba(255, 90, 95, 0.16);
+  box-shadow: 0 0 22px rgba(255, 90, 95, 0.45)
+}
+
+.hero-emergency:focus-visible {
+  outline: 3px solid var(--hero-red);
+  outline-offset: 3px
+}
+
+.hero-emergency svg {
+  flex-shrink: 0;
+  color: var(--hero-red);
+  animation: heroSirenGlow 1.8s ease-in-out infinite
+}
+
+@keyframes heroSirenGlow {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(255, 90, 95, 0.55)) }
+  50% { filter: drop-shadow(0 0 8px rgba(255, 90, 95, 1)) drop-shadow(0 0 14px rgba(255, 90, 95, 0.6)) }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-emergency svg {
+    animation: none;
+    filter: drop-shadow(0 0 6px rgba(255, 90, 95, 0.8))
+  }
+}
+
 .hero-ghost {
   display: inline-block;
   padding: 14px 32px;
@@ -1544,7 +1717,14 @@ iframe {
   justify-content: flex-end;
   gap: 8px;
   margin: -2.25rem 0 1rem;
+  /* Same as .team-rail-nav: above the header's animation wrapper, but only
+     the buttons take clicks, so "View All Services" stays clickable. */
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
 }
+
+.services-rail-nav button { pointer-events: auto; }
 
 .services-rail-btn {
   display: grid;

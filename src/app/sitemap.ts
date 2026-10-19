@@ -14,6 +14,7 @@ const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly" | "
   { path: "/appointment", changeFrequency: "yearly", priority: 0.9 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.8 },
   { path: "/news", changeFrequency: "daily", priority: 0.8 },
+  { path: "/doctors", changeFrequency: "monthly", priority: 0.8 },
   { path: "/about", changeFrequency: "yearly", priority: 0.7 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.7 },
   { path: "/organogram", changeFrequency: "yearly", priority: 0.4 },

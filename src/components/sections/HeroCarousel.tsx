@@ -110,26 +110,7 @@ export function HeroCarousel() {
           )}
           <a
             href={telHref(SITE.emergencyPhones[0])}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 9,
-              padding: "14px 28px",
-              background: "transparent",
-              color: "#fff",
-              border: "1.5px solid rgba(255,255,255,0.38)",
-              borderRadius: 4,
-              fontSize: "0.92rem",
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              transition: "border-color 0.2s",
-            }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)")
-            }
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.38)")
-            }
+            className="hero-emergency"
             aria-label={`Emergency line, 24 hours: ${SITE.emergencyPhones[0]}`}
           >
             <Siren size={17} aria-hidden="true" />

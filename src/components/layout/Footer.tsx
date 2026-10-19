@@ -44,6 +44,7 @@ const FOOTER_LINKS = {
   Hospital: [
     { label: "About Us", href: "/about" },
     { label: "Our Team", href: "/about#team" },
+    { label: "Doctors & Specialists", href: "/doctors" },
     { label: "News", href: "/news" },
     { label: "Contact", href: "/contact" },
     { label: "Appointment", href: "/appointment" },

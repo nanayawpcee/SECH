@@ -13,10 +13,25 @@ export interface NewsItem {
   image: { src: string; alt: string; width: number; height: number } | null;
 }
 
+/** One photo in an article's slider. */
+export interface ArticlePhoto {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption: string | null;
+}
+
 export interface NewsArticle extends NewsItem {
   content: string;
   commentsOpen: boolean;
   readMinutes: number;
+  /**
+   * Every photo for the article page's slider: the featured image first, then
+   * the post's gallery (or, for older posts without one, the photos embedded
+   * in its text). News cards keep showing only `image`.
+   */
+  photos: ArticlePhoto[];
 }
 
 export type NewsCategory = "News" | "Announcements" | "Events" | "Health & Education" | "Blog";

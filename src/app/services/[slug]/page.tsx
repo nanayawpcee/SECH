@@ -6,7 +6,11 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 import { HoverLink } from "@/components/ui/HoverLink";
+import "@/styles/doctors.css";
+import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { DoctorCard } from "@/components/doctors/DoctorCard";
+import { getDoctorsForService } from "@/lib/doctors-data";
 import { breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import fs from "node:fs";
 import path from "node:path";
@@ -26,6 +30,9 @@ function iconExists(src: string) {
 interface Props {
   params: { slug: string };
 }
+
+// Specialist profiles refresh every 5 minutes, and straight away when one is saved.
+export const revalidate = 300;
 
 export async function generateStaticParams() {
   return SERVICES.map((s) => ({ slug: s.slug }));
@@ -53,9 +60,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function ServiceDetailPage({ params }: Props) {
+export default async function ServiceDetailPage({ params }: Props) {
   const svc = SERVICES.find((s) => s.slug === params.slug);
   if (!svc) notFound();
+  const specialists = await getDoctorsForService(svc.slug);
 
   const others = SERVICES.filter((s) => s.slug !== svc.slug).slice(0, 4);
 
@@ -358,6 +366,22 @@ export default function ServiceDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Published profiles linked to this service in the portal (Doctors). */}
+      {specialists.length > 0 && (
+        <section className="dc-strip" aria-labelledby="dc-strip-title">
+          <div className="dc-strip-head">
+            <div>
+              <div className="section-tag"><span>Our Specialists</span></div>
+              <h2 id="dc-strip-title" className="section-heading">Who you’ll see in {svc.title}</h2>
+            </div>
+            <Link href="/doctors" className="dc-strip-all">All doctors and specialists →</Link>
+          </div>
+          <div className="dc-grid">
+            {specialists.map((d) => <DoctorCard key={d.databaseId} doctor={d} currentService={svc.slug} />)}
+          </div>
+        </section>
+      )}
 
       <EmergencyBanner />
     </>

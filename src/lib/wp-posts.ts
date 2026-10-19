@@ -138,3 +138,19 @@ export const SET_FEATURED_IMAGE = `
     }
   }
 `;
+
+/** A post's extra photos for the article slider (SECH Portal plugin 1.9.0). */
+export const POST_GALLERY_QUERY = `
+  query PostGallery($id: ID!) {
+    post(id: $id, idType: DATABASE_ID) { galleryImages { databaseId sourceUrl } }
+  }
+`;
+
+export const SET_POST_GALLERY = `
+  mutation SetPostGallery($postId: Int!, $mediaIds: [Int]) {
+    setPostGallery(input: { postId: $postId, mediaIds: $mediaIds }) { images { databaseId sourceUrl } }
+  }
+`;
+
+/** Most photos a post's gallery may hold; the plugin enforces the same. */
+export const GALLERY_MAX = 20;

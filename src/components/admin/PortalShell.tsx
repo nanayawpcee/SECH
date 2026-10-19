@@ -30,6 +30,7 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   ShieldX,
+  Stethoscope,
   UsersRound,
   XCircle,
 } from "lucide-react";
@@ -69,6 +70,7 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/comments", icon: MessageSquare, label: "Comments", badgeKey: "comments", perm: "comments" },
       { href: "/admin/messages", icon: Inbox, label: "Messages", badgeKey: "messages", perm: "messages" },
       { href: "/admin/newsletter", icon: Mail, label: "Newsletter", perm: "newsletter" },
+      { href: "/admin/doctors", icon: Stethoscope, label: "Doctors", perm: "doctors.manage" },
     ],
   },
   {
@@ -119,6 +121,7 @@ const VARIANT = {
       comments: "Comments", bookings: "Bookings", calendar: "Calendar", settings: "Settings",
       notices: "Notice board", newsletter: "Newsletter", messages: "Messages",
       employees: "Employees", departments: "Departments and units", ranks: "Ranks and positions",
+      doctors: "Doctors",
     } as Record<string, string>,
   },
   staff: {
@@ -143,6 +146,7 @@ const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/employees", "staff.manage"],
   ["/admin/departments", "staff.manage"],
   ["/admin/ranks", "staff.manage"],
+  ["/admin/doctors", "doctors.manage"],
   ["/admin/posts", "posts.write"],
   ["/staff/posts", "posts.write"],
 ];

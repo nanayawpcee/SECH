@@ -33,6 +33,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { AdminPost } from "@/lib/wp-posts";
 import { can } from "@/lib/permissions";
 import { Card, Chip, PageHeader, Segmented, StatusBadge, Switch, type Tone } from "@/components/admin/ui";
+import { PostGalleryCard, type GalleryItem } from "@/components/admin/PostGalleryCard";
 
 type PostType = AdminPost["type"];
 type Status = AdminPost["status"];
@@ -100,6 +101,11 @@ export function PostEditorForm({
   const [saving, setSaving] = useState<Status | null>(null);
   const [dirty, setDirty] = useState(false);
   const [mode, setMode] = useState<"write" | "preview">("write");
+  // Extra photos for the article slider; saved after the post itself.
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(isEdit);
+  const [galleryNeedsPlugin, setGalleryNeedsPlugin] = useState(false);
+  const galleryDirty = useRef(false);
 
   const status: Status = initialPost?.status ?? "draft";
   const published = status === "published";
@@ -165,6 +171,41 @@ export function PostEditorForm({
     }
   };
 
+  // Load an existing post's gallery.
+  useEffect(() => {
+    if (!initialPost) return;
+    let live = true;
+    fetch(`/api/posts/${initialPost.id}/gallery`, { cache: "no-store" })
+      .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
+      .then(({ ok, d }) => {
+        if (!live) return;
+        if (d.needsPlugin) setGalleryNeedsPlugin(true);
+        else if (ok) setGallery((d.images ?? []).filter((x: { sourceUrl: string | null }) => x.sourceUrl).map((x: { databaseId: number; sourceUrl: string }) => ({ id: x.databaseId, url: x.sourceUrl })));
+      })
+      .catch(() => {})
+      .finally(() => live && setGalleryLoading(false));
+    return () => { live = false; };
+  }, [initialPost]);
+
+  const onGalleryChange = useCallback(() => { galleryDirty.current = true; markDirty(); }, [markDirty]);
+
+  /** Saves the gallery for a post that now exists. Reports, never throws: the post itself is saved. */
+  const saveGallery = async (postId: number) => {
+    if (!galleryDirty.current) return;
+    try {
+      const res = await fetch(`/api/posts/${postId}/gallery`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaIds: gallery.map((g) => g.id) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "the photo gallery could not be saved");
+      galleryDirty.current = false;
+    } catch (err) {
+      addToast(`The post was saved, but ${err instanceof Error ? err.message : "the photo gallery could not be saved"}.`, "warn");
+    }
+  };
+
   /* ── Featured image ── */
   const upload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -225,6 +266,7 @@ export function PostEditorForm({
           featuredImageId: featuredImageId ?? null, // null clears the thumbnail
         } as Partial<AdminPost>);
         stored = saved.status;
+        await saveGallery(initialPost.id);
       } else {
         const response = await fetch("/api/posts", {
           method: "POST",
@@ -238,6 +280,7 @@ export function PostEditorForm({
         if (!response.ok) throw new Error(result.error || "Could not save the post.");
         if (result.warning) addToast(result.warning, "warn");
         if (result.post?.status === "pending") stored = "pending";
+        if (result.post?.databaseId) await saveGallery(result.post.databaseId);
         await refreshPosts();
       }
       setEditorDirty(false);
@@ -418,7 +461,7 @@ export function PostEditorForm({
 
         {/* Sidebar */}
         <aside className="ed-side">
-          <Card title="Featured image" subtitle="Shown at the top of the article and on the news list">
+          <Card title="Featured image" subtitle="The main photo: the one shown on news cards, and first in the article’s photo slider">
             {!canUpload && !previewUrl ? (
               <div className="po-alert po-tone-info" style={{ alignItems: "flex-start" }}>
                 <Info size={16} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -459,6 +502,15 @@ export function PostEditorForm({
               </div>
             )}
           </Card>
+
+          <PostGalleryCard
+            items={gallery}
+            setItems={setGallery}
+            onChange={onGalleryChange}
+            canUpload={canUpload}
+            loading={galleryLoading}
+            needsPlugin={galleryNeedsPlugin}
+          />
 
           <Card title="Post settings">
             <div style={{ display: "grid", gap: 16 }}>
