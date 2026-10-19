@@ -1,0 +1,102 @@
+/* Laboratory sections on /services/laboratory. Prefix lab-. */
+
+.lab-sections { padding: 4.5rem 2rem; background: #F7F9F7; }
+.lab-sections-inner { max-width: 1240px !important; margin: 0 auto; }
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.lab-card {
+  scroll-margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1.5px solid #E2EBE7;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.lab-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+
+/* Arrived here from a section link on the Services page. */
+.lab-card:target,
+.lab-card[data-hash-target] { border-color: var(--primary); box-shadow: 0 0 0 3px var(--accent), var(--shadow-hover); }
+
+.lab-photo { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--primary-dark); }
+.lab-photo img { transition: transform 0.5s ease; }
+.lab-card:hover .lab-photo img { transform: scale(1.04); }
+
+.lab-icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent-light);
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.6px) 0 0 / 14px 14px,
+    radial-gradient(circle at 25% 15%, rgba(232, 184, 75, 0.22), transparent 55%),
+    linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.lab-body { padding: 1.1rem 1.25rem 1.3rem; }
+.lab-body::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 3px;
+  margin-bottom: 0.8rem;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+.lab-card:hover .lab-body::before { width: 56px; }
+.lab-body h3 { margin: 0 0 0.35rem; font-family: var(--font-serif); font-size: 1.12rem; font-weight: 700; color: var(--text-dark); }
+.lab-body p { margin: 0; color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; }
+
+/* Smaller services without their own section (Endocrinology). */
+.lab-extras {
+  display: grid;
+  gap: 10px;
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-md);
+  background: #fff;
+  border: 1.5px dashed #CFE0D7;
+}
+.lab-extras-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--primary-light); }
+.lab-extra {
+  scroll-margin-top: 100px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 8px;
+  margin: -8px;
+  border-radius: 12px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.lab-extra[data-hash-target], .lab-extra:target { background: var(--light-green); box-shadow: 0 0 0 2px var(--accent); }
+.lab-extra-icon { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--light-green); color: var(--primary); }
+.lab-extra h3 { margin: 0 0 2px; font-family: var(--font-serif); font-size: 1.02rem; font-weight: 700; color: var(--text-dark); }
+.lab-extra p { margin: 0; color: var(--text-mid); font-size: 0.9rem; line-height: 1.55; }
+
+@media (max-width: 960px) { .lab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .lab-sections { padding: 3.5rem 16px; }
+  .lab-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lab-card, .lab-photo img, .lab-body::before { transition: none; }
+  .lab-card:hover { transform: none; }
+}
+
+/* "What We Offer" items on the Laboratory page link to their section card. */
+.svc-feature-link { color: inherit; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.svc-feature-link:hover { color: var(--primary); }
+
+/* "Other Services" follows on the same light background; a hairline keeps them apart. */
+.lab-sections + section { border-top: 1px solid #E2EBE7; }

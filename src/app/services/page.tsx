@@ -38,7 +38,11 @@ export default function ServicesPage() {
     iconTone: d.iconTone,
     headerBg: d.headerStyle.background,
     dotColor: d.dotColor,
-    items: d.services.map((s) => ({ name: s.name, slug: "slug" in s ? s.slug : undefined })),
+    items: d.services.map((s) => ({
+      name: s.name,
+      slug: "slug" in s ? s.slug : undefined,
+      anchor: "anchor" in s ? s.anchor : undefined,
+    })),
   }));
 
   // Which department each service page belongs to, from the category lists.

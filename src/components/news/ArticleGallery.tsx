@@ -5,8 +5,12 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Images, Pause, Play } from "lucide-react";
 import type { ArticlePhoto } from "@/lib/news";
 
-/** Most of a photo that may be trimmed to fill the frame (0.15 = 15%). */
-const FIT_TRIM = 0.15;
+/**
+ * Most of a photo that may be trimmed to fill the frame (0.2 = 20%). Enough
+ * for ordinary 4:3 camera photos in the 16:10 frame (about 17%); squares,
+ * portraits and posters still show whole.
+ */
+const FIT_TRIM = 0.2;
 
 /** How long each photo shows before the slider moves on by itself. */
 const AUTOPLAY_MS = 5000;

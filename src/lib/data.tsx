@@ -69,19 +69,25 @@ export const SERVICES = [
     shortDesc:
       "State-of-the-art diagnostics with rapid turnaround for accurate results.",
     fullDesc:
-      "The SECH Laboratory is equipped with modern analysers for haematology, biochemistry, microbiology, and histopathology. Our certified scientists ensure rapid, accurate results that power clinical decision-making.",
+      "The SECH Laboratory runs the tests your doctor relies on, across six sections: haematology, microbiology, biochemistry, transfusion services, molecular biology and immunology, with endocrinology on a compact analyser. Our medical laboratory scientists report every result back to your doctor.",
+    // The laboratory's own sections (LAB_SECTIONS and LAB_EXTRAS below); on the
+    // Laboratory page each links to its card.
     features: [
-      "Haematology & biochemistry",
-      "Microbiology cultures",
-      "HIV/TB testing",
-      "Same-day results",
+      "Haematology",
+      "Microbiology",
+      "Biochemistry",
+      "Transfusion Services",
+      "Molecular Biology",
+      "Immunology",
+      "Endocrinology",
     ],
   },
   {
     slug: "eye-center",
     icon: "/icons/eye.png",
     title: "Eye Center",
-    image: "/images/eye.png",
+    // An eye examination at the slit lamp in the hospital's Eye Center.
+    image: "/images/eye-clinic.jpg",
     shortDesc:
       "Full ophthalmic services from routine screening to surgical interventions.",
     fullDesc:
@@ -96,17 +102,24 @@ export const SERVICES = [
   {
     slug: "postnatal",
     icon: "/icons/postnatal.png",
-    title: "Post-Natal & CWC",
-    image: "/images/postnatal.png",
+    title: "Reproductive & Child Health (RCH)",
+    // A nurse weighing a baby at the Reproductive & Child Health clinic.
+    image: "/images/rch-growth-monitoring.jpg",
     shortDesc:
-      "Mother and child wellness from delivery through early development.",
+      "Care for mothers and children, from pregnancy and birth through the early years.",
+    // Blank lines separate paragraphs on the service page.
     fullDesc:
-      "Our post-natal and Child Welfare Clinic (CWC) supports mothers and infants through the critical first months. Services include breastfeeding support, immunisation, growth monitoring, and nutritional counselling.",
+      "Our Reproductive & Child Health (RCH) unit brings together the care a mother and her child need, from the first antenatal visit to the child's fifth birthday. Mothers and children are seen in one place by our nurses and midwives, so each visit builds on the last.\n\n" +
+      "During pregnancy, regular antenatal check-ups follow the health of the mother and the growth of the baby, with advice on nutrition, warning signs to look out for and preparing for birth. After delivery, post-natal check-ups make sure mother and baby are both well, and our staff help with breastfeeding in the early weeks.\n\n" +
+      "At the Child Welfare Clinic, children under five are weighed at every visit so their growth can be followed over time. They receive their routine immunisations on schedule, and parents get practical advice on feeding and keeping their child healthy.\n\n" +
+      "Please bring your Maternal and Child Health Record Book to every visit, so the record of your pregnancy and your child's growth and immunisations stays complete.",
     features: [
+      "Antenatal check-ups",
+      "Post-natal care for mother and baby",
       "Breastfeeding support",
-      "Immunisation schedule",
-      "Growth monitoring",
-      "Nutritional counselling",
+      "Child growth monitoring",
+      "Routine childhood immunisation",
+      "Nutrition advice",
     ],
   },
 
@@ -145,9 +158,9 @@ export const SERVICES = [
     slug: "psychiatry",
     icon: "/icons/mental.png",
     title: "Psychiatry & Counselling",
-    image:
-      // Stock photo (Unsplash) until the hospital has its own.
-      "https://images.unsplash.com/photo-1573495804664-b1c0849525af?auto=format&fit=crop&w=1400&q=80",
+    // The hospital's own counselling room; the wall posters were added in
+    // editing (Higgsfield, Oct 2026).
+    image: "/images/psychiatry-counselling.jpg",
     shortDesc:
       "Mental health support, counselling, and inpatient psychiatric care.",
     fullDesc:
@@ -196,9 +209,8 @@ export const SERVICES = [
     slug: "x-ray",
     icon: "/icons/x-ray.png",
     title: "X-Ray",
-    image:
-      // Stock photo (Unsplash) until the hospital has its own.
-      "https://images.unsplash.com/photo-1631563018856-81be9c118283?auto=format&fit=crop&w=1400&q=80",
+    // The hospital's own X-ray room. The patient's face is blurred for privacy.
+    image: "/images/xray-room.jpg",
     shortDesc: "Digital X-ray services for accurate diagnostics.",
     fullDesc:
       "Our X-Ray department provides high-quality digital X-ray imaging for a wide range of clinical applications, ensuring fast and reliable results for healthcare providers.",
@@ -208,9 +220,8 @@ export const SERVICES = [
     slug: "OPG",
     icon: "/icons/tooth.png",
     title: "Dental X-Ray (OPG)",
-    image:
-      // Stock photo (Unsplash) until the hospital has its own.
-      "https://images.unsplash.com/photo-1777445374290-eedda5be8e5b?auto=format&fit=crop&w=1400&q=80",
+    // The hospital's own OPG machine, patient photographed from behind.
+    image: "/images/dental-xray-opg.jpg",
     shortDesc:
       "Specialised dental imaging for comprehensive oral health assessment.",
     fullDesc:
@@ -226,9 +237,8 @@ export const SERVICES = [
     slug: "ultrasound",
     icon: "/icons/ultrasound.png",
     title: "Ultrasound Scan",
-    image:
-      // Stock photo (Unsplash) until the hospital has its own.
-      "https://images.unsplash.com/photo-1691933880096-4046bc9e2fa0?auto=format&fit=crop&w=1400&q=80",
+    // The hospital's own ultrasound room during a scan.
+    image: "/images/ultrasound-scan.jpg",
     shortDesc:
       "Comprehensive ultrasound services for obstetric and general imaging.",
     fullDesc:
@@ -244,9 +254,9 @@ export const SERVICES = [
     slug: "ecg",
     icon: "/icons/ecg.png",
     title: "Electrocardiogram (ECG)",
-    image:
-      // Stock photo (Unsplash) until the hospital has its own.
-      "https://images.unsplash.com/photo-1724395261682-c8b152dc5b9b?auto=format&fit=crop&w=1400&q=80",
+    // The hospital's own ECG test; the room was redecorated and the ECG
+    // machine added in editing (Higgsfield, Oct 2026).
+    image: "/images/ecg-room.jpg",
     shortDesc: "ECG services for cardiac assessment and monitoring.",
     fullDesc:
       "Our ECG department provides comprehensive electrocardiogram services for cardiac assessment, including resting ECGs, stress tests, and Holter monitoring, to support accurate diagnosis and management of heart conditions.",
@@ -260,7 +270,8 @@ export const SERVICES = [
   {
     slug: "outpatient",
     icon: "/icons/outpatient.png",
-    image: "/images/opd.jpg",
+    // A consultation in the Out-Patient Department.
+    image: "/images/opd-consultation.jpg",
     title: "Out-Patient Services",
     shortDesc:
       "General consultations and specialist clinics without admission.",
@@ -287,6 +298,57 @@ export const SERVICES = [
       "Obstetric ultrasound",
       "Malaria prophylaxis",
       "Birth preparedness",
+    ],
+  },
+  {
+    slug: "surgery",
+    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
+    icon: "/icons/surgery.png",
+    title: "General Surgery",
+    // The hospital's own operating theatre; the surgical field is blurred.
+    image: "/images/general-surgery.jpg",
+    shortDesc: "Planned and emergency operations by our surgical team, with care before and after surgery.",
+    fullDesc:
+      "Our surgical team carries out general surgical operations in the hospital's operating theatre, from emergency procedures to planned operations. Patients are assessed before surgery, cared for on our wards afterwards and followed up at the out-patient clinic.",
+    features: [
+      "Emergency surgery",
+      "Planned (elective) operations",
+      "Pre-operative assessment",
+      "Post-operative ward care",
+    ],
+  },
+  {
+    slug: "physiotherapy",
+    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
+    icon: "/icons/physiotherapy.png",
+    title: "Physiotherapy",
+    // The hospital's own physiotherapy room; the two staff were dressed as patients.
+    image: "/images/physiotherapy.jpg",
+    shortDesc: "Exercise and hands-on therapy to help you move, recover and regain strength.",
+    fullDesc:
+      "Our physiotherapy unit helps patients recover movement and strength after injury, surgery, stroke or long illness, and manage ongoing pain. Each patient follows an exercise plan suited to them, guided and supervised by our physiotherapy staff in a dedicated exercise room.",
+    features: [
+      "Exercise therapy",
+      "Recovery after injury or surgery",
+      "Stroke rehabilitation",
+      "Pain management",
+    ],
+  },
+  {
+    slug: "paediatrics",
+    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
+    icon: "/icons/paediatrics.png",
+    title: "Paediatrics (Child Health)",
+    // The hospital's own children's ward, tidied up.
+    image: "/images/paediatrics-ward.jpg",
+    shortDesc: "Care for babies, children and teenagers, with parents welcome at the bedside.",
+    fullDesc:
+      "Our paediatric team looks after children from birth to adolescence, from clinic visits for common illnesses to admission on our children's ward. Parents and carers can stay with their child, and our nurses care for young patients day and night.",
+    features: [
+      "Paediatric clinic",
+      "Children's ward admission",
+      "Care for newborns and infants",
+      "Parents can stay with their child",
     ],
   },
 ];
@@ -489,7 +551,7 @@ export const PHOTOS = [
       "Our Eye Center offers comprehensive ophthalmic services from routine screening to cataract surgery.",
     color: "#1A2F2A",
     icon: "/svgs/eye_clinic.svg",
-    image: "/images/eye.png",
+    image: "/images/eye-clinic.jpg",
     pattern: "wave",
     accent: "#E8B84B",
   },
@@ -522,12 +584,75 @@ export const PHOTOS = [
       "Our 24/7 emergency department and busy OPD serve hundreds of patients daily with expert triage.",
     color: "#1A2F2A",
     icon: "/icons/outpatient.png",
-    image:
-      "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&q=80",
+    // The OPD waiting area on a busy clinic morning.
+    image: "/images/opd-waiting-area.jpg",
     pattern: "wave",
     accent: "#E8B84B",
   },
 ];
+// ─── Laboratory sections (on /services/laboratory) ─────────────
+/**
+ * The laboratory's sections, each shown with a photo on the Laboratory page.
+ * The "anchor" on each Laboratory item in DEPARTMENT_GRID_DATA links here.
+ * Sections without a photo yet show an icon panel.
+ */
+export const LAB_SECTIONS: { id: string; name: string; desc: string; image?: string; imageAlt?: string }[] = [
+  {
+    id: "haematology",
+    name: "Haematology",
+    desc: "Blood counts and blood cell tests, such as the full blood count and haemoglobin level.",
+    image: "/images/lab-haematology.jpg",
+    imageAlt: "A medical laboratory scientist examining a blood film under a Zeiss microscope",
+  },
+  {
+    id: "microbiology",
+    name: "Microbiology",
+    desc: "Finding the cause of infections, from microscopy to cultures that show which medicine will work.",
+    image: "/images/lab-microbiology.jpg",
+    imageAlt: "A laboratory scientist in protective gear flaming an inoculating loop over a Bunsen burner before plating a culture",
+  },
+  {
+    id: "biochemistry",
+    name: "Biochemistry",
+    desc: "Blood chemistry on our automated analyser: kidney and liver function, blood sugar, cholesterol and more.",
+    image: "/images/lab-biochemistry.jpg",
+    imageAlt: "A laboratory scientist reviewing results beside the HumaStar 300SR chemistry analyser",
+  },
+  {
+    id: "transfusion",
+    name: "Transfusion Services",
+    desc: "Blood grouping and cross-matching, so every patient receives safe, compatible blood.",
+    image: "/images/lab-transfusion.jpg",
+    imageAlt: "A laboratory scientist checking the label on a unit of blood from the blood bank fridge",
+  },
+  {
+    id: "molecular-biology",
+    name: "Molecular Biology",
+    desc: "DNA and RNA tests, such as PCR, that detect infections like TB and measure viral load.",
+    image: "/images/lab-molecular-biology.jpg",
+    imageAlt: "A laboratory scientist at the computer beside a sealed glove-box workstation in the molecular laboratory",
+  },
+  {
+    id: "immunology",
+    name: "Immunology",
+    desc: "Tests for infections and the immune system, such as HIV and hepatitis screening.",
+    image: "/images/lab-immunology.jpg",
+    imageAlt: "Two laboratory scientists at the bench running rapid diagnostic tests",
+  },
+];
+
+/**
+ * Smaller laboratory services without a section of their own (no dedicated
+ * workstation), listed under the section cards on /services/laboratory.
+ */
+export const LAB_EXTRAS: { id: string; name: string; desc: string }[] = [
+  {
+    id: "endocrinology",
+    name: "Endocrinology",
+    desc: "Hormone tests, such as thyroid function and fertility hormones, run on a compact analyser.",
+  },
+];
+
 // ─── Departments Grid Data (For Services Page) ────────────────────
 /**
  * The four service categories on /services. `slug` links an item to its
@@ -580,9 +705,9 @@ export const DEPARTMENT_GRID_DATA = [
       { name: "Dental & Maxillofacial Surgery", slug: "dental" },
       { name: "Family Medicine" },
       { name: "Obstetrics & Gynaecology (Maternal)" },
-      { name: "General Surgery" },
-      { name: "Physiotherapy" },
-      { name: "Paediatric (Child Health)" },
+      { name: "General Surgery", slug: "surgery" },
+      { name: "Physiotherapy", slug: "physiotherapy" },
+      { name: "Paediatric (Child Health)", slug: "paediatrics" },
       { name: "Restorative Dentistry", slug: "dental" },
       { name: "Urology" },
     ],
@@ -627,12 +752,13 @@ export const DEPARTMENT_GRID_DATA = [
     subtitle: "Advanced diagnostics & scientific analysis",
     featured: false,
     services: [
-      { name: "Haematology", slug: "laboratory" },
-      { name: "Microbiology", slug: "laboratory" },
-      { name: "Biochemistry", slug: "laboratory" },
-      { name: "Transfusion Services", slug: "laboratory" },
-      { name: "Endocrinology", slug: "laboratory" },
-      { name: "Immunology", slug: "laboratory" },
+      { name: "Haematology", slug: "laboratory", anchor: "haematology" },
+      { name: "Microbiology", slug: "laboratory", anchor: "microbiology" },
+      { name: "Biochemistry", slug: "laboratory", anchor: "biochemistry" },
+      { name: "Transfusion Services", slug: "laboratory", anchor: "transfusion" },
+      { name: "Molecular Biology", slug: "laboratory", anchor: "molecular-biology" },
+      { name: "Endocrinology", slug: "laboratory", anchor: "endocrinology" },
+      { name: "Immunology", slug: "laboratory", anchor: "immunology" },
     ],
     headerStyle: { background: "#1A2F2A" },
     badgeStyle: {

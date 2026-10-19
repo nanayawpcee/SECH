@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { PHOTOS } from "@/lib/data";
 import { Pause } from "lucide-react";
 
@@ -90,10 +91,6 @@ function Slide({
           top: 0,
           bottom: 0,
           width: "65%",
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3)), url(${photo.image})`,
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
           clipPath: "polygon(0 0, 100% 0, 77% 100%, 0 100%)",
           display: "flex",
           alignItems: "center",
@@ -102,10 +99,18 @@ function Slide({
           zIndex: 1,
         }}
       >
+        {/* Through next/image, so visitors get a resized AVIF/WebP copy
+            rather than the full-size JPEG a CSS background would load. */}
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+          <Image src={photo.image} alt="" fill sizes="(max-width: 768px) 100vw, 65vw" style={{ objectFit: "cover" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3))" }} />
+        </div>
+
         {/* Desktop floating center icon */}
         <div
           className="carousel-icon-badge"
           style={{
+            position: "relative",
             width: 180,
             height: 180,
             borderRadius: "50%",
@@ -678,17 +683,12 @@ export function PhotoCarousel() {
                 }}
                 aria-label={`Jump to ${p.label}`}
               >
-                <img
+                <Image
                   src={p.image}
                   alt=""
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    opacity: 0.45,
-                  }}
+                  fill
+                  sizes="110px"
+                  style={{ objectFit: "cover", opacity: 0.45 }}
                 />
 
                 <div

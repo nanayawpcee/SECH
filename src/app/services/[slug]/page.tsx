@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SERVICES } from "@/lib/data";
+import { LAB_EXTRAS, LAB_SECTIONS, SERVICES } from "@/lib/data";
 import { PageHero } from "@/components/ui/PageHero";
 import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { AnimateIn } from "@/components/ui/AnimateIn";
@@ -10,14 +10,15 @@ import "@/styles/doctors.css";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
+import { LabSections } from "@/components/services/LabSections";
 import { getDoctorsForService } from "@/lib/doctors-data";
 import { breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import fs from "node:fs";
 import path from "node:path";
-import { Activity, Check, ScanLine, Stethoscope, type LucideIcon } from "lucide-react";
+import { Activity, Baby, Check, Dumbbell, ScanLine, Scissors, Stethoscope, type LucideIcon } from "lucide-react";
 
 /** Drawn icons for services whose icon image doesn't exist yet. */
-const FALLBACK_ICON: Record<string, LucideIcon> = { ecg: Activity, ultrasound: ScanLine };
+const FALLBACK_ICON: Record<string, LucideIcon> = { ecg: Activity, ultrasound: ScanLine, surgery: Scissors, physiotherapy: Dumbbell, paediatrics: Baby };
 
 function iconExists(src: string) {
   try {
@@ -64,6 +65,10 @@ export default async function ServiceDetailPage({ params }: Props) {
   const svc = SERVICES.find((s) => s.slug === params.slug);
   if (!svc) notFound();
   const specialists = await getDoctorsForService(svc.slug);
+  // On the Laboratory page, each section in "What We Offer" jumps to its card.
+  const featureAnchors = new Map<string, string>(
+    svc.slug === "laboratory" ? [...LAB_SECTIONS, ...LAB_EXTRAS].map((x) => [x.name, x.id]) : [],
+  );
 
   const others = SERVICES.filter((s) => s.slug !== svc.slug).slice(0, 4);
 
@@ -81,6 +86,7 @@ export default async function ServiceDetailPage({ params }: Props) {
         title={svc.title}
         subtitle={svc.shortDesc}
         backgroundImage={svc.image}
+        tall
       />
 
       <section style={{ padding: "5rem 2rem", background: "#fff" }}>
@@ -133,16 +139,22 @@ export default async function ServiceDetailPage({ params }: Props) {
             >
               About This Service
             </h2>
-            <p
-              style={{
-                color: "var(--text-light)",
-                lineHeight: 1.82,
-                fontSize: "1rem",
-                marginBottom: "2.5rem",
-              }}
-            >
-              {svc.fullDesc}
-            </p>
+            {/* A blank line in fullDesc starts a new paragraph. */}
+            <div style={{ marginBottom: "2.5rem" }}>
+              {svc.fullDesc.split(/\n\s*\n/).map((para, i) => (
+                <p
+                  key={i}
+                  style={{
+                    color: "var(--text-light)",
+                    lineHeight: 1.82,
+                    fontSize: "1rem",
+                    margin: i === 0 ? 0 : "1rem 0 0",
+                  }}
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
 
             <h3
               style={{
@@ -193,7 +205,11 @@ export default async function ServiceDetailPage({ params }: Props) {
                       fontWeight: 500,
                     }}
                   >
-                    {feat}
+                    {featureAnchors.get(feat) ? (
+                      <a href={`#${featureAnchors.get(feat)}`} className="svc-feature-link">{feat}</a>
+                    ) : (
+                      feat
+                    )}
                   </span>
                 </li>
               ))}
@@ -294,6 +310,9 @@ export default async function ServiceDetailPage({ params }: Props) {
           </aside>
         </div>
       </section>
+
+      {/* The laboratory's own sections come before "Other Services". */}
+      {svc.slug === "laboratory" && <LabSections />}
 
       {/* Other services */}
       <section

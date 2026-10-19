@@ -61,6 +61,7 @@ const PARTNERS_AND_DONORS: Partner[] = [
     logo: "/partnerlogos/cornelia.jpg",
   },
   { name: "Church of Pentecost", logo: "/partnerlogos/cop.png" },
+  { name: "GCB Bank", logo: "/partnerlogos/GCB_Logo.png", wordmark: true },
 ];
 
 /** Marquee pace, in seconds per chip. Rows scale their duration by item count

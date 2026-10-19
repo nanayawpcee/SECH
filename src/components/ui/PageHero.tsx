@@ -10,6 +10,12 @@ interface Props {
   backgroundImage?: string; // ← New prop
   overlayOpacity?: number; // Optional: control darkness (0.4 - 0.8 recommended)
   dotGrid?: boolean;
+  /**
+   * A taller header (about 16:9, up to 680px) so more of a photo shows.
+   * Service pages use it; their 4:3 photos lost their top and bottom in the
+   * standard 40vh strip.
+   */
+  tall?: boolean;
 }
 
 export function PageHero({
@@ -20,13 +26,14 @@ export function PageHero({
   backgroundImage,
   overlayOpacity = 0.4,
   dotGrid = false,
+  tall = false,
 }: Props) {
   return (
     <div
-      className="page-hero"
+      className={tall ? "page-hero page-hero--tall" : "page-hero"}
       style={{
         position: "relative",
-        minHeight: "40vh",
+        minHeight: tall ? "clamp(360px, 56.25vw, 680px)" : "40vh",
         display: "flex",
         alignItems: "center",
         overflow: "hidden",

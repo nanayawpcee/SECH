@@ -20,6 +20,8 @@ import {
 export interface CategoryItem {
   name: string;
   slug?: string;
+  /** A section on that service's page, e.g. Biochemistry on Laboratory. */
+  anchor?: string;
 }
 
 export interface Category {
@@ -71,7 +73,7 @@ const QUICK_PICKS: { label: string; query: string }[] = [
  */
 const ALSO_KNOWN_AS: Record<string, string> = {
   antenatal: "antenatal ante-natal anc pregnancy pregnant maternal",
-  postnatal: "postnatal post-natal after delivery mother baby reproductive",
+  postnatal: "postnatal post-natal after delivery mother baby reproductive rch child health weighing immunisation immunization",
   cwc: "child welfare weighing immunisation immunization vaccination baby",
   laboratory: "laboratory lab test tests blood sample",
   dental: "dental dentist dentistry teeth tooth",
@@ -91,9 +93,16 @@ const ALSO_KNOWN_AS: Record<string, string> = {
   "Obstetrics & Gynaecology (Maternal)": "obstetrics gynaecology gynecology maternity pregnancy antenatal women",
   "Paediatric (Child Health)": "paediatric pediatric children child",
   "General Surgery": "surgery surgical operation theatre",
+  surgery: "general surgery surgical operation operations theatre surgeon",
+  paediatrics: "paediatric pediatric pediatrics children child kids baby babies infant newborn ward",
+  physiotherapy: "physio physical therapy rehabilitation rehab exercise stroke back pain injury",
   Physiotherapy: "physiotherapy physio rehabilitation",
   "Counselling / ART Services": "counselling counseling art hiv",
   "Family Medicine": "family medicine general doctor",
+  "Molecular Biology": "molecular pcr dna rna genexpert viral load",
+  Endocrinology: "endocrinology hormone hormones thyroid fertility",
+  Haematology: "haematology hematology blood count fbc",
+  "Transfusion Services": "transfusion blood bank donor grouping",
 };
 
 /** Lower-case words, with hyphens and punctuation ignored ("Ante-Natal" = "antenatal"). */
@@ -239,7 +248,7 @@ export function ServicesExplorer({ categories, tiles }: { categories: Category[]
                       {list.map((item) => (
                         <li key={item.name}>
                           {item.slug ? (
-                            <Link href={`/services/${item.slug}`} className="sv-item sv-item--link">
+                            <Link href={`/services/${item.slug}${item.anchor ? `#${item.anchor}` : ""}`} className="sv-item sv-item--link">
                               <span className="sv-dot" style={{ background: c.dotColor }} />
                               <span className="sv-item-name">{item.name}</span>
                               <ArrowUpRight size={15} className="sv-item-go" aria-hidden="true" />
