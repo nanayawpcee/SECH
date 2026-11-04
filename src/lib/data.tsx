@@ -1,33 +1,27 @@
-// ─── Site-wide constants ───────────────────────────────────────
 export const SITE = {
   name: "St. Elizabeth Catholic Hospital",
   shortName: "SECH",
-  /** The canonical address: the bare sech-gh.org redirects here, so search
-   *  engines and share previews should always be given the www form. */
+  // canonical host, the bare domain redirects here
   url: "https://www.sech-gh.org",
   tagline: "Healing with Faith & Excellence",
-  /** Administration office (the secretary). Answered Mon to Fri, 8am to 5pm
-   *  only: never offer it for emergencies. */
+  // office line, weekdays 8 to 5 only. not for emergencies
   phone: "032 229 8428",
   phoneHours: "Mon to Fri, 8am to 5pm",
-  /** Emergency lines, answered 24 hours a day, every day. */
   emergencyPhones: ["050 870 5607", "059 183 9622"],
   email: "info@sech-gh.org",
   address: "Hwidiem, Asutifi South District, Ahafo Region, Ghana",
   hours: "24 hours, 7 days a week",
-  /** The hospital's pin on Google Maps. */
   geo: { lat: 6.9325279, lng: -2.3580684 },
   mapsUrl:
     "https://www.google.com/maps/place/St.+Elizabeth+Catholic+Hospital/@6.9325332,-2.3606433,17z/data=!4m6!3m5!1s0xfdb2e3e952a5dcd:0xaaa7c226d485c7f7!8m2!3d6.9325279!4d-2.3580684!16s%2Fg%2F11cktmsnnr",
   chag: true,
 };
 
-/** A tel: link that works from any SIM: "050 870 5607" -> "tel:+233508705607". */
+// "050 870 5607" -> "tel:+233508705607"
 export function telHref(number: string) {
   return `tel:+233${number.replace(/\D/g, "").replace(/^0/, "")}`;
 }
 
-// ─── Services ──────────────────────────────────────────────────
 export const SERVICES = [
   {
     slug: "inpatient",
@@ -70,8 +64,6 @@ export const SERVICES = [
       "State-of-the-art diagnostics with rapid turnaround for accurate results.",
     fullDesc:
       "The SECH Laboratory runs the tests your doctor relies on, across six sections: haematology, microbiology, biochemistry, transfusion services, molecular biology and immunology, with endocrinology on a compact analyser. Our medical laboratory scientists report every result back to your doctor.",
-    // The laboratory's own sections (LAB_SECTIONS and LAB_EXTRAS below); on the
-    // Laboratory page each links to its card.
     features: [
       "Haematology",
       "Microbiology",
@@ -86,7 +78,6 @@ export const SERVICES = [
     slug: "eye-center",
     icon: "/icons/eye.png",
     title: "Eye Center",
-    // An eye examination at the slit lamp in the hospital's Eye Center.
     image: "/images/eye-clinic.jpg",
     shortDesc:
       "Full ophthalmic services from routine screening to surgical interventions.",
@@ -103,11 +94,9 @@ export const SERVICES = [
     slug: "postnatal",
     icon: "/icons/postnatal.png",
     title: "Reproductive & Child Health (RCH)",
-    // A nurse weighing a baby at the Reproductive & Child Health clinic.
     image: "/images/rch-growth-monitoring.jpg",
     shortDesc:
       "Care for mothers and children, from pregnancy and birth through the early years.",
-    // Blank lines separate paragraphs on the service page.
     fullDesc:
       "Our Reproductive & Child Health (RCH) unit brings together the care a mother and her child need, from the first antenatal visit to the child's fifth birthday. Mothers and children are seen in one place by our nurses and midwives, so each visit builds on the last.\n\n" +
       "During pregnancy, regular antenatal check-ups follow the health of the mother and the growth of the baby, with advice on nutrition, warning signs to look out for and preparing for birth. After delivery, post-natal check-ups make sure mother and baby are both well, and our staff help with breastfeeding in the early weeks.\n\n" +
@@ -158,8 +147,6 @@ export const SERVICES = [
     slug: "psychiatry",
     icon: "/icons/mental.png",
     title: "Psychiatry & Counselling",
-    // The hospital's own counselling room; the wall posters were added in
-    // editing (Higgsfield, Oct 2026).
     image: "/images/psychiatry-counselling.jpg",
     shortDesc:
       "Mental health support, counselling, and inpatient psychiatric care.",
@@ -209,7 +196,6 @@ export const SERVICES = [
     slug: "x-ray",
     icon: "/icons/x-ray.png",
     title: "X-Ray",
-    // The hospital's own X-ray room. The patient's face is blurred for privacy.
     image: "/images/xray-room.jpg",
     shortDesc: "Digital X-ray services for accurate diagnostics.",
     fullDesc:
@@ -220,7 +206,6 @@ export const SERVICES = [
     slug: "OPG",
     icon: "/icons/tooth.png",
     title: "Dental X-Ray (OPG)",
-    // The hospital's own OPG machine, patient photographed from behind.
     image: "/images/dental-xray-opg.jpg",
     shortDesc:
       "Specialised dental imaging for comprehensive oral health assessment.",
@@ -237,7 +222,6 @@ export const SERVICES = [
     slug: "ultrasound",
     icon: "/icons/ultrasound.png",
     title: "Ultrasound Scan",
-    // The hospital's own ultrasound room during a scan.
     image: "/images/ultrasound-scan.jpg",
     shortDesc:
       "Comprehensive ultrasound services for obstetric and general imaging.",
@@ -254,8 +238,6 @@ export const SERVICES = [
     slug: "ecg",
     icon: "/icons/ecg.png",
     title: "Electrocardiogram (ECG)",
-    // The hospital's own ECG test; the room was redecorated and the ECG
-    // machine added in editing (Higgsfield, Oct 2026).
     image: "/images/ecg-room.jpg",
     shortDesc: "ECG services for cardiac assessment and monitoring.",
     fullDesc:
@@ -270,7 +252,6 @@ export const SERVICES = [
   {
     slug: "outpatient",
     icon: "/icons/outpatient.png",
-    // A consultation in the Out-Patient Department.
     image: "/images/opd-consultation.jpg",
     title: "Out-Patient Services",
     shortDesc:
@@ -302,10 +283,8 @@ export const SERVICES = [
   },
   {
     slug: "surgery",
-    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
     icon: "/icons/surgery.png",
     title: "General Surgery",
-    // The hospital's own operating theatre; the surgical field is blurred.
     image: "/images/general-surgery.jpg",
     shortDesc: "Planned and emergency operations by our surgical team, with care before and after surgery.",
     fullDesc:
@@ -319,10 +298,8 @@ export const SERVICES = [
   },
   {
     slug: "physiotherapy",
-    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
     icon: "/icons/physiotherapy.png",
     title: "Physiotherapy",
-    // The hospital's own physiotherapy room; the two staff were dressed as patients.
     image: "/images/physiotherapy.jpg",
     shortDesc: "Exercise and hands-on therapy to help you move, recover and regain strength.",
     fullDesc:
@@ -336,10 +313,8 @@ export const SERVICES = [
   },
   {
     slug: "paediatrics",
-    // No icon file yet: the page shows a drawn icon instead (FALLBACK_ICON).
     icon: "/icons/paediatrics.png",
     title: "Paediatrics (Child Health)",
-    // The hospital's own children's ward, tidied up.
     image: "/images/paediatrics-ward.jpg",
     shortDesc: "Care for babies, children and teenagers, with parents welcome at the bedside.",
     fullDesc:
@@ -353,7 +328,6 @@ export const SERVICES = [
   },
 ];
 
-// ─── Departments (for appointment booking) ────────────────────
 export const DEPARTMENTS = [
   "General Medicine",
   "Paediatrics",
@@ -367,7 +341,6 @@ export const DEPARTMENTS = [
   "Nutrition & Dietetics",
 ];
 
-// ─── Hero carousel slides ─────────────────────────────────────
 export const HERO_SLIDES = [
   {
     heading: "Healing with\nFaith & Excellence",
@@ -398,9 +371,7 @@ export const HERO_SLIDES = [
   },
 ];
 
-// ─── Stats ────────────────────────────────────────────────────
-// Source: SECH Annual Report 2025. Clinic opened 3 Dec 1956; bed complement
-// 100; 99,274 outpatient attendances in 2025; 441 staff at year end.
+// figures from the 2025 annual report
 export const STATS = [
   { value: "70+", label: "Years of Service" },
   { value: "100+", label: "Beds" },
@@ -408,7 +379,6 @@ export const STATS = [
   { value: "440+", label: "Staff Members" },
 ];
 
-// ─── News ─────────────────────────────────────────────────────
 export const NEWS = [
   {
     slug: "community-health-outreach-2026",
@@ -452,17 +422,13 @@ export const NEWS = [
   },
 ];
 
-// ─── Team ─────────────────────────────────────────────────────
 export interface TeamMember {
   id: number;
   name: string;
   role: string;
   dept: string;
   initials: string;
-  /** A real photo of this person. Leave it out until one is supplied: the
-   *  card shows their initials, never a stock photo of someone else. */
   image?: string;
-  /** Omit any of these and the card falls back to the hospital's own line. */
   linkedin?: string;
   email?: string;
   phone?: string;
@@ -490,7 +456,6 @@ export const TEAM: TeamMember[] = [
     role: "Nurse Manager",
     dept: "Nursing",
     initials: "GB",
-    // Her own photo; the office background was retouched (Higgsfield, Oct 2026).
     image: "/images/team/gladys-bediako.jpg",
     id: 3,
   },
@@ -520,7 +485,6 @@ export const TEAM: TeamMember[] = [
   },
 ];
 
-// Dashboard photo gallery
 export const PHOTOS = [
   {
     id: 1,
@@ -584,18 +548,11 @@ export const PHOTOS = [
       "Our 24/7 emergency department and busy OPD serve hundreds of patients daily with expert triage.",
     color: "#1A2F2A",
     icon: "/icons/outpatient.png",
-    // The OPD waiting area on a busy clinic morning.
     image: "/images/opd-waiting-area.jpg",
     pattern: "wave",
     accent: "#E8B84B",
   },
 ];
-// ─── Laboratory sections (on /services/laboratory) ─────────────
-/**
- * The laboratory's sections, each shown with a photo on the Laboratory page.
- * The "anchor" on each Laboratory item in DEPARTMENT_GRID_DATA links here.
- * Sections without a photo yet show an icon panel.
- */
 export const LAB_SECTIONS: { id: string; name: string; desc: string; image?: string; imageAlt?: string }[] = [
   {
     id: "haematology",
@@ -641,10 +598,7 @@ export const LAB_SECTIONS: { id: string; name: string; desc: string; image?: str
   },
 ];
 
-/**
- * Smaller laboratory services without a section of their own (no dedicated
- * workstation), listed under the section cards on /services/laboratory.
- */
+// small lab services with no workstation of their own
 export const LAB_EXTRAS: { id: string; name: string; desc: string }[] = [
   {
     id: "endocrinology",
@@ -653,11 +607,7 @@ export const LAB_EXTRAS: { id: string; name: string; desc: string }[] = [
   },
 ];
 
-// ─── Departments Grid Data (For Services Page) ────────────────────
-/**
- * The four service categories on /services. `slug` links an item to its
- * detail page under /services; items without one have no page yet.
- */
+// items with a slug link to /services/<slug>, the rest are plain text
 export const DEPARTMENT_GRID_DATA = [
   {
     key: "general",
@@ -688,8 +638,6 @@ export const DEPARTMENT_GRID_DATA = [
     dotColor: "#5DCAA5",
     iconColor: "#5DCAA5",
     icon: "/svgs/hospital.svg",
-    // Light-toned artwork: darkened at render so it reads on the light plate.
-    // Drop this to "dark" once a darker mark replaces it.
     iconTone: "light",
   },
   {

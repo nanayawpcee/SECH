@@ -25,7 +25,6 @@ import { formatDay, greeting, todayKey } from "@/lib/admin-dates";
 export default function StaffHome() {
   const { admin } = useAuth();
   const { posts: allPosts, postsLoading, notices, noticesLoading, noticesNeedPlugin, markNoticeRead } = useAdminData();
-  // Own posts only, even for an admin browsing the staff area.
   const posts = admin?.id ? allPosts.filter((p) => p.authorId === admin.id) : allPosts;
   const canWrite = can(admin?.perms, "posts.write");
   const canPublish = can(admin?.perms, "posts.publish");
@@ -36,7 +35,6 @@ export default function StaffHome() {
   const live = posts.filter((p) => p.status === "published");
   const unreadNotices = notices.filter((n) => !n.isRead);
   const urgent = unreadNotices.filter((n) => n.priority === "urgent");
-  // Unread first, then pinned — the board's own order otherwise.
   const latestNotices = [...notices]
     .sort((a, b) => Number(a.isRead) - Number(b.isRead))
     .slice(0, 3);
@@ -56,7 +54,6 @@ export default function StaffHome() {
         ) : undefined}
       />
 
-      {/* Urgent notices nobody should miss. */}
       {urgent.map((n) => (
         <div key={n.databaseId} className="po-alert po-tone-danger" role="alert" style={{ marginBottom: 12, alignItems: "center" }}>
           <AlertTriangle size={18} style={{ flexShrink: 0 }} />

@@ -7,22 +7,11 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { LinkedInIcon } from "@/components/ui/LinkedInIcon";
 import { useScrollRail } from "@/components/ui/useScrollRail";
 
-/**
- * Cards per row on wide screens: 4, or 3 when that gives even rows (6 people
- * as 3 + 3 rather than 4 + 2).
- */
 const TEAM_COLUMNS = TEAM.length % 4 === 0 ? 4 : TEAM.length % 3 === 0 ? 3 : 4;
 
-/** Members without their own contact details reach the hospital's lines. */
 const HOSPITAL_EMAIL = SITE.email;
-const HOSPITAL_TEL = telHref(SITE.phone); // office line, weekdays
+const HOSPITAL_TEL = telHref(SITE.phone);
 
-/**
- * "Meet the Team". Laid out like the homepage services cards: every card is
- * the same fixed size at every screen width, 4 in a row on wide screens, a
- * swipeable row with arrows on tablets, stacked on small phones
- * (see .team-custom-grid in globals.css).
- */
 export function TeamGrid() {
   const { railRef, canPrev, canNext, step } = useScrollRail(".team-cell");
 
@@ -69,7 +58,6 @@ export function TeamGrid() {
                       sizes="(max-width: 375px) 100vw, 300px"
                     />
                   ) : (
-                    // No photo yet: a monogram, never a stock image of someone else.
                     <div className="team-monogram" aria-hidden="true">
                       <span>{member.initials}</span>
                     </div>
@@ -81,8 +69,6 @@ export function TeamGrid() {
                   <h3 className="team-member-name">{member.name}</h3>
                   <p className="team-member-role">{member.role}</p>
 
-                  {/* Members without their own details reach the hospital's
-                      lines; the tooltip says so rather than implying a direct line. */}
                   <div className="team-actions">
                     <a
                       href={`mailto:${member.email ?? HOSPITAL_EMAIL}`}

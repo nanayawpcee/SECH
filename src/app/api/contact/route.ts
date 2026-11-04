@@ -15,7 +15,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** The inbox — administrators only, never cached. */
 export async function GET() {
   const gate = await requirePerm("messages");
   if (gate instanceof NextResponse) return gate;
@@ -34,15 +33,10 @@ export async function GET() {
 const rateLimited = createRateLimiter({ max: 4, windowMs: 10 * 60_000 });
 const UNAVAILABLE = `We couldn’t send your message just now. Please call the hospital instead.`;
 
-/**
- * Public: the contact form. Unauthenticated by necessity, so like bookings it
- * is gated on the shared key that only this server holds.
- */
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return NextResponse.json({ error: "Please fill in the form." }, { status: 400 });
 
-  // Honeypot: a field people never see. Bots fill it; pretend it worked.
   if (String(body.website ?? "").trim()) return NextResponse.json({ ok: true, reference: null });
 
   const name = String(body.name ?? "").trim().slice(0, 80);
@@ -86,7 +80,6 @@ export async function POST(request: Request) {
     if (error instanceof WpGraphQLError && isMissingMessagesPlugin(error.message)) {
       console.error("Contact message failed: WordPress needs sech-portal 1.5.0.");
     }
-    // The plugin's validation messages are written for the public; nothing else is.
     const friendly = status === 400 && /^Please |too many messages/i.test(err.error);
     return NextResponse.json({ error: friendly ? err.error : UNAVAILABLE }, { status: friendly ? 400 : 502 });
   }

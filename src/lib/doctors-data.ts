@@ -7,10 +7,6 @@ import { BIO_MAX, DAYS, PUBLIC_DOCTORS_QUERY, type Doctor, type DoctorInput } fr
 const KNOWN_SERVICES = new Set<string>(SERVICES.map((s) => s.slug));
 const DAY_CODES = new Set<string>(DAYS.map((d) => d.code));
 
-/**
- * A portal request body, checked and trimmed into mutation variables.
- * Returns an error message for anything a person needs to fix.
- */
 export function doctorVariables(body: Record<string, unknown>): { ok: true; vars: DoctorInput } | { ok: false; error: string } {
   const text = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
   const name = text(body.name, 80);
@@ -40,17 +36,12 @@ export function doctorVariables(body: Record<string, unknown>): { ok: true; vars
   };
 }
 
-/** After any change: the directory and every service page show profiles. */
 export function revalidateDoctorPages() {
   revalidatePath("/doctors");
   revalidatePath("/services/[slug]", "page");
 }
 
-/**
- * Published profiles, in display order. [] when WordPress is unreachable or
- * doesn't have plugin 1.8.0 yet, so the pages fall back to their empty state.
- * Links to services that no longer exist on the site are dropped.
- */
+// [] if WordPress is down, so the pages still render
 export async function getPublicDoctors(): Promise<Doctor[]> {
   const data = await wpQuery<{ publicDoctors: Doctor[] | null }>(PUBLIC_DOCTORS_QUERY, {}, 300);
   return (data?.publicDoctors ?? []).map((d) => ({
@@ -60,7 +51,6 @@ export async function getPublicDoctors(): Promise<Doctor[]> {
   }));
 }
 
-/** Published specialists linked to one service page. */
 export async function getDoctorsForService(slug: string): Promise<Doctor[]> {
   return (await getPublicDoctors()).filter((d) => d.services.includes(slug));
 }

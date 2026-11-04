@@ -54,7 +54,7 @@ function StatItem({
         opacity: active ? 1 : 0,
         transform: active ? "translateY(0)" : "translateY(20px)",
         transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
-        minWidth: 0, // allow shrinking inside grid
+        minWidth: 0,
       }}
     >
       <div

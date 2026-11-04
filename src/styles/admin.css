@@ -1,17 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECH admin design system
-   ───────────────────────────────────────────────────────────────────────────
-   Everything is scoped under .po-root and driven by tokens, so light and dark
-   are one set of rules with two palettes — no per-colour overrides. Theme is
-   set by the existing data-admin-theme attribute on <html>.
-
-   Note on the public site's `div { max-width: 100% !important }` guard: it
-   also applies in here. Anything absolutely positioned inside a small wrapper
-   (menus, popovers) must opt out with its own max-width !important.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
 .po-root {
-  /* Surfaces */
   --po-bg: #F3F6F4;
   --po-surface: #FFFFFF;
   --po-surface-2: #F7FAF8;
@@ -19,21 +6,18 @@
   --po-border: #E2E9E5;
   --po-border-strong: #CBD6D0;
 
-  /* Text */
   --po-text: #0E1D18;
   --po-text-2: #45594F;
   --po-text-3: #82938B;
 
-  /* Brand */
   --po-brand: #0A4F3C;
   --po-brand-hover: #0D6149;
-  --po-brand-ink: #0A4F3C;       /* brand used as text/icon colour */
+  --po-brand-ink: #0A4F3C;
   --po-brand-soft: #E4F1EB;
   --po-gold: #E8B84B;
   --po-gold-ink: #946B12;
   --po-gold-soft: #FBF1D9;
 
-  /* Semantic */
   --po-success: #15803D;  --po-success-soft: #E3F5E9;
   --po-warn: #B45309;     --po-warn-soft: #FDF0D9;
   --po-danger: #C62828;   --po-danger-soft: #FCE8E8;
@@ -41,7 +25,6 @@
   --po-violet: #6D3FD8;   --po-violet-soft: #EFE8FD;
   --po-teal: #0E8A86;     --po-teal-soft: #DFF4F3;
 
-  /* Chart series — distinguishable, and each passes 3:1 on the surface */
   --po-c1: #0E7A5A;
   --po-c2: #E0A21B;
   --po-c3: #3B6FD8;
@@ -49,14 +32,12 @@
   --po-c5: #7B52D9;
   --po-c6: #17A2A0;
 
-  /* Sidebar (dark in both themes — the corporate anchor of the layout) */
   --po-side-bg: linear-gradient(180deg, #073A2D 0%, #052A21 100%);
   --po-side-text: rgba(255, 255, 255, 0.70);
   --po-side-text-dim: rgba(255, 255, 255, 0.38);
   --po-side-hover: rgba(255, 255, 255, 0.07);
   --po-side-active: rgba(232, 184, 75, 0.14);
 
-  /* Elevation & shape */
   --po-shadow-sm: 0 1px 2px rgba(14, 29, 24, 0.05);
   --po-shadow-md: 0 1px 2px rgba(14, 29, 24, 0.04), 0 6px 20px -6px rgba(14, 29, 24, 0.10);
   --po-shadow-lg: 0 24px 64px -16px rgba(6, 30, 23, 0.35);
@@ -131,8 +112,6 @@
   border-radius: 6px;
 }
 
-/* ── Shell ─────────────────────────────────────────────────────────────── */
-
 .po-shell {
   display: grid;
   grid-template-columns: var(--po-side-w, 248px) minmax(0, 1fr);
@@ -149,7 +128,6 @@
   height: 100vh;
 }
 
-/* The scroll container. min-height:0 lets it shrink so overflow can engage. */
 .po-scroll {
   flex: 1;
   min-height: 0;
@@ -165,8 +143,6 @@
   width: 100%;
 }
 
-/* ── Sidebar ───────────────────────────────────────────────────────────── */
-
 .po-sidebar {
   background: var(--po-side-bg);
   color: var(--po-side-text);
@@ -178,7 +154,6 @@
   border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* A faint brand glow so the rail is not a flat slab. */
 .po-sidebar::before {
   content: "";
   position: absolute;
@@ -256,7 +231,6 @@
 .po-nav-item[data-active="true"] svg { color: var(--po-gold); }
 .po-nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* The moving highlight — animated between items with framer-motion layoutId. */
 .po-nav-pill {
   position: absolute; inset: 0;
   border-radius: 9px;
@@ -285,7 +259,6 @@
   box-shadow: 0 0 0 2px #06271F;
 }
 
-/* Collapsed rail: icon-only, labels become tooltips. */
 .po-shell[data-collapsed="true"] .po-brand { justify-content: center; padding: 18px 0 14px; flex-direction: column; gap: 10px; }
 .po-shell[data-collapsed="true"] .po-collapse-btn { margin-left: 0; }
 .po-shell[data-collapsed="true"] .po-side-search { justify-content: center; margin: 4px 14px 10px; }
@@ -302,7 +275,6 @@
 .po-side-link:hover { color: var(--po-gold); background: var(--po-side-hover); }
 .po-shell[data-collapsed="true"] .po-side-link { justify-content: center; }
 
-/* Tooltips for the collapsed rail (and anything else with data-tip). */
 [data-tip] { position: relative; }
 .po-shell[data-collapsed="true"] [data-tip]:hover::after,
 .po-tip-always[data-tip]:hover::after {
@@ -317,8 +289,6 @@
   z-index: 50;
   animation: po-fade-in 0.12s ease;
 }
-
-/* ── Top bar ───────────────────────────────────────────────────────────── */
 
 .po-topbar {
   height: var(--po-topbar-h);
@@ -353,8 +323,6 @@
 .po-topbar-search .po-kbd { margin-left: auto; }
 
 .po-topbar-actions { display: flex; align-items: center; gap: 8px; }
-
-/* ── Buttons ───────────────────────────────────────────────────────────── */
 
 .po-btn {
   --btn-bg: var(--po-surface);
@@ -428,8 +396,6 @@
   color: var(--po-text-3);
 }
 
-/* ── Page header ───────────────────────────────────────────────────────── */
-
 .po-page-head {
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 16px; flex-wrap: wrap;
@@ -443,8 +409,6 @@
 }
 .po-page-sub { margin: 5px 0 0; color: var(--po-text-3); font-size: 13.5px; }
 .po-page-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-/* ── Cards ─────────────────────────────────────────────────────────────── */
 
 .po-card {
   background: var(--po-surface);
@@ -469,8 +433,6 @@
 .po-divider { height: 1px; background: var(--po-border); border: 0; margin: 0; }
 
 .po-grid { display: grid; gap: 16px; }
-
-/* ── KPI tiles ─────────────────────────────────────────────────────────── */
 
 .po-kpi {
   position: relative; overflow: hidden;
@@ -499,8 +461,6 @@
 .po-trend--down { color: var(--po-danger); }
 .po-trend--flat { color: var(--po-text-3); }
 
-/* ── Badges & chips ────────────────────────────────────────────────────── */
-
 .po-badge {
   display: inline-flex; align-items: center; gap: 6px;
   height: 22px; padding: 0 9px;
@@ -527,12 +487,8 @@
 .po-tone-teal    { --tone: var(--po-teal);      --tone-soft: var(--po-teal-soft); }
 .po-tone-muted   { --tone: var(--po-text-2);    --tone-soft: var(--po-surface-3); }
 
-/* ── Segmented control / tabs ──────────────────────────────────────────── */
-
 .po-seg {
   display: inline-flex; gap: 2px; padding: 3px;
-  /* The site-wide div max-width caps this at its container; scroll rather
-     than let the last option spill out of the box on a phone. */
   overflow-x: auto; scrollbar-width: none;
   border-radius: 10px;
   background: var(--po-surface-3);
@@ -565,8 +521,6 @@
 }
 .po-seg-btn[aria-selected="true"] .po-seg-count, .po-seg-btn[aria-pressed="true"] .po-seg-count { background: var(--po-brand-soft); color: var(--po-brand-ink); }
 
-/* ── Forms ─────────────────────────────────────────────────────────────── */
-
 .po-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .po-label { font-size: 12.5px; font-weight: 600; color: var(--po-text-2); }
 .po-hint { font-size: 12px; color: var(--po-text-3); }
@@ -598,7 +552,6 @@
 .po-check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; font-size: 13px; color: var(--po-text-2); }
 .po-check input { width: 16px; height: 16px; accent-color: var(--po-brand); }
 
-/* Toggle switch */
 .po-switch { position: relative; display: inline-flex; width: 38px; height: 22px; flex-shrink: 0; cursor: pointer; }
 .po-switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .po-switch-track {
@@ -616,11 +569,7 @@
 .po-switch input:checked ~ .po-switch-thumb { transform: translateX(16px); }
 .po-switch input:focus-visible + .po-switch-track { box-shadow: var(--po-ring); }
 
-/* ── Tables ────────────────────────────────────────────────────────────── */
-
 .po-table-wrap { overflow-x: auto; }
-/* The public stylesheet sets `table { display: block }` for mobile overflow,
-   which stops rows stretching. Tables here scroll inside .po-table-wrap. */
 .po-root .po-table { display: table; }
 .po-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
 .po-table th {
@@ -652,12 +601,9 @@
 .po-cell-main { font-weight: 600; color: var(--po-text); }
 .po-cell-sub { font-size: 12px; color: var(--po-text-3); margin-top: 1px; }
 
-/* Row actions that appear on hover (always visible to keyboard and touch). */
 .po-row-actions { display: flex; gap: 4px; justify-content: flex-end; opacity: 0.55; transition: opacity 0.15s; }
 tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 @media (hover: none) { .po-row-actions { opacity: 1; } }
-
-/* ── Avatar ────────────────────────────────────────────────────────────── */
 
 .po-avatar {
   width: 34px; height: 34px; border-radius: 50%;
@@ -668,8 +614,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 }
 .po-avatar--sm { width: 28px; height: 28px; font-size: 11px; }
 .po-avatar--lg { width: 44px; height: 44px; font-size: 15px; }
-
-/* ── Empty / loading states ────────────────────────────────────────────── */
 
 .po-empty {
   display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -699,8 +643,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   font-size: 13px; font-weight: 500;
 }
 
-/* ── Menus / popovers ──────────────────────────────────────────────────── */
-
 .po-popover {
   position: absolute; right: 0; top: calc(100% + 8px);
   min-width: 220px;
@@ -726,8 +668,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-menu-item--danger { color: var(--po-danger); }
 .po-menu-item--danger:hover { background: var(--po-danger-soft); color: var(--po-danger); }
 
-/* ── Modal / drawer ────────────────────────────────────────────────────── */
-
 .po-overlay {
   position: fixed; inset: 0; z-index: 600;
   background: rgba(4, 20, 15, 0.5);
@@ -736,9 +676,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
 }
-/* A fully transparent backdrop must never swallow clicks. Guards against a
-   close animation that stalls and leaves an invisible overlay over the page —
-   which is what froze the notice board after closing its composer. */
 .po-overlay[style*="opacity: 0;"] { pointer-events: none; }
 
 .po-modal {
@@ -770,8 +707,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-dl { display: grid; grid-template-columns: 130px 1fr; gap: 10px 14px; margin: 0; font-size: 13.5px; }
 .po-dl dt { color: var(--po-text-3); font-weight: 500; }
 .po-dl dd { margin: 0; color: var(--po-text); font-weight: 500; overflow-wrap: anywhere; }
-
-/* ── Command palette ───────────────────────────────────────────────────── */
 
 .po-cmdk-overlay { align-items: flex-start; padding-top: 12vh; }
 .po-cmdk {
@@ -810,8 +745,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-cmdk-foot { display: flex; gap: 14px; padding: 10px 16px; border-top: 1px solid var(--po-border); background: var(--po-surface-2); font-size: 12px; color: var(--po-text-3); }
 .po-cmdk-foot span { display: inline-flex; align-items: center; gap: 6px; }
 
-/* ── Toasts ────────────────────────────────────────────────────────────── */
-
 .po-toast-stack { position: fixed; right: 20px; bottom: 20px; z-index: 700; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
 .po-toast {
   pointer-events: auto;
@@ -825,8 +758,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   border: 1px solid rgba(255,255,255,0.06);
 }
 .po-toast-icon { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
-
-/* ── Charts ────────────────────────────────────────────────────────────── */
 
 .po-chart { position: relative; width: 100%; }
 .po-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -849,8 +780,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-meter { height: 8px; border-radius: 4px; background: var(--po-surface-3); overflow: hidden; }
 .po-meter > span { display: block; height: 100%; border-radius: 4px; background: var(--tone, var(--po-brand-ink)); transform-origin: left; animation: po-grow 0.9s var(--po-ease) both; }
 
-/* ── Motion ────────────────────────────────────────────────────────────── */
-
 @keyframes po-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 @keyframes po-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes po-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -865,8 +794,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   }
 }
 
-/* ── Responsive ────────────────────────────────────────────────────────── */
-
 @media (max-width: 1023.98px) {
   .po-page { padding: 20px 18px 40px; }
   .po-topbar { padding: 0 14px 0 18px; }
@@ -880,13 +807,10 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-topbar-actions .po-search-label { display: none; }
   .po-topbar-actions .po-btn--primary { width: 36px; padding: 0; }
   .po-page-title { font-size: 20px; }
-  /* !important: the crumb wrappers carry an inline display. */
   .po-crumbs > :not([aria-current="page"]) { display: none !important; }
   .po-dl { grid-template-columns: 1fr; gap: 2px 0; }
   .po-dl dd { margin-bottom: 10px; }
 }
-
-/* ── Lists: toolbar, selection, bulk actions ──────────────────────────── */
 
 .po-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 16px; }
 .po-cb { width: 16px; height: 16px; accent-color: var(--po-brand); cursor: pointer; vertical-align: middle; }
@@ -904,9 +828,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-spin { animation: po-rot 0.8s linear infinite; }
 @keyframes po-rot { to { transform: rotate(360deg); } }
 
-/* The bulk bar is dark in both themes, so its buttons get their own palette.
-   Without this they inherited the light-mode hover (a near-white fill), which
-   turned the close button into a white square with an invisible icon. */
 .po-bulkbar .po-btn {
   --btn-bg: rgba(255, 255, 255, 0.08);
   --btn-fg: #fff;
@@ -924,11 +845,9 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-bulkbar .po-btn.po-btn--ghost { --btn-bg: transparent; --btn-fg: rgba(255, 255, 255, 0.7); --btn-bd: transparent; }
 .po-bulkbar .po-btn.po-btn--ghost:not(:disabled):hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: transparent; }
 
-/* Disabled stays visibly unavailable against the dark bar. */
 .po-bulkbar .po-btn:disabled { opacity: 0.4; }
 .po-bulkbar :focus-visible { outline-color: var(--po-gold); }
 
-/* ── Messages inbox (/admin/messages) ─────────────────────────────────────── */
 .po-root .msg-layout { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
 .po-root .msg-list-card { display: flex; flex-direction: column; min-height: 420px; overflow: hidden; }
 .po-root .msg-list-head { display: grid; gap: 10px; padding: 14px; border-bottom: 1px solid var(--po-border); }
@@ -979,7 +898,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-root .msg-list { max-height: none; }
 }
 
-/* ── Newsletter: downloadable issue card ─────────────────────────────────── */
 .po-root .nli-current { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .po-root .nli-icon {
   display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;
@@ -991,7 +909,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-root .nli-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .po-root .nli-editor .po-alert a { color: inherit; }
 
-/* ── Staff: employees, departments, ranks ────────────────────────────────── */
 .po-root .st-drawer { width: min(620px, 100vw); }
 .po-root .st-form { display: block; }
 .po-root .st-h { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); margin: 22px 0 10px; }
@@ -1006,7 +923,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-root .st-grid--name .po-field { grid-column: auto !important; }
 }
 
-/* Doctors directory editor (dr-) */
 .po-root .dr-publish { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid var(--po-border); border-radius: 12px; background: var(--po-surface-2); }
 .po-root .dr-publish strong { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--po-text); margin-bottom: 2px; }
 .po-root .dr-pills { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1019,7 +935,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-root .dr-pill[aria-pressed="false"]:hover:not(:disabled),
 .po-root .dr-day[aria-pressed="false"]:hover { border-color: var(--po-brand); color: var(--po-brand); }
 .po-root .dr-pill[aria-pressed="true"], .po-root .dr-day[aria-pressed="true"] { background: var(--po-brand); border-color: var(--po-brand); color: #fff; }
-/* Selected: stay white-on-green when hovered, just a shade deeper. */
 .po-root .dr-pill[aria-pressed="true"]:hover, .po-root .dr-day[aria-pressed="true"]:hover { background: var(--po-brand-hover); border-color: var(--po-brand-hover); color: #fff; }
 .po-root .dr-pill:disabled { opacity: .45; cursor: not-allowed; }
 .po-root .dr-pill:focus-visible, .po-root .dr-day:focus-visible { outline: none; box-shadow: var(--po-ring); }
@@ -1077,7 +992,6 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-root .st-level { grid-column: 2 / 3; }
 }
 
-/* Post editor: photo gallery (pg-) */
 .po-root .pg-grid { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .po-root .pg-tile { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--po-surface-2); border: 1px solid var(--po-border); display: grid; place-items: center; }
 .po-root .pg-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1099,3 +1013,14 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .po-root .pg-drop span { display: grid; gap: 2px; }
 .po-root .pg-drop strong { color: var(--po-text); font-size: 13.5px; }
 .po-root .pg-drop small { font-size: 12px; }
+
+.dp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .dp-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.mr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.mr-rows { margin: 0; display: grid; gap: 10px; }
+.mr-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.mr-row dt { font-size: 12.5px; font-weight: 600; color: var(--po-text-3); }
+.mr-row dd { margin: 0; color: var(--po-text); overflow-wrap: anywhere; }
+@media (max-width: 900px) { .mr-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .mr-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }

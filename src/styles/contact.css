@@ -1,6 +1,3 @@
-/* Contact form (shared) and the /contact page. Prefix ct-. */
-
-/* ── Form ──────────────────────────────────────────────────────────────── */
 .ct-form {
   --ct-text: var(--text-dark);
   --ct-text-2: var(--text-mid);
@@ -90,7 +87,6 @@
 
 .ct-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
-/* ── /contact page ─────────────────────────────────────────────────────── */
 .ct-page { background: var(--off-white); padding: 0 0 5rem; }
 .ct-container { width: 100%; max-width: 1180px !important; margin: 0 auto; padding: 0 2rem; }
 @media (max-width: 640px) { .ct-container { padding: 0 16px; } }
@@ -142,7 +138,6 @@ a.ct-card:hover .ct-card-cta svg { transform: translateX(3px); }
 
 .ct-side { display: grid; gap: 1.6rem; }
 
-/* Illustrated map — a picture, not a live map; the buttons open the real one. */
 .ct-map {
   position: relative; height: 230px; overflow: hidden; border-radius: 20px 20px 0 0;
   background:
@@ -199,7 +194,6 @@ a.ct-card:hover .ct-card-cta svg { transform: translateX(3px); }
   .ct-pin-pulse::after, .ct-spin { animation: none; }
 }
 
-/* Compact: the homepage band, where the form sits beside the contact details. */
 .ct-form[data-compact] { gap: 11px; }
 .ct-form[data-compact] .ct-form-title { font-size: 1.15rem; }
 .ct-form[data-compact] .ct-grid { gap: 11px; }
@@ -212,8 +206,6 @@ a.ct-card:hover .ct-card-cta svg { transform: translateX(3px); }
 .ct-form[data-compact] .ct-btn { min-height: 44px; padding: 0 22px; font-size: 0.9rem; }
 .ct-form[data-compact] .ct-sent { padding: 0.75rem 0; }
 
-/* The homepage card stays a comfortable width however wide the screen is.
-   !important only to beat the site-wide "div { max-width: 100% !important }". */
 .contact-section .contact-form { max-width: 540px !important; margin-left: auto; padding: 1.6rem 1.75rem; }
 @media (max-width: 900px) { .contact-section .contact-form { margin-left: 0; } }
 @media (max-width: 480px) { .contact-section .contact-form { padding: 1.25rem 1.1rem; } }

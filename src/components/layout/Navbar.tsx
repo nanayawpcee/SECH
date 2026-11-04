@@ -54,13 +54,10 @@ export function Navbar() {
             height: 68,
           }}
         >
-          {/* Logo */}
           <Link
             href="/"
             style={{ display: "flex", alignItems: "center", gap: 12 }}
           >
-            {/* The logo file is already a circle on a transparent field, so it
-                needs no wrapper to clip or back it. */}
             <Image
               src="/images/logo.png"
               alt="St. Elizabeth Catholic Hospital Logo"
@@ -95,7 +92,6 @@ export function Navbar() {
               </div>
             </div>
           </Link>
-          {/* Desktop nav */}
           <div
             className="hide-mobile"
             style={{ display: "flex", alignItems: "center", gap: 28 }}
@@ -150,7 +146,6 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen((o) => !o)}
             style={{
@@ -161,14 +156,13 @@ export function Navbar() {
               cursor: "pointer",
               padding: 4,
             }}
-            className="show-mobile" /* Let classes handle display none/block */
+            className="show-mobile"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={26} aria-hidden="true" /> : <Menu size={26} aria-hidden="true" />}
           </button>
         </div>
 
-        {/* Mobile drawer */}
         {mobileOpen && (
           <div
             style={{

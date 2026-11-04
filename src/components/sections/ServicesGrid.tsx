@@ -18,14 +18,11 @@ export function ServicesGrid({ preview = false }: Props) {
 
   const displayed = preview ? SERVICES.slice(0, 4) : SERVICES;
 
-  // On tablets the cards become a swipeable row (see .services-grid in
-  // globals.css), with arrows.
   const { railRef, canPrev, canNext, step } = useScrollRail(".service-cell");
 
   return (
     <section id="services" className="services-section">
       <div className="services-container">
-        {/* Header */}
         <AnimateIn>
           <div className="services-header">
             <div className="services-intro">
@@ -68,9 +65,6 @@ export function ServicesGrid({ preview = false }: Props) {
           </button>
         </div>
 
-        {/* Every card is the same fixed size at every screen width: 4 in a
-            row on wide screens, a swipeable row on tablets, one per row on
-            phones. */}
         <div className="services-grid" id="services-rail" ref={railRef} role="region" aria-label="Our services" tabIndex={0}>
           {displayed.map((svc, i) => (
             <AnimateIn key={svc.slug} delay={i * 55} className="service-cell">

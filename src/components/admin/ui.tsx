@@ -1,11 +1,5 @@
 "use client";
 
-/**
- * Small, shared building blocks for the admin console. Styling lives in
- * src/styles/admin.css; these components only pick the right classes, so a
- * page never hand-writes colours and both themes stay in step.
- */
-
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
@@ -14,8 +8,6 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 export type Tone =
   | "brand" | "gold" | "success" | "warn" | "danger"
   | "info" | "violet" | "teal" | "muted";
-
-/* ── Page header ─────────────────────────────────────────────────────────── */
 
 export function PageHeader({
   title,
@@ -36,8 +28,6 @@ export function PageHeader({
     </header>
   );
 }
-
-/* ── Card ────────────────────────────────────────────────────────────────── */
 
 export function Card({
   title,
@@ -79,8 +69,6 @@ export function Card({
   );
 }
 
-/* ── Status badge ────────────────────────────────────────────────────────── */
-
 const STATUS_TONE: Record<string, Tone> = {
   pending: "warn",
   confirmed: "success",
@@ -102,8 +90,6 @@ export function Chip({ tone = "muted", children }: { tone?: Tone; children: Reac
   return <span className={`po-badge po-badge--plain po-tone-${tone}`}>{children}</span>;
 }
 
-/* ── Avatar (initials, colour picked stably from the name) ──────────────── */
-
 const AVATAR_TONES: Tone[] = ["brand", "gold", "info", "violet", "teal", "danger"];
 
 export function initialsOf(name: string) {
@@ -123,8 +109,6 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
   );
 }
 
-/* ── Segmented control with a sliding pill ──────────────────────────────── */
-
 export function Segmented<T extends string>({
   value,
   onChange,
@@ -135,7 +119,6 @@ export function Segmented<T extends string>({
   value: T;
   onChange: (v: T) => void;
   options: { value: T; label: ReactNode; count?: number }[];
-  /** Unique per page, so two controls' pills never animate into each other. */
   id: string;
   ariaLabel: string;
 }) {
@@ -168,8 +151,6 @@ export function Segmented<T extends string>({
   );
 }
 
-/* ── Animated number ─────────────────────────────────────────────────────── */
-
 export function CountUp({ value, duration = 900 }: { value: number; duration?: number }) {
   const reduce = useReducedMotion();
   const [shown, setShown] = useState(reduce ? value : 0);
@@ -197,8 +178,6 @@ export function CountUp({ value, duration = 900 }: { value: number; duration?: n
   return <>{shown.toLocaleString("en-GB")}</>;
 }
 
-/* ── Trend indicator ─────────────────────────────────────────────────────── */
-
 export function Trend({ current, previous, suffix = "vs last period" }: {
   current: number;
   previous: number;
@@ -221,8 +200,6 @@ export function Trend({ current, previous, suffix = "vs last period" }: {
     </span>
   );
 }
-
-/* ── Empty & loading ─────────────────────────────────────────────────────── */
 
 export function EmptyState({
   icon: Icon,
@@ -265,8 +242,6 @@ export function SkeletonRows({ rows = 5, cols = 4 }: { rows?: number; cols?: num
   );
 }
 
-/* ── Switch ──────────────────────────────────────────────────────────────── */
-
 export function Switch({ checked, onChange, label }: {
   checked: boolean;
   onChange: (v: boolean) => void;
@@ -280,8 +255,6 @@ export function Switch({ checked, onChange, label }: {
     </label>
   );
 }
-
-/* ── Staggered entrance for grids of cards ──────────────────────────────── */
 
 export function Reveal({ children, delay = 0, style, className }: {
   children: ReactNode; delay?: number; style?: React.CSSProperties; className?: string;
@@ -299,8 +272,6 @@ export function Reveal({ children, delay = 0, style, className }: {
     </motion.div>
   );
 }
-
-/* ── Confirm dialog ──────────────────────────────────────────────────────── */
 
 export function ConfirmDialog({
   open,
@@ -373,13 +344,6 @@ export function ConfirmDialog({
   );
 }
 
-/* ── Query-string value, read once on mount ─────────────────────────────── */
-
-/**
- * Deep links such as /admin/bookings?status=pending set a page's starting
- * filter. Read in an effect rather than with useSearchParams, which would
- * force a Suspense boundary around every admin page for a one-time value.
- */
 export function useInitialParam(name: string): string | null {
   const [value, setValue] = useState<string | null>(null);
   useEffect(() => {

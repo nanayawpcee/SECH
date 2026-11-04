@@ -51,7 +51,6 @@ type Range = "7" | "30" | "90";
 
 const RANGE_LABEL: Record<Range, string> = { "7": "last 7 days", "30": "last 30 days", "90": "last 90 days" };
 
-/** HR officers manage staff records only; the dashboard has nothing for them. */
 export default function DashboardPage() {
   const { admin } = useAuth();
   const router = useRouter();
@@ -103,19 +102,16 @@ function Dashboard() {
       .filter(Boolean)
       .sort()[0];
 
-    // Daily series for the chart and sparkline.
     const keys = daysBetween(start, today);
     const receivedByDay = keys.map((k) => bookings.filter((b) => keyOfTimestamp(b.createdAtISO) === k).length);
     const scheduledByDay = keys.map((k) => live.filter((b) => b.preferredDateISO === k).length);
 
-    // Status split for bookings received in the range.
     const statusSplit = {
       pending: received.filter((b) => b.status === "pending").length,
       confirmed: received.filter((b) => b.status === "confirmed").length,
       cancelled: received.filter((b) => b.status === "cancelled").length,
     };
 
-    // Which departments patients are asking for.
     const deptCounts = new Map<string, number>();
     for (const b of received) {
       const d = b.dept || "Unspecified";
@@ -133,8 +129,6 @@ function Dashboard() {
   }, [bookings, posts, today, days]);
 
   const firstName = (admin?.name ?? "").split(" ")[0] || "there";
-  // A content manager sees the content side only; patient bookings are for
-  // administrators. The server enforces the same split.
   const canBookings = can(admin?.perms, "bookings");
   const canPublish = can(admin?.perms, "posts.publish");
   const canComments = can(admin?.perms, "comments");
@@ -185,7 +179,6 @@ function Dashboard() {
         )}
       />
 
-      {/* ── KPIs ─────────────────────────────────────────────────────── */}
       <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", marginBottom: 16 }}>
         {canBookings && (<>
         <Reveal delay={0}>
@@ -264,7 +257,6 @@ function Dashboard() {
       </div>
 
       {canBookings && (<>
-      {/* ── Trend + status ───────────────────────────────────────────── */}
       <div className="po-grid po-dash-row">
         <Reveal delay={0.2}>
           <Card
@@ -331,7 +323,6 @@ function Dashboard() {
         </Reveal>
       </div>
 
-      {/* ── Upcoming + departments ───────────────────────────────────── */}
       <div className="po-grid po-dash-row" style={{ marginTop: 16 }}>
         <Reveal delay={0.3}>
           <Card
@@ -410,7 +401,6 @@ function Dashboard() {
 
       </>)}
 
-      {/* ── Content + shortcuts ──────────────────────────────────────── */}
       <div className="po-grid po-dash-row" style={{ marginTop: canBookings ? 16 : 0 }}>
         <Reveal delay={0.4}>
           <Card

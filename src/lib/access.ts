@@ -9,20 +9,14 @@ export interface Viewer {
   email: string;
   roles: string[];
   perms: Perm[];
-  /** Signed in with a temporary password that hasn't been replaced yet. */
   mustChangePassword: boolean;
 }
 
 const VIEWER_FIELDS = `databaseId name email roles { nodes { name } } capabilities`;
 const VIEWER_QUERY = `query PortalViewer { viewer { ${VIEWER_FIELDS} mustChangePassword } }`;
-// For a WordPress still on plugin < 1.2.0, which doesn't know mustChangePassword.
 const VIEWER_QUERY_LEGACY = `query PortalViewer { viewer { ${VIEWER_FIELDS} } }`;
 
-/**
- * Who is signed in, and what WordPress lets them do. Cached briefly per token:
- * every API call needs it, and roles change rarely. A role change takes effect
- * within a minute, or immediately on the next sign-in.
- */
+// cached briefly per token, every API call needs the viewer
 const cache = new Map<string, { at: number; viewer: Viewer }>();
 const TTL_MS = 60_000;
 
@@ -62,7 +56,6 @@ export async function viewerForToken(token: string): Promise<Viewer | null> {
   }
 }
 
-/** Drop the cached viewer, e.g. after a password change clears the flag. */
 export function forgetViewer(token: string | null | undefined) {
   if (token) cache.delete(token);
 }
@@ -72,20 +65,12 @@ export async function getViewer(): Promise<Viewer | null> {
   return token ? viewerForToken(token) : null;
 }
 
-/**
- * Gate for API routes. Returns the viewer when allowed, or a ready-made error
- * response: 401 when nobody is signed in, 403 when they are but may not.
- *
- *   const gate = await requirePerm("bookings");
- *   if (gate instanceof NextResponse) return gate;
- */
+// top of every API route: 401 if signed out, 403 if not allowed
 export async function requirePerm(...perms: Perm[]): Promise<Viewer | NextResponse> {
   const viewer = await getViewer();
   if (!viewer) {
     return NextResponse.json({ error: "Your session has expired. Please sign in again." }, { status: 401 });
   }
-  // Until a temporary password is replaced, nothing else is allowed — enforced
-  // here, not just by the page redirect.
   if (viewer.mustChangePassword) {
     return NextResponse.json(
       { error: "Choose your own password before continuing.", code: "PASSWORD_CHANGE_REQUIRED" },
@@ -98,8 +83,6 @@ export async function requirePerm(...perms: Perm[]): Promise<Viewer | NextRespon
   return viewer;
 }
 
-/** Signed in — and allowed even while a temporary password is pending. For the
- *  routes a person needs in order to replace it. */
 export async function requireSignedInAllowingPasswordChange(): Promise<Viewer | NextResponse> {
   const viewer = await getViewer();
   if (!viewer) {

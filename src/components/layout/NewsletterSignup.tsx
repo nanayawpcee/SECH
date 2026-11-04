@@ -7,13 +7,11 @@ import { formatBytes, type NewsletterIssue } from "@/lib/wp-newsletter";
 
 type State = { kind: "idle" } | { kind: "sending" } | { kind: "done"; message: string } | { kind: "error"; message: string };
 
-/** Footer sign-up: health tips and hospital news by email, plus the latest
- *  issue as a PDF when the admin portal has one set. */
 export function NewsletterSignup({ latest = null }: { latest?: NewsletterIssue | null }) {
   const id = useId();
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
-  const [trap, setTrap] = useState(""); // honeypot — hidden from people
+  const [trap, setTrap] = useState(""); // honeypot, hidden from people
   const [state, setState] = useState<State>({ kind: "idle" });
 
   const submit = async (e: React.FormEvent) => {
@@ -100,7 +98,6 @@ export function NewsletterSignup({ latest = null }: { latest?: NewsletterIssue |
             </button>
           </div>
 
-          {/* Honeypot. Off-screen, skipped by keyboard and screen readers. */}
           <div className="fn-trap" aria-hidden="true">
             <label>
               Website

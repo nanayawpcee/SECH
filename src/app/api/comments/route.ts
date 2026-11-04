@@ -13,19 +13,10 @@ import { checkComment } from "@/lib/comment-spam";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Public comments. The browser talks to this route, never to WordPress — the
- * shared secret stays on the server, exactly as the booking endpoint works.
- */
-
 const MAX_COMMENT = 2000;
 const MIN_COMMENT = 2;
 
-/**
- * Per-IP throttle. In-memory, so on serverless it is per-instance and resets on
- * cold start — a speed bump against casual flooding, not a guarantee. The real
- * defences are the moderation queue (nothing publishes unreviewed) and Akismet.
- */
+// per-IP throttle, in-memory so it resets on cold starts
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 3;
 const hits = new Map<string, number[]>();
@@ -39,7 +30,6 @@ function rateLimited(ip: string): boolean {
   }
   recent.push(now);
   hits.set(ip, recent);
-  // Keep the map from growing without bound on a long-lived instance.
   if (hits.size > 5000) {
     hits.forEach((times: number[], key: string) => {
       if (times.every((t) => now - t >= WINDOW_MS)) hits.delete(key);
@@ -53,7 +43,6 @@ function clientIp(request: Request): string {
   return (forwarded?.split(",")[0] ?? "unknown").trim();
 }
 
-/** Approved comments for one post. Nothing pending is ever exposed. */
 export async function GET(request: Request) {
   const slug = new URL(request.url).searchParams.get("slug")?.trim();
   if (!slug) {
@@ -69,8 +58,6 @@ export async function GET(request: Request) {
   }>(APPROVED_COMMENTS_QUERY, { slug }, 30);
 
   if (!data?.post) {
-    // The CMS is unreachable or the post does not exist. Either way the page
-    // should render without comments rather than show an error.
     return NextResponse.json({ comments: [] as PublicComment[], postId: null });
   }
 
@@ -84,8 +71,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Honeypot: a field hidden from people, irresistible to form-filling bots.
-    // Answer 200 so the bot believes it succeeded and does not retry.
+    // honeypot filled means a bot. answer 200 so it doesn't retry
     if (String(body.website ?? "").trim() !== "") {
       return NextResponse.json({ success: true, pending: true });
     }
@@ -98,8 +84,6 @@ export async function POST(request: Request) {
     }
 
     const postId = Number(body.postId);
-    // Strip to plain text on the way IN, so nothing dangerous is ever stored —
-    // staff open this queue inside wp-admin.
     const author = toPlainName(String(body.author ?? ""));
     const email = String(body.email ?? "").trim().toLowerCase();
     const content = toPlainText(String(body.content ?? ""), MAX_COMMENT);
@@ -120,8 +104,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please write a comment." }, { status: 400 });
     }
 
-    // Links are refused with a reason a person can act on; advertising is
-    // dropped but answered like any other comment, so bots learn nothing.
+    // links get a reason back, ads are dropped quietly
     const verdict = checkComment({ author, content });
     if (verdict.action === "reject") {
       return NextResponse.json({ error: verdict.message }, { status: 400 });
@@ -131,8 +114,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, pending: true });
     }
 
-    // Checked last, so every check above also runs on a machine without the
-    // key (local development), just like the contact form.
+    // checked last so the checks above still run locally without the key
     const key = process.env.SECH_BOOKING_KEY;
     if (!key) {
       console.error("SECH_BOOKING_KEY is not set, so comments cannot be submitted.");
@@ -148,8 +130,7 @@ export async function POST(request: Request) {
       { headers: { "X-SECH-BOOKING-KEY": key } },
     );
 
-    // Always "pending": WordPress holds it for approval, and saying so plainly
-    // stops people re-submitting when their comment does not appear.
+    // always pending, WordPress holds every comment for approval
     return NextResponse.json({ success: true, pending: true });
   } catch (error) {
     const { body, status } = toErrorResponse(error);

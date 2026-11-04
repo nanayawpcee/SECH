@@ -10,6 +10,7 @@ import {
   LICENCE_BODIES,
   STATUSES,
   TITLES,
+  formatDate,
   fullName,
   isTemporary,
   licenceState,
@@ -27,7 +28,7 @@ const EMPTY: Form = {
   employmentType: "permanent", status: "active", phone: "", email: "",
   dateFirstAppointment: "", dateCurrentRank: "",
   licenceBody: "", licencePin: "", licenceExpiry: "",
-  cagdStaffId: "", ssnit: "", notes: "", userId: "",
+  cagdStaffId: "", ssnit: "", notes: "", dateExited: "", userId: "",
 };
 
 function toForm(e: Employee | null): Form {
@@ -38,11 +39,6 @@ function toForm(e: Employee | null): Form {
   return f;
 }
 
-/**
- * Add or edit one staff record, in a side drawer. `employee` null + `open`
- * true means a new record. Everything except the names is optional: new
- * nurses and national service persons often have no payroll ID or licence yet.
- */
 export function EmployeeEditor({
   open,
   employee,
@@ -89,7 +85,6 @@ export function EmployeeEditor({
   const inService = yearsSince(form.dateFirstAppointment);
   const licence = licenceState(form.licenceExpiry);
 
-  // A login can belong to one record only; hide the ones already taken.
   const takenUserIds = useMemo(
     () => new Set(employees.filter((e) => e.userId && e.databaseId !== employee?.databaseId).map((e) => e.userId)),
     [employees, employee],
@@ -126,7 +121,7 @@ export function EmployeeEditor({
             aria-modal="true"
             aria-label={employee ? `Edit ${name}` : "Add a staff member"}
             initial={{ x: "100%" }}
-            animate={{ x: "0%" }} /* same unit as initial/exit, or the exit never completes */
+            animate={{ x: "0%" }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >
@@ -142,6 +137,15 @@ export function EmployeeEditor({
             </div>
 
             <form className="po-drawer-body st-form" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
+              {employee?.anonymisedAt && (
+                <div className="po-alert po-tone-info" role="note" style={{ marginBottom: 16 }}>
+                  <Info size={17} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span>
+                    Personal details were removed on {formatDate(employee.anonymisedAt)} under the retention period. Only the name,
+                    staff number, posting and dates of service are kept.
+                  </span>
+                </div>
+              )}
               <h3 className="st-h">Name</h3>
               <div className="st-grid st-grid--name">
                 <label className="po-field">
@@ -189,6 +193,13 @@ export function EmployeeEditor({
                     {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </label>
+                {form.status === "exited" && (
+                  <label className="po-field">
+                    <span className="po-label">Date left</span>
+                    <input className="po-input" type="date" value={form.dateExited} onChange={(e) => set("dateExited", e.target.value)} />
+                    <span className="po-hint">Starts the retention period. Left blank, it is set to the day you save.</span>
+                  </label>
+                )}
                 <label className="po-field">
                   <span className="po-label">Hospital staff number</span>
                   <input className="po-input" value={form.staffNumber} onChange={(e) => set("staffNumber", e.target.value)} />
@@ -308,7 +319,10 @@ export function EmployeeEditor({
 
               <h3 className="st-h">Notes</h3>
               <textarea className="po-input" rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000}
-                style={{ resize: "vertical", minHeight: 80 }} aria-label="Notes" />
+                style={{ resize: "vertical", minHeight: 80 }} aria-label="Notes" aria-describedby="emp-notes-hint" />
+              <span id="emp-notes-hint" className="po-hint">
+                Work-related notes only. Do not record health, religious, disciplinary or family details here.
+              </span>
 
               {error && (
                 <div className="po-alert po-tone-danger" role="alert" style={{ marginTop: 16 }}>

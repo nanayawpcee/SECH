@@ -41,16 +41,11 @@ export const BOOKING_FIELDS = `
 const TYPES: Booking["type"][] = ["consultation", "followup", "test"];
 const STATUSES: Booking["status"][] = ["pending", "confirmed", "cancelled"];
 
-/** Booking plus the numeric id the status mutation needs. */
 export type AdminBooking = Booking & {
   databaseId: number;
   dateOfBirth?: string;
   gender?: string;
-  /** Raw YYYY-MM-DD, kept so the calendar can group by day without reparsing
-   *  the localised display string. */
   preferredDateISO: string;
-  /** When the request was submitted, as an ISO timestamp — for "received"
-   *  counts and trends, which the localised createdAt cannot sort or compare. */
   createdAtISO: string;
 };
 
@@ -74,7 +69,6 @@ export function mapWpBooking(node: WpBookingNode): AdminBooking {
     dept: node.department ?? "",
     type,
     preferredDateISO: node.preferredDate ?? "",
-    // Patients pick an ISO date; render it the way the admin tables expect.
     date: node.preferredDate
       ? new Date(node.preferredDate + "T00:00:00").toLocaleDateString("en-GB", {
           day: "numeric",

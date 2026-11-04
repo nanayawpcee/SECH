@@ -74,7 +74,6 @@ export default function BookingsPage() {
     if (initialStatus === "pending" || initialStatus === "confirmed" || initialStatus === "cancelled") setStatus(initialStatus);
   }, [initialStatus]);
 
-  // ?open=<reference> — from the command palette — opens that booking.
   useEffect(() => {
     if (!initialOpen || !bookings.length) return;
     const match = bookings.find((b) => b.id === initialOpen);
@@ -196,7 +195,6 @@ export default function BookingsPage() {
         }
       />
 
-      {/* Status tiles double as the status filter. */}
       <div className="po-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 16 }}>
         {TILES.map((t) => {
           const Icon = t.icon;
@@ -344,7 +342,6 @@ export default function BookingsPage() {
         )}
       </section>
 
-      {/* Bulk bar */}
       <AnimatePresence>
         {selected.size > 0 && (
           <motion.div
@@ -438,7 +435,7 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
             aria-modal="true"
             aria-label={`Booking for ${booking.name}`}
             initial={{ x: "100%" }}
-            animate={{ x: "0%" }} /* same unit as initial/exit — a 0 ↔ "100%" mix never finished exiting */
+            animate={{ x: "0%" }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >
@@ -494,7 +491,6 @@ function BookingDrawer({ booking, onClose, onConfirm, onCancel, onCopy, busy }: 
               {booking.notes && (
                 <>
                   <h3 className="po-drawer-h">Notes from the patient</h3>
-                  {/* Visitor-supplied: rendered as text, never markup. */}
                   <p className="po-notes">{booking.notes}</p>
                 </>
               )}

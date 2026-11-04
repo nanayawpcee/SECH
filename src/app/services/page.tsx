@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     "Explore the full range of medical and health services offered at St. Elizabeth Catholic Hospital, from in-patient care to specialist clinics.",
 };
 
-/** Some services have no photo yet; show a branded panel instead of a broken image. */
 function publicFileExists(src: string | undefined) {
   if (!src) return false;
   if (/^https?:\/\//.test(src)) return true;
@@ -45,7 +44,6 @@ export default function ServicesPage() {
     })),
   }));
 
-  // Which department each service page belongs to, from the category lists.
   const categoryOf = new Map<string, string>();
   for (const c of categories) for (const i of c.items) if (i.slug && !categoryOf.has(i.slug)) categoryOf.set(i.slug, c.key);
 
@@ -58,7 +56,6 @@ export default function ServicesPage() {
     category: categoryOf.get(s.slug) ?? "general",
   }));
 
-  // Office line for questions (weekday hours); the 24-hour line for emergencies.
   const phone = SITE.phone;
   const tel = telHref(phone);
   const emergencyPhone = SITE.emergencyPhones[0];

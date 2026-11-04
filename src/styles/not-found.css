@@ -1,0 +1,40 @@
+.nf {
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  background: linear-gradient(135deg, rgba(232, 245, 240, 0.6) 0%, #fff 50%, rgba(232, 245, 240, 0.9) 100%);
+}
+.nf-inner { max-width: 28rem !important; text-align: center; }
+
+.nf-art { position: relative; margin-bottom: 2rem; }
+.nf-num {
+  font-size: 150px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--primary);
+  opacity: 0.1;
+  user-select: none;
+}
+.nf-logo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+.nf h1 { margin: 0 0 12px; font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; color: var(--text-dark); }
+.nf-text { margin: 0 0 2rem; color: var(--text-light); line-height: 1.7; }
+
+.nf-actions { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+
+.nf-help { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #E2EBE7; }
+.nf-help p { margin: 0 0 1rem; font-size: 0.875rem; color: var(--text-light); }
+.nf-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 1rem; font-size: 0.875rem; }
+.nf-links a { color: var(--primary); font-weight: 500; }
+.nf-links a:hover { text-decoration: underline; }
+.nf-sep { color: rgba(107, 143, 130, 0.35); }
+
+@media (min-width: 1024px) {
+  .nf-num { font-size: 200px; }
+  .nf h1 { font-size: 1.9rem; }
+}
+@media (max-width: 480px) {
+  .nf-actions { flex-direction: column; align-items: center; }
+}

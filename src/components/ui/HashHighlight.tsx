@@ -2,11 +2,7 @@
 
 import { useEffect } from "react";
 
-/**
- * Marks the element named in the address bar's #hash with data-hash-target,
- * for styling. CSS :target alone misses it when the page was reached through
- * a client-side link, which is how the site's own links navigate.
- */
+// :target doesn't update on client-side navigation, so mark the element ourselves
 export function HashHighlight() {
   useEffect(() => {
     let marked: Element | null = null;

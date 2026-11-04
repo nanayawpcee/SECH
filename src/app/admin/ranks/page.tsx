@@ -17,7 +17,6 @@ function move<T>(list: T[], from: number, to: number) {
   return next;
 }
 
-/** Cadres with their rank ladders (junior to senior), and management positions. */
 export default function RanksPage() {
   const { addToast } = useAdminData();
   const staff = useStaff();
@@ -34,7 +33,6 @@ export default function RanksPage() {
     [draft, staff.setup],
   );
 
-  // How many records use each thing; anything in use can't be removed.
   const usage = useMemo(() => {
     const count = (key: "cadreId" | "rankId" | "positionId") => {
       const m = new Map<string, number>();

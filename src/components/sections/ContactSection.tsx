@@ -28,15 +28,11 @@ const CONTACT_INFO: { icon: LucideIcon; label: string; lines: ContactLine[]; eme
   },
 ];
 
-// Partner and client lists live in partnerslider.tsx, which renders them.
-
 export function ContactSection() {
   return (
     <section id="contact" className="contact-section">
       <div className="container">
-        {/* 2-col grid */}
         <div className="contact-grid">
-          {/* Left — contact info */}
           <AnimateIn direction="left">
             <span
               style={{
@@ -78,7 +74,6 @@ export function ContactSection() {
             ))}
           </AnimateIn>
 
-          {/* Right — contact form */}
           <AnimateIn delay={160} direction="right">
             <div className="contact-form">
               <ContactForm theme="dark" compact />
@@ -86,7 +81,6 @@ export function ContactSection() {
           </AnimateIn>
         </div>
 
-        {/* NEW: Full Width Horizontal Infinite Logo Slider */}
         <Partners />
       </div>
     </section>

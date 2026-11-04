@@ -14,7 +14,6 @@ type Show = "all" | "published" | "hidden";
 
 const SERVICE_TITLE = new Map<string, string>(SERVICES.map((s) => [s.slug, s.title]));
 
-/** Public doctor and specialist profiles. Content managers and administrators. */
 export default function DoctorsAdminPage() {
   const { admin, logout } = useAuth();
   const { addToast } = useAdminData();

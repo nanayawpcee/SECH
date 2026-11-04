@@ -1,9 +1,3 @@
-/**
- * Date helpers for the admin console. Everything works on local calendar days
- * as "YYYY-MM-DD" strings: bookings store the patient's chosen day that way,
- * and comparing strings avoids timezone drift from Date arithmetic at midnight.
- */
-
 export function dayKey(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -20,12 +14,10 @@ export function addDays(key: string, n: number): string {
   return dayKey(new Date(y, m - 1, d + n));
 }
 
-/** The calendar day of a WordPress timestamp like "2026-09-20T10:15:00". */
 export function keyOfTimestamp(ts: string): string {
   return ts ? ts.slice(0, 10) : "";
 }
 
-/** Inclusive list of day keys from `start` to `end`. */
 export function daysBetween(start: string, end: string): string[] {
   const out: string[] = [];
   for (let k = start; k <= end; k = addDays(k, 1)) out.push(k);
@@ -44,7 +36,6 @@ export function formatDay(key: string, opts: Intl.DateTimeFormatOptions = { day:
   return new Date(y, m - 1, d).toLocaleDateString("en-GB", opts);
 }
 
-/** "Today", "Tomorrow", or a weekday + date. */
 export function relativeDay(key: string): string {
   const diff = diffDays(todayKey(), key);
   if (diff === 0) return "Today";
@@ -58,7 +49,6 @@ export function greeting(d = new Date()): string {
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
-/** "today", "tomorrow", "in 12 days", "3 days ago". */
 export function fromNow(key: string): string {
   const diff = diffDays(todayKey(), key);
   if (diff === 0) return "today";

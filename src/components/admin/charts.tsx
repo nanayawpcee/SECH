@@ -1,15 +1,7 @@
 "use client";
 
-/**
- * Hand-drawn SVG charts for the admin console. No chart library: the needs
- * are small (a trend, a breakdown, a sparkline), and SVG styled from the
- * admin tokens themes itself for free in light and dark.
- */
-
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-
-/* ── Width tracking, so text and strokes render at true pixel size ──────── */
 
 function useWidth<T extends HTMLElement>(fallback = 600) {
   const ref = useRef<T>(null);
@@ -27,7 +19,6 @@ function useWidth<T extends HTMLElement>(fallback = 600) {
   return [ref, width] as const;
 }
 
-/** A tidy upper bound for the y-axis: 1, 2, 5 × 10ⁿ steps. */
 function niceMax(v: number) {
   if (v <= 4) return 4;
   const pow = Math.pow(10, Math.floor(Math.log10(v)));
@@ -36,7 +27,6 @@ function niceMax(v: number) {
   return step * pow;
 }
 
-/** Smooth path through points (monotone-ish Catmull-Rom, clamped to 0). */
 function smoothPath(pts: [number, number][], floorY: number) {
   if (pts.length < 2) return pts.length ? `M${pts[0][0]},${pts[0][1]}` : "";
   let d = `M${pts[0][0]},${pts[0][1]}`;
@@ -55,11 +45,9 @@ function smoothPath(pts: [number, number][], floorY: number) {
   return d;
 }
 
-/* ── Area / line chart ───────────────────────────────────────────────────── */
-
 export interface Series {
   name: string;
-  color: string; // a CSS colour or var()
+  color: string;
   values: number[];
 }
 
@@ -73,7 +61,6 @@ export function AreaChart({
   labels: string[];
   series: Series[];
   height?: number;
-  /** Show every nth x label; defaults to about seven labels across. */
   tickEvery?: number;
   formatTip?: (i: number) => string;
 }) {
@@ -193,8 +180,6 @@ export function AreaChart({
   );
 }
 
-/* ── Donut ───────────────────────────────────────────────────────────────── */
-
 export interface Slice {
   label: string;
   value: number;
@@ -275,8 +260,6 @@ export function Donut({
     </div>
   );
 }
-
-/* ── Sparkline ───────────────────────────────────────────────────────────── */
 
 export function Sparkline({ values, color, width = 96, height = 30 }: {
   values: number[]; color: string; width?: number; height?: number;

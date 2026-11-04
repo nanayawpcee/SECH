@@ -13,11 +13,6 @@ const GET_POST = `
   }
 `;
 
-/**
- * Staff writers may only touch their own posts. WordPress enforces this too;
- * checking here as well gives a clear message and fails closed if a role is
- * ever misconfigured.
- */
 async function ownershipGate(viewer: Viewer, id: string): Promise<NextResponse | null> {
   if (viewer.perms.includes("posts.editOthers")) return null;
   const data = await wpGraphQL<{ post: WpPostNode | null }>(GET_POST, { id }, { authenticated: true });
@@ -76,7 +71,6 @@ const UPDATE_POST = `
   }
 `;
 
-/** Partial update — only the fields present in the body are sent on. */
 export async function PATCH(request: Request, { params }: Params) {
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
@@ -101,8 +95,6 @@ export async function PATCH(request: Request, { params }: Params) {
             ? undefined
             : toWpStatus(allowedStatus(patch.status, gate.perms.includes("posts.publish"))),
         categoryName: patch.type,
-        // undefined leaves the post's current setting untouched — this is a
-        // partial update, so an absent toggle must not silently close comments.
         commentStatus:
           patch.commentsOpen === undefined
             ? undefined
@@ -113,7 +105,6 @@ export async function PATCH(request: Request, { params }: Params) {
       { authenticated: true },
     );
 
-    // undefined = leave alone; null = clear; number = set.
     if (patch.featuredImageId !== undefined) {
       await wpGraphQL(
         SET_FEATURED_IMAGE,
@@ -123,7 +114,6 @@ export async function PATCH(request: Request, { params }: Params) {
         },
         { authenticated: true },
       );
-      // Re-read so the response carries the new image rather than the stale one.
       const fresh = await wpGraphQL<{ post: WpPostNode | null }>(
         GET_POST,
         { id: params.id },
@@ -147,7 +137,6 @@ const DELETE_POST = `
   }
 `;
 
-/** Moves the post to the WordPress trash rather than destroying it. */
 export async function DELETE(_request: Request, { params }: Params) {
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;

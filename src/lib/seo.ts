@@ -1,16 +1,13 @@
 import { SITE } from "@/lib/data";
 
-/** Absolute URL on the canonical host, for structured data and the sitemap. */
 export function absoluteUrl(path = "/") {
   return new URL(path, SITE.url).toString();
 }
 
-/** "050 870 5607" -> "+233508705607", the international form search engines expect. */
 function intlPhone(number: string) {
   return `+233${number.replace(/\D/g, "").replace(/^0/, "")}`;
 }
 
-/** Fallback share image (1200 × 630), cut from the aerial photo of the campus. */
 export const DEFAULT_SHARE_IMAGE = {
   url: "/images/og-default.jpg",
   width: 1200,
@@ -21,12 +18,7 @@ export const DEFAULT_SHARE_IMAGE = {
 const ALL_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const WEEKDAYS = ALL_WEEK.slice(0, 5);
 
-/**
- * The hospital as a schema.org Hospital, so Google can show its address,
- * map pin, 24-hour opening and phone numbers in search and Maps.
- * Keep in step with SITE: never list the office line as the main number,
- * it is only answered on weekdays.
- */
+// schema.org markup so Google can show the address, hours and phone numbers
 export function hospitalJsonLd() {
   return {
     "@context": "https://schema.org",
@@ -95,7 +87,6 @@ export function hospitalJsonLd() {
   };
 }
 
-/** Lets search engines show "Home > Services > Dental" style trails. */
 export function breadcrumbJsonLd(trail: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",

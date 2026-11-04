@@ -19,7 +19,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Build the Multi-Part Request directly to WordPress REST endpoint
     const wpFormData = new FormData();
     wpFormData.append("file", fileItem, fileItem.name);
 
@@ -35,7 +34,6 @@ export async function POST(request: Request) {
 
     if (!wpResponse.ok) {
       const raw = String(mediaResult.message || "");
-      // PHP's own size limit on the WordPress host, reported in php.ini terms.
       if (/upload_max_filesize|post_max_size|exceeds the maximum upload size/i.test(raw)) {
         return NextResponse.json(
           {
@@ -48,7 +46,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: raw || "WordPress rejected the upload." }, { status: wpResponse.status });
     }
 
-    // Return numerical ID directly back to frontend layout loop
     return NextResponse.json({ id: mediaResult.id, url: mediaResult.source_url });
   } catch (error) {
     return NextResponse.json({ error: "Media routing thread execution failed" }, { status: 500 });

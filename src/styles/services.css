@@ -1,5 +1,3 @@
-/* /services — search, department cards, photo gallery, access steps. Prefix sv-. */
-
 .sv-page {
   background: var(--off-white);
   padding-bottom: 5rem;
@@ -19,7 +17,6 @@
   }
 }
 
-/* ── Finder ─────────────────────────────────────────────────────────────── */
 .sv-finder {
   position: relative;
   z-index: 2;
@@ -136,7 +133,6 @@
   font-weight: 700;
 }
 
-/* ── Section headings ───────────────────────────────────────────────────── */
 .sv-section {
   margin-top: 4.5rem;
 }
@@ -189,8 +185,6 @@
   line-height: 1.7;
 }
 
-/* ── Department ("subscription") cards ──────────────────────────────────── */
-/* 4 across when they fit, otherwise 2 x 2, otherwise 1: never 3 + 1. */
 .sv-cats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -456,7 +450,6 @@
   outline-offset: 2px;
 }
 
-/* ── Gallery ────────────────────────────────────────────────────────────── */
 .sv-tabs {
   display: flex;
   gap: 8px;
@@ -557,7 +550,6 @@
     linear-gradient(145deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
 
-/* Same white plate whether the service has its own icon or not. */
 .sv-plate {
   display: grid;
   place-items: center;
@@ -622,7 +614,6 @@
   transform: translateX(3px);
 }
 
-/* ── Access steps ───────────────────────────────────────────────────────── */
 .sv-access {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -708,7 +699,6 @@
   color: var(--primary);
 }
 
-/* ── Help band ──────────────────────────────────────────────────────────── */
 .sv-help {
   display: flex;
   align-items: center;

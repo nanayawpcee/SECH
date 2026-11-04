@@ -5,7 +5,6 @@ import { ShareButton } from "./ShareButton";
 
 const PRIORITY_TONE = { normal: "brand", important: "gold", urgent: "danger" } as const;
 
-/** Sign-in link that brings the person straight back to this notice. */
 export function readHref(id: number) {
   return `/admin/login?next=${encodeURIComponent(`/staff/notices?open=${id}`)}`;
 }
@@ -15,12 +14,6 @@ function when(iso: string) {
   return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "Africa/Accra" });
 }
 
-/**
- * The public face of the staff notice board: headlines only. The message,
- * author, department and links are never sent to this page — only to a
- * signed-in staff member. Notices a manager marked staff-only appear as a
- * locked placeholder with no title at all.
- */
 export function PublicHeadlines({ headlines, focusId }: { headlines: NoticeHeadline[] | null; focusId?: number }) {
   const focus = focusId ? headlines?.find((h) => h.databaseId === focusId) : undefined;
   const rest = (headlines ?? []).filter((h) => h.databaseId !== focus?.databaseId);

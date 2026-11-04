@@ -20,15 +20,10 @@ function validate(f: typeof EMPTY): Errors {
   return e;
 }
 
-/**
- * "Send a message" — saved to the hospital's inbox in the admin portal.
- * `theme` matches the surface it sits on: the dark homepage band or the
- * light contact page. `compact` trims it to fit beside other content.
- */
 export function ContactForm({ theme = "light", compact = false }: { theme?: "light" | "dark"; compact?: boolean }) {
   const id = useId();
   const [form, setForm] = useState(EMPTY);
-  const [trap, setTrap] = useState(""); // honeypot — hidden from people
+  const [trap, setTrap] = useState(""); // honeypot, hidden from people
   const [errors, setErrors] = useState<Errors>({});
   const [sending, setSending] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -144,7 +139,6 @@ export function ContactForm({ theme = "light", compact = false }: { theme?: "lig
         </div>
       </div>
 
-      {/* Honeypot. Off-screen, skipped by keyboard and screen readers. */}
       <div className="ct-trap" aria-hidden="true">
         <label>Website<input type="text" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} /></label>
       </div>

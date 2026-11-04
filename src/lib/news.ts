@@ -1,9 +1,3 @@
-/**
- * Shared by the news pages' server and client components — no data fetching
- * here (see news-data.ts), so it is safe to import from the browser.
- */
-
-/** A story as the public news pages show it — plain text, ready to render. */
 export interface NewsItem {
   slug: string;
   title: string;
@@ -13,7 +7,6 @@ export interface NewsItem {
   image: { src: string; alt: string; width: number; height: number } | null;
 }
 
-/** One photo in an article's slider. */
 export interface ArticlePhoto {
   src: string;
   alt: string;
@@ -26,24 +19,14 @@ export interface NewsArticle extends NewsItem {
   content: string;
   commentsOpen: boolean;
   readMinutes: number;
-  /**
-   * Every photo for the article page's slider: the featured image first, then
-   * the post's gallery (or, for older posts without one, the photos embedded
-   * in its text). News cards keep showing only `image`.
-   */
   photos: ArticlePhoto[];
 }
 
 export type NewsCategory = "News" | "Announcements" | "Events" | "Health & Education" | "Blog";
 
-/** Display order of the filter chips. */
 export const NEWS_CATEGORIES: NewsCategory[] = ["News", "Announcements", "Events", "Health & Education", "Blog"];
 
-/**
- * Posts carry years of inconsistent categories ("Event" and "Events",
- * "healthnews", "Headlines", or none at all). Fold them into the handful a
- * visitor can actually filter by; anything unrecognised is News.
- */
+// old posts have messy categories, map them onto the five filters
 export function categoryFor(names: string[]): NewsCategory {
   const all = names.map((n) => n.toLowerCase().replace(/[^a-z]/g, ""));
   if (all.some((n) => n.startsWith("announcement"))) return "Announcements";

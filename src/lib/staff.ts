@@ -1,8 +1,3 @@
-/**
- * Employee management: shapes, labels, helpers and GraphQL documents
- * (plugin 1.7.0+). Safe to import from the browser — no data fetching here.
- */
-
 export interface Unit {
   id: string;
   name: string;
@@ -20,7 +15,6 @@ export interface Department {
 export interface Rank {
   id: string;
   name: string;
-  /** Pay level, e.g. on the Single Spine Salary Structure. Free text. */
   level: string;
 }
 
@@ -78,6 +72,8 @@ export interface Employee {
   cagdStaffId: string | null;
   ssnit: string | null;
   notes: string | null;
+  dateExited: string | null;
+  anonymisedAt: string | null;
   userId: number | null;
   updatedAt: string;
 }
@@ -108,7 +104,6 @@ export const STATUSES: { value: EmployeeStatus; label: string }[] = [
 
 export const TITLES = ["Mr", "Mrs", "Ms", "Miss", "Dr", "Prof.", "Rev.", "Rev. Sr.", "Rev. Fr.", "Very Rev."];
 
-/** Professional regulators in Ghana, for the licence field. */
 export const LICENCE_BODIES = [
   "Nursing and Midwifery Council (NMC)",
   "Medical and Dental Council (MDC)",
@@ -125,7 +120,6 @@ export const isTemporary = (v: string | null | undefined) => !!EMPLOYMENT_TYPES.
 export const fullName = (e: Pick<Employee, "title" | "firstName" | "lastName" | "otherNames">, withTitle = false) =>
   [withTitle ? e.title : null, e.firstName, e.otherNames, e.lastName].filter(Boolean).join(" ");
 
-/** Look-ups built once per render from the setup lists. */
 export function indexSetup(setup: StaffSetup | null) {
   const departments = new Map<string, Department>();
   const units = new Map<string, Unit & { departmentId: string }>();
@@ -144,7 +138,6 @@ export function indexSetup(setup: StaffSetup | null) {
   return { departments, units, cadres, ranks, positions };
 }
 
-/** Whole years between a YYYY-MM-DD date and today, or null. */
 export function yearsSince(date: string | null | undefined): number | null {
   if (!date) return null;
   const d = new Date(`${date}T00:00:00`);
@@ -155,7 +148,6 @@ export function yearsSince(date: string | null | undefined): number | null {
   return Math.max(0, years);
 }
 
-/** "expired", "soon" (within 60 days), "ok", or null when there's no expiry date. */
 export function licenceState(expiry: string | null | undefined): "expired" | "soon" | "ok" | null {
   if (!expiry) return null;
   const end = new Date(`${expiry}T23:59:59`).getTime();
@@ -170,17 +162,17 @@ export function formatDate(date: string | null | undefined) {
   return Number.isNaN(d.getTime()) ? date : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** Fields the portal sends when saving; the plugin validates them all again. */
+// the plugin validates all of these again
 export const EMPLOYEE_INPUT_FIELDS = [
   "title", "firstName", "lastName", "otherNames", "gender", "staffNumber",
   "cadreId", "rankId", "positionId", "departmentId", "unitId",
   "employmentType", "status", "phone", "email",
   "dateFirstAppointment", "dateCurrentRank",
   "licenceBody", "licencePin", "licenceExpiry",
-  "cagdStaffId", "ssnit", "notes",
+  "cagdStaffId", "ssnit", "notes", "dateExited",
 ] as const;
 
-const EMPLOYEE_FIELDS = `databaseId userId updatedAt ${EMPLOYEE_INPUT_FIELDS.join(" ")}`;
+const EMPLOYEE_FIELDS = `databaseId userId updatedAt anonymisedAt ${EMPLOYEE_INPUT_FIELDS.join(" ")}`;
 
 export const STAFF_QUERY = `
   query StaffData {
@@ -190,13 +182,115 @@ export const STAFF_QUERY = `
   }
 `;
 
-export const SAVE_EMPLOYEE = `
-  mutation SaveEmployee($databaseId: Int, $userId: Int, ${EMPLOYEE_INPUT_FIELDS.map((f) => `$${f}: String`).join(", ")}) {
-    saveEmployee(input: { databaseId: $databaseId, userId: $userId, ${EMPLOYEE_INPUT_FIELDS.map((f) => `${f}: $${f}`).join(", ")} }) {
-      employee { ${EMPLOYEE_FIELDS} }
+function saveEmployeeMutation(inputs: readonly string[], fields: string) {
+  return `
+  mutation SaveEmployee($databaseId: Int, $userId: Int, ${inputs.map((f) => `$${f}: String`).join(", ")}) {
+    saveEmployee(input: { databaseId: $databaseId, userId: $userId, ${inputs.map((f) => `${f}: $${f}`).join(", ")} }) {
+      employee { ${fields} }
     }
   }
 `;
+}
+
+export const SAVE_EMPLOYEE = saveEmployeeMutation(EMPLOYEE_INPUT_FIELDS, EMPLOYEE_FIELDS);
+
+const LEGACY_INPUT_FIELDS = EMPLOYEE_INPUT_FIELDS.filter((f) => f !== "dateExited");
+export const SAVE_EMPLOYEE_LEGACY = saveEmployeeMutation(
+  LEGACY_INPUT_FIELDS,
+  `databaseId userId updatedAt ${LEGACY_INPUT_FIELDS.join(" ")}`,
+);
+
+// tries the current mutation, then the pre-1.10.0 one
+export async function saveEmployeeCompat<T>(
+  run: (query: string, vars: Record<string, unknown>) => Promise<T>,
+  vars: Record<string, unknown>,
+  isOutdated: (error: unknown) => boolean,
+): Promise<T> {
+  try {
+    return await run(SAVE_EMPLOYEE, vars);
+  } catch (error) {
+    if (!isOutdated(error)) throw error;
+    const { dateExited: _ignored, ...rest } = vars;
+    return run(SAVE_EMPLOYEE_LEGACY, rest);
+  }
+}
+
+// fallback while WordPress is on a plugin older than 1.10.0
+export const STAFF_QUERY_LEGACY = STAFF_QUERY
+  .replace(" anonymisedAt", "")
+  .replace(" dateExited", "");
+
+export function isOutdatedStaffPlugin(message: string) {
+  return /dateExited|anonymisedAt|staffDataProtection|staffAudit|myStaffRecord|logStaffExport|setStaffRetention/.test(message)
+    && /Cannot query field|Unknown|not exist|not defined/i.test(message);
+}
+
+export interface StaffAuditEntry {
+  id: number;
+  at: string;
+  userName: string;
+  action: string;
+  employeeId: number | null;
+  employeeName: string;
+  detail: string;
+}
+
+export interface StaffDataProtection {
+  retentionYears: number;
+  encryption: "dedicated" | "site" | "off";
+  auditKeepYears: number;
+  dueForCleanup: number;
+}
+
+export const STAFF_DP_QUERY = `query StaffDP { staffDataProtection { retentionYears encryption auditKeepYears dueForCleanup } }`;
+export const STAFF_AUDIT_QUERY = `query StaffAudit($first: Int) { staffAudit(first: $first) { id at userName action employeeId employeeName detail } }`;
+export const SET_STAFF_RETENTION = `mutation SetStaffRetention($years: Int!) { setStaffRetention(input: { years: $years }) { years } }`;
+export const LOG_STAFF_EXPORT = `mutation LogStaffExport($count: Int!, $withIdentifiers: Boolean) { logStaffExport(input: { count: $count, withIdentifiers: $withIdentifiers }) { ok } }`;
+
+export interface MyStaffRecord {
+  title: string | null;
+  firstName: string | null;
+  otherNames: string | null;
+  lastName: string | null;
+  gender: string | null;
+  staffNumber: string | null;
+  department: string | null;
+  unit: string | null;
+  cadre: string | null;
+  rank: string | null;
+  position: string | null;
+  employmentType: string | null;
+  status: string | null;
+  phone: string | null;
+  email: string | null;
+  dateFirstAppointment: string | null;
+  dateCurrentRank: string | null;
+  licenceBody: string | null;
+  licencePin: string | null;
+  licenceExpiry: string | null;
+  cagdStaffId: string | null;
+  ssnit: string | null;
+  notes: string | null;
+  updatedAt: string | null;
+}
+
+export const MY_STAFF_RECORD_QUERY = `query MyStaffRecord { myStaffRecord {
+  title firstName otherNames lastName gender staffNumber department unit cadre rank position
+  employmentType status phone email dateFirstAppointment dateCurrentRank
+  licenceBody licencePin licenceExpiry cagdStaffId ssnit notes updatedAt
+} }`;
+
+export const AUDIT_ACTIONS: Record<string, string> = {
+  viewed: "Opened staff records",
+  created: "Added a record",
+  updated: "Changed a record",
+  deleted: "Deleted a record",
+  exported: "Exported records",
+  anonymised: "Retention clean-up",
+  settings: "Changed retention",
+  viewed_own: "Viewed own record",
+  encrypted: "Encrypted identifiers",
+};
 
 export const DELETE_EMPLOYEE = `mutation DeleteEmployee($id: Int!) { deleteEmployee(input: { id: $id }) { ok } }`;
 export const SAVE_STRUCTURE = `mutation SaveStaffStructure($json: String!) { saveStaffStructure(input: { json: $json }) { json } }`;
@@ -207,7 +301,6 @@ export function isMissingStaffPlugin(message: string) {
     && /Cannot query field|Unknown|not exist/i.test(message);
 }
 
-/** Only the fields the plugin accepts, as strings; it validates everything again. */
 export function employeeVariables(body: Record<string, unknown>) {
   const vars: Record<string, unknown> = {};
   for (const f of EMPLOYEE_INPUT_FIELDS) {

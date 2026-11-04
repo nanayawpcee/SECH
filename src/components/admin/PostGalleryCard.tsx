@@ -9,11 +9,6 @@ import { GALLERY_MAX } from "@/lib/wp-posts";
 export type GalleryItem = { id: number; url: string };
 type Pending = { key: string; url: string };
 
-/**
- * Extra photos for the article page's slider. The featured image stays the
- * one photo on news cards and leads the slider; these follow it, in order.
- * The parent owns the list and saves it with the post.
- */
 export function PostGalleryCard({
   items,
   setItems,
@@ -46,7 +41,6 @@ export function PostGalleryCard({
     if (!batch.length) return;
     setPending((p) => [...p, ...batch.map(({ key, url }) => ({ key, url }))]);
 
-    // One at a time, so a slow connection doesn't time every upload out at once.
     let added = 0;
     for (const b of batch) {
       const form = new FormData();

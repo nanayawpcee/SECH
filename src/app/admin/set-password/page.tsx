@@ -7,11 +7,6 @@ import { useAuth } from "@/context/AuthContext";
 import { homeFor } from "@/lib/permissions";
 import { passwordStrength } from "@/lib/password-strength";
 
-/**
- * First sign-in with a temporary password. The person must choose their own
- * before the portal will do anything else — the server refuses every other
- * request until WordPress has cleared the flag.
- */
 export default function SetPasswordPage() {
   const { admin, loading, logout, passwordChanged } = useAuth();
   const reduce = useReducedMotion();
@@ -42,7 +37,7 @@ export default function SetPasswordPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        logout(); // the session itself has ended
+        logout();
         return;
       }
       if (!res.ok) throw new Error(data.error || "Could not set your password.");
@@ -80,7 +75,6 @@ export default function SetPasswordPage() {
           </div>
         )}
 
-        {/* Lets password managers file the new password under the right account. */}
         <input type="text" name="username" autoComplete="username" value={admin.email || admin.name} readOnly hidden />
 
         <div style={{ display: "grid", gap: 14 }}>

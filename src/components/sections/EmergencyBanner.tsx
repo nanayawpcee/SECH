@@ -15,7 +15,6 @@ export function EmergencyBanner() {
 
       <div className="container emergency-row">
         <div className="emergency-left">
-          {/* Pulsing dot */}
           <div className="emergency-dot">
             <div className="emergency-dot-pulse" aria-hidden />
             <div className="emergency-dot-core">
@@ -31,8 +30,6 @@ export function EmergencyBanner() {
           </div>
         </div>
 
-        {/* The 24-hour emergency lines, never the office line, which closes
-            at 5pm and on weekends. */}
         <div className="emergency-ctas">
           {SITE.emergencyPhones.map((n) => (
             <a key={n} href={telHref(n)} className="emergency-cta" aria-label={`Call the emergency line ${n}`}>

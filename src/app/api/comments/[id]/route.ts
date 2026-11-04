@@ -6,7 +6,6 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: { id: string } };
 
-/** Statuses a moderator may set. Anything else is rejected outright. */
 const ALLOWED = ["approved", "hold", "spam"] as const;
 type Status = (typeof ALLOWED)[number];
 
@@ -20,7 +19,6 @@ function commentId(params: Params["params"]): number | null {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/** Approve a comment, send it back to the queue, or mark it as spam. */
 export async function PATCH(request: Request, { params }: Params) {
   const gate = await requirePerm("comments");
   if (gate instanceof NextResponse) return gate;
@@ -44,7 +42,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
   try {
     const response = await fetch(`${WP_BASE_URL}/wp-json/wp/v2/comments/${id}`, {
-      method: "POST", // WP REST accepts POST for updates; avoids PUT/CORS quirks
+      method: "POST",
       headers: {
         Authorization: `Bearer ${adminToken}`,
         "Content-Type": "application/json",
@@ -69,7 +67,6 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-/** Move a comment to the WordPress trash — recoverable, not a hard delete. */
 export async function DELETE(_request: Request, { params }: Params) {
   const gate = await requirePerm("comments");
   if (gate instanceof NextResponse) return gate;

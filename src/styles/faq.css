@@ -1,12 +1,9 @@
-/* FAQs: /faq and the "Common questions" strip on /contact. Prefix fq-. */
-
 .fq-page { background: #fff; padding: 3.5rem 0 5rem; }
 .fq-container {
   width: 100%; max-width: 1100px !important; margin: 0 auto; padding: 0 2rem;
   display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 4rem; align-items: start;
 }
 
-/* Topic list */
 .fq-toc { align-self: stretch; }
 .fq-toc-inner { position: sticky; top: 90px; }
 .fq-toc-label { display: block; margin-bottom: 12px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-light); }
@@ -19,7 +16,6 @@
 .fq-toc a svg { flex-shrink: 0; color: var(--primary-light); }
 .fq-toc a:hover { color: var(--primary); border-left-color: var(--accent); }
 
-/* Body */
 .fq-body { max-width: 760px; }
 .fq-emergency {
   display: flex; gap: 14px; align-items: flex-start; margin-bottom: 2.6rem; padding: 1.1rem 1.25rem;
@@ -41,7 +37,6 @@
 }
 .fq-topic-icon[data-icon="emergency"] { background: #FDF1F1; color: #B0343A; }
 
-/* Questions */
 .fq-list { display: grid; gap: 10px; }
 .fq-item {
   border: 1px solid #DCEAE3; border-radius: 14px; background: #fff;
@@ -70,7 +65,6 @@
 .fq-link:hover { color: var(--primary-light); }
 .fq-link:hover svg { transform: translateX(3px); }
 
-/* "Still have a question?" */
 .fq-more {
   display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
   padding: 1.5rem 1.6rem; border-radius: 18px; background: var(--light-green);
@@ -88,7 +82,6 @@
 .fq-btn--ghost:hover { background: #fff; color: var(--primary); }
 .fq-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
-/* Contact page strip */
 .fq-teaser {
   display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 3rem; align-items: start;
   margin-top: 3.5rem; padding-top: 3rem; border-top: 1px solid #E2EDE7;

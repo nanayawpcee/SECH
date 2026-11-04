@@ -9,7 +9,6 @@ import { fullName, type Department, type Employee, type StaffStructure } from "@
 
 const newId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 
-/** Pick a person for an in-charge slot. Current staff only, grouped by posting. */
 function PersonSelect({
   value, onChange, employees, label, preferDept, exclude = 0,
 }: {
@@ -18,7 +17,6 @@ function PersonSelect({
   employees: Employee[];
   label: string;
   preferDept?: string;
-  /** Someone who can't be picked here, e.g. the unit's in-charge in the deputy slot. */
   exclude?: number;
 }) {
   if (exclude && exclude !== value) employees = employees.filter((e) => e.databaseId !== exclude);
@@ -34,7 +32,6 @@ function PersonSelect({
   );
 }
 
-/** Departments and units, each with an in-charge (and a deputy for units). */
 export default function DepartmentsPage() {
   const { addToast } = useAdminData();
   const staff = useStaff();
@@ -42,7 +39,6 @@ export default function DepartmentsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Edit a copy; nothing is written until Save.
   useEffect(() => {
     if (staff.setup) setDraft(structuredClone(staff.setup.structure));
   }, [staff.setup]);
@@ -65,7 +61,6 @@ export default function DepartmentsPage() {
       if (e.departmentId) byDept.set(e.departmentId, (byDept.get(e.departmentId) ?? 0) + 1);
       if (e.unitId) byUnit.set(e.unitId, (byUnit.get(e.unitId) ?? 0) + 1);
     }
-    // Anyone still assigned (even people who left) blocks removal.
     const anyUnit = new Set(staff.employees.map((e) => e.unitId).filter(Boolean));
     const anyDept = new Set(staff.employees.map((e) => e.departmentId).filter(Boolean));
     return { byDept, byUnit, anyUnit, anyDept };

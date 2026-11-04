@@ -7,24 +7,26 @@ import { EmergencyBanner } from "@/components/sections/EmergencyBanner";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicDoctors } from "@/lib/doctors-data";
-import { doctorName } from "@/lib/doctors";
+import { notFound } from "next/navigation";
+import { doctorName, SHOW_DOCTORS_PUBLICLY } from "@/lib/doctors";
 import { absoluteUrl } from "@/lib/seo";
 import { SITE, telHref } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Our Doctors & Specialists",
-  description:
-    "Meet the doctors and specialists at St. Elizabeth Catholic Hospital, Hwidiem: their specialties, clinic days and the services they run.",
-  alternates: { canonical: "/doctors" },
-};
+export const metadata: Metadata = SHOW_DOCTORS_PUBLICLY
+  ? {
+      title: "Our Doctors & Specialists",
+      description:
+        "Meet the doctors and specialists at St. Elizabeth Catholic Hospital, Hwidiem: their specialties, clinic days and the services they run.",
+      alternates: { canonical: "/doctors" },
+    }
+  : { title: "Page Not Found", robots: { index: false, follow: false } };
 
-// Refreshed every 5 minutes, and straight away when a profile is saved in the portal.
 export const revalidate = 300;
 
 export default async function DoctorsPage() {
+  if (!SHOW_DOCTORS_PUBLICLY) notFound();
   const doctors = await getPublicDoctors();
 
-  // Each published profile as a schema.org Physician working at the hospital.
   const ld = doctors.length
     ? {
         "@context": "https://schema.org",

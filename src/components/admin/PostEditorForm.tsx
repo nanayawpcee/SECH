@@ -45,8 +45,6 @@ const TYPES: { value: PostType; label: string; tone: Tone }[] = [
   { value: "announcement", label: "Announcement", tone: "teal" },
 ];
 
-/** Formatting the website actually keeps — see sanitizeArticleContent in
- *  app/news/[slug]/page.tsx. Offering anything else would be discarded. */
 const TOOLS: { icon: typeof Bold; label: string; key?: string; wrap: [string, string]; block?: boolean }[] = [
   { icon: Pilcrow, label: "Paragraph", wrap: ["<p>", "</p>"], block: true },
   { icon: Heading2, label: "Heading", wrap: ["<h2>", "</h2>"], block: true },
@@ -58,7 +56,6 @@ const TOOLS: { icon: typeof Bold; label: string; key?: string; wrap: [string, st
   { icon: Quote, label: "Quote", wrap: ["<blockquote>", "</blockquote>"], block: true },
 ];
 
-/** Preview styles, close to the public article page. */
 const PREVIEW_CSS = `
   body { margin: 0; padding: 24px 28px; font: 17px/1.85 Lora, Georgia, serif; color: #2D5047; background: #fff; }
   h2, h3 { color: #0D1F1A; line-height: 1.3; margin: 1.4em 0 .5em; }
@@ -79,7 +76,6 @@ export function PostEditorForm({
   base = "/admin/posts",
 }: {
   initialPost: AdminPost | null;
-  /** Where the list lives: the admin console or the staff area. */
   base?: "/admin/posts" | "/staff/posts";
 }) {
   const router = useRouter();
@@ -101,7 +97,6 @@ export function PostEditorForm({
   const [saving, setSaving] = useState<Status | null>(null);
   const [dirty, setDirty] = useState(false);
   const [mode, setMode] = useState<"write" | "preview">("write");
-  // Extra photos for the article slider; saved after the post itself.
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(isEdit);
   const [galleryNeedsPlugin, setGalleryNeedsPlugin] = useState(false);
@@ -110,12 +105,10 @@ export function PostEditorForm({
   const status: Status = initialPost?.status ?? "draft";
   const published = status === "published";
   const inReview = status === "pending";
-  // Offered by permission; the server applies the same rules regardless.
   const canPublish = can(admin?.perms, "posts.publish");
   const canUpload = can(admin?.perms, "media.upload");
   const words = useMemo(() => countWords(body), [body]);
 
-  // Reset the shared unsaved-changes guard on mount and unmount.
   useEffect(() => {
     setEditorDirty(false);
     return () => setEditorDirty(false);
@@ -126,13 +119,11 @@ export function PostEditorForm({
     setEditorDirty(true);
   }, [setEditorDirty]);
 
-  /* ── Formatting ── */
   const applyTool = (wrap: [string, string], block?: boolean) => {
     const el = bodyRef.current;
     if (!el) return;
     const { selectionStart: a, selectionEnd: b, value } = el;
     const selected = value.slice(a, b);
-    // Blocks start on their own line so the HTML stays readable.
     const before = block && a > 0 && value[a - 1] !== "\n" ? "\n" : "";
     const after = block && value[b] !== "\n" ? "\n" : "";
     const inner = selected || (block ? "" : "text");
@@ -154,7 +145,6 @@ export function PostEditorForm({
       if (url) addToast("Links must start with https://, http:// or mailto:", "warn");
       return;
     }
-    // Quotes would end the attribute early; encode them.
     applyTool([`<a href="${url.trim().replace(/"/g, "%22")}">`, "</a>"]);
   };
 
@@ -166,12 +156,11 @@ export function PostEditorForm({
       applyTool(tool.wrap, tool.block);
     } else if (e.key.toLowerCase() === "k") {
       e.preventDefault();
-      e.stopPropagation(); // not the command palette
+      e.stopPropagation();
       insertLink();
     }
   };
 
-  // Load an existing post's gallery.
   useEffect(() => {
     if (!initialPost) return;
     let live = true;
@@ -189,7 +178,6 @@ export function PostEditorForm({
 
   const onGalleryChange = useCallback(() => { galleryDirty.current = true; markDirty(); }, [markDirty]);
 
-  /** Saves the gallery for a post that now exists. Reports, never throws: the post itself is saved. */
   const saveGallery = async (postId: number) => {
     if (!galleryDirty.current) return;
     try {
@@ -206,7 +194,6 @@ export function PostEditorForm({
     }
   };
 
-  /* ── Featured image ── */
   const upload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       addToast("Please choose an image file", "warn");
@@ -243,7 +230,6 @@ export function PostEditorForm({
     markDirty();
   };
 
-  /* ── Saving ── */
   const goToList = () => router.push(base);
   const cancel = () => { if (requestLeave(base)) goToList(); };
 
@@ -263,7 +249,7 @@ export function PostEditorForm({
           type,
           status: next,
           commentsOpen,
-          featuredImageId: featuredImageId ?? null, // null clears the thumbnail
+          featuredImageId: featuredImageId ?? null,
         } as Partial<AdminPost>);
         stored = saved.status;
         await saveGallery(initialPost.id);
@@ -285,8 +271,6 @@ export function PostEditorForm({
       }
       setEditorDirty(false);
       setDirty(false);
-      // Say what WordPress actually did: a request to publish from an account
-      // that can't is stored as "pending", and the message must match.
       if (next === "published" && stored === "pending") {
         addToast("Saved and sent for review. Your account can’t publish directly.", "warn");
         goToList();
@@ -299,14 +283,12 @@ export function PostEditorForm({
       );
       goToList();
     } catch (err: any) {
-      // updatePost reports its own failures; the create path reports here.
       if (!isEdit) addToast(err?.message ?? "Could not save the post.", "danger");
     } finally {
       setSaving(null);
     }
   };
 
-  // Cmd/Ctrl + S saves without changing the post's status.
   const saveRef = useRef(save);
   saveRef.current = save;
   useEffect(() => {
@@ -382,7 +364,6 @@ export function PostEditorForm({
       />
 
       <div className="ed-layout">
-        {/* Main column */}
         <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
           <section className="po-card" style={{ padding: "18px 20px" }}>
             <input
@@ -447,8 +428,6 @@ export function PostEditorForm({
                 spellCheck
               />
             ) : (
-              // Sandboxed with no permissions: scripts, forms and navigation are
-              // all blocked, so previewing untrusted HTML cannot affect the admin.
               <iframe
                 title="Article preview"
                 sandbox=""
@@ -459,7 +438,6 @@ export function PostEditorForm({
           </section>
         </div>
 
-        {/* Sidebar */}
         <aside className="ed-side">
           <Card title="Featured image" subtitle="The main photo: the one shown on news cards, and first in the article’s photo slider">
             {!canUpload && !previewUrl ? (

@@ -7,13 +7,11 @@ import { useAdminData } from "@/context/AdminDataContext";
 import { PostEditorForm } from "@/components/admin/PostEditorForm";
 import { EmptyState, Skeleton } from "@/components/admin/ui";
 
-/** Shared by the admin console and the staff area. */
 export function EditPostRoute({ base }: { base: "/admin/posts" | "/staff/posts" }) {
   const params = useParams<{ id: string }>();
   const { posts, postsLoading } = useAdminData();
   const post = posts.find((p) => p.id === Number(params.id));
 
-  // On a direct visit the post list is still loading — that is not "not found".
   if (!post && postsLoading) {
     return (
       <div style={{ display: "grid", gap: 16 }}>
@@ -39,6 +37,5 @@ export function EditPostRoute({ base }: { base: "/admin/posts" | "/staff/posts" 
     );
   }
 
-  // Keyed by id so moving between posts starts a fresh editor.
   return <PostEditorForm key={post.id} initialPost={post} base={base} />;
 }

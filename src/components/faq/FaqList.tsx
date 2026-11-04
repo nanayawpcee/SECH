@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import type { FaqItem } from "@/lib/faq";
 
-/** Expanding questions built on <details>, so they work without JavaScript. */
 export function FaqList({ items }: { items: FaqItem[] }) {
   return (
     <div className="fq-list">

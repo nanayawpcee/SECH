@@ -40,7 +40,6 @@ function when(iso: string) {
     : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: d.getFullYear() === today.getFullYear() ? undefined : "numeric" });
 }
 
-/** Contact-form inbox. Administrators only — messages can hold complaints and personal details. */
 export default function MessagesPage() {
   const { logout } = useAuth();
   const { addToast, setNewMessages } = useAdminData();
@@ -73,7 +72,6 @@ export default function MessagesPage() {
     load();
   }, [load]);
 
-  // Keep the sidebar badge in step with what's on screen.
   useEffect(() => {
     if (messages) setNewMessages(messages.filter((m) => m.status === "new").length);
   }, [messages, setNewMessages]);
@@ -122,7 +120,6 @@ export default function MessagesPage() {
     [addToast, logout],
   );
 
-  // Opening a new message marks it read, like any inbox.
   const select = (m: ContactMessage) => {
     setOpenId(m.databaseId);
     if (m.status === "new") setStatus(m, "read", true);
@@ -277,7 +274,6 @@ export default function MessagesPage() {
                 )}
               </dl>
 
-              {/* Plain text only: visitor-typed content is never rendered as HTML. */}
               <div className="msg-body">{open.message}</div>
 
               <div className="msg-actions">

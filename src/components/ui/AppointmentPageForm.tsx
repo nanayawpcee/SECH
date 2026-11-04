@@ -78,7 +78,6 @@ export function AppointmentPageForm() {
     const result = await submitAppointment(data);
     setSubmitting(false);
     if (!result.ok) {
-      // Keep the patient on the review step with their details intact.
       setSubmitError(result.error ?? "Something went wrong.");
       return;
     }
@@ -94,7 +93,6 @@ export function AppointmentPageForm() {
 
   return (
     <div>
-      {/* Step indicator */}
       {step !== "success" && (
         <div className="booking-steps" style={{ display: "flex", marginBottom: "2rem" }}>
           {STEPS.map((s, i) => (
@@ -109,8 +107,6 @@ export function AppointmentPageForm() {
                   border: i === stepIndex ? "2.5px solid var(--accent)" : "2.5px solid transparent",
                   transition: "all 0.3s",
                 }}>
-                  {/* Upcoming steps sit on a pale disc, where these light-toned
-                      marks would otherwise wash out; darken them just there. */}
                   {i < stepIndex ? <Check size={18} strokeWidth={3} aria-hidden="true" /> : s.icon.startsWith("/")
                     ? <Image src={s.icon} alt="" aria-hidden="true" width={20} height={20} style={{ width: 20, height: 20, objectFit: "contain", filter: i > stepIndex ? "brightness(0.55)" : undefined }} />
                     : <UserRound size={19} aria-hidden="true" />}
@@ -127,14 +123,12 @@ export function AppointmentPageForm() {
         </div>
       )}
 
-      {/* ── STEP 1 ── */}
       {step === "personal" && (
         <div style={{ animation: "slideUp 0.3s ease" }}>
           <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", fontWeight: 700, margin: "0 0 1.4rem", color: "var(--text-dark)" }}>
             Personal Information
           </h3>
           
-          {/* First & Last Name row */}
           <div className="contact-name-grid">
             <div className="form-group">
               <label className="form-label">First Name *</label>
@@ -148,7 +142,6 @@ export function AppointmentPageForm() {
             </div>
           </div>
 
-          {/* DOB & Gender row */}
           <div className="contact-name-grid">
             <div className="form-group">
               <label className="form-label">Date of Birth</label>
@@ -183,7 +176,6 @@ export function AppointmentPageForm() {
               <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-mid)" }}>I have health insurance (NHIS or private)</span>
             </label>
             {data.hasInsurance && (
-              /* Insurance grid wrapper */
               <div className="contact-name-grid" style={{ marginTop: "0.85rem", animation: "slideUp 0.25s ease" }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Insurance Provider</label>
@@ -199,7 +191,6 @@ export function AppointmentPageForm() {
         </div>
       )}
 
-      {/* ── STEP 2 ── */}
       {step === "appointment" && (
         <div style={{ animation: "slideUp 0.3s ease" }}>
           <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", fontWeight: 700, margin: "0 0 1.4rem", color: "var(--text-dark)" }}>Appointment Details</h3>
@@ -213,7 +204,6 @@ export function AppointmentPageForm() {
           </div>
           <div className="form-group">
             <label className="form-label">Appointment Type</label>
-            {/* Added flexWrap and dynamic flex bases so option boxes stack gracefully on mobile screens */}
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {[
                 { value: "consultation", label: "New Consultation", Icon: Stethoscope },
@@ -229,7 +219,6 @@ export function AppointmentPageForm() {
             </div>
           </div>
           
-          {/* Preferred Date & Time row */}
           <div className="contact-name-grid">
             <div className="form-group">
               <label className="form-label">Preferred Date *</label>
@@ -253,7 +242,6 @@ export function AppointmentPageForm() {
         </div>
       )}
 
-      {/* ── STEP 3: Review ── */}
       {step === "review" && (
         <div style={{ animation: "slideUp 0.3s ease" }}>
           <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.15rem", fontWeight: 700, margin: "0 0 1.4rem", color: "var(--text-dark)" }}>Review Your Booking</h3>
@@ -284,7 +272,6 @@ export function AppointmentPageForm() {
         </div>
       )}
 
-      {/* ── SUCCESS ── */}
       {step === "success" && (
         <div style={{ textAlign: "center", padding: "3rem 1rem", animation: "slideUp 0.4s ease" }}>
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--light-green)", border: "3px solid var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, margin: "0 auto 1.5rem" }}><Check size={36} strokeWidth={2.6} color="var(--primary)" aria-hidden="true" /></div>
@@ -298,7 +285,6 @@ export function AppointmentPageForm() {
         </div>
       )}
 
-      {/* Nav buttons */}
       {step !== "success" && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #E2EBE7" }}>
           <button

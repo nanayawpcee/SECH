@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { Check, Share2 } from "lucide-react";
 
-/** Forward this page — the phone's own share sheet where available. */
 export function ShareButton({ focusTitle }: { focusTitle: string | null }) {
   const [copied, setCopied] = useState(false);
   const share = async () => {
     const url = window.location.href;
     const text = focusTitle ? `SECH staff notice: ${focusTitle}` : "SECH staff notice board";
     if (navigator.share) {
-      try { await navigator.share({ title: text, text, url }); return; } catch { /* cancelled */ }
+      try { await navigator.share({ title: text, text, url }); return; } catch {}
     }
     await navigator.clipboard?.writeText(url).catch(() => {});
     setCopied(true);

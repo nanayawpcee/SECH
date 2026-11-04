@@ -31,8 +31,6 @@ export function HeroCarousel() {
       style={{ background: slide.bg }}
       aria-label="Hero carousel"
     >
-      {/* Each slide keeps its own design — cross, wave, dots — now driven by
-          the pointer instead of being painted once and left static. */}
       <PatternField
         pattern={slide.pattern}
         motion="ambient"
@@ -40,7 +38,6 @@ export function HeroCarousel() {
         opacity={0.22}
       />
 
-      {/* Decorative rings */}
       <div
         className="hero-ring large"
         style={{ borderColor: `${slide.accent}22` }}
@@ -51,9 +48,7 @@ export function HeroCarousel() {
       />
       <div className="hero-ring small" />
 
-      {/* Content */}
       <div className="container hero-container">
-        {/* Tag line */}
         <div
           style={{
             display: "flex",
@@ -79,17 +74,14 @@ export function HeroCarousel() {
 
         </div>
 
-        {/* Heading */}
         <h1 key={`h-${current}`} className="hero-heading">
           {slide.heading}
         </h1>
 
-        {/* Sub */}
         <p key={`s-${current}`} className="hero-sub">
           {slide.sub}
         </p>
 
-        {/* CTAs */}
         <div className="hero-ctas">
           {slide.cta === "Book Appointment" ? (
             <button
@@ -119,7 +111,6 @@ export function HeroCarousel() {
         </div>
       </div>
 
-      {/* Slide dots */}
       <div
         style={{
           position: "absolute",
@@ -145,7 +136,6 @@ export function HeroCarousel() {
         ))}
       </div>
 
-      {/* Scroll hint */}
       <div className="hero-scrollhint">
         <span>Scroll</span>
         <div />

@@ -14,7 +14,6 @@ export function NewsBrowser({ items }: { items: NewsItem[] }) {
   const [shown, setShown] = useState(PAGE);
   const q = useDeferredValue(query.trim().toLowerCase());
 
-  // Only offer the categories that actually have stories.
   const counts = useMemo(() => {
     const c = new Map<NewsCategory, number>();
     for (const i of items) c.set(i.category, (c.get(i.category) ?? 0) + 1);
@@ -31,7 +30,6 @@ export function NewsBrowser({ items }: { items: NewsItem[] }) {
     [items, category, q],
   );
 
-  // The newest story leads the page, until the visitor starts narrowing things down.
   const browsing = category === "All" && !q;
   const lead = browsing ? filtered[0] : undefined;
   const rest = lead ? filtered.slice(1) : filtered;

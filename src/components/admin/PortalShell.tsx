@@ -18,6 +18,7 @@ import {
   FilePen,
   FilePlus2,
   Home,
+  IdCard,
   Megaphone,
   LayoutGrid,
   Inbox,
@@ -50,11 +51,8 @@ interface NavItem {
   icon: typeof LayoutGrid;
   label: string;
   badgeKey?: BadgeKey;
-  /** Hidden unless the person has this permission. */
   perm?: Perm;
-  /** Shortcuts such as "New post" are never highlighted. */
   neverActive?: boolean;
-  /** Match only this exact path, not its children. */
   exact?: boolean;
 }
 
@@ -86,6 +84,7 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/employees", icon: UsersRound, label: "Employees", perm: "staff.manage" },
       { href: "/admin/departments", icon: Building2, label: "Departments", perm: "staff.manage" },
       { href: "/admin/ranks", icon: Award, label: "Ranks & positions", perm: "staff.manage" },
+      { href: "/admin/data-protection", icon: ShieldCheck, label: "Data protection", perm: "settings" },
     ],
   },
   { section: "Staff", items: [{ href: "/admin/notices", icon: Megaphone, label: "Notice board", badgeKey: "notices" }] },
@@ -98,6 +97,7 @@ const STAFF_NAV: Nav = [
     items: [
       { href: "/staff", icon: Home, label: "Home", exact: true },
       { href: "/staff/notices", icon: Megaphone, label: "Notice board", badgeKey: "notices" },
+      { href: "/staff/my-record", icon: IdCard, label: "My staff record" },
     ],
   },
   {
@@ -121,7 +121,7 @@ const VARIANT = {
       comments: "Comments", bookings: "Bookings", calendar: "Calendar", settings: "Settings",
       notices: "Notice board", newsletter: "Newsletter", messages: "Messages",
       employees: "Employees", departments: "Departments and units", ranks: "Ranks and positions",
-      doctors: "Doctors",
+      doctors: "Doctors", "data-protection": "Data protection",
     } as Record<string, string>,
   },
   staff: {
@@ -130,12 +130,11 @@ const VARIANT = {
     subtitle: "St. Elizabeth · Hwidiem",
     root: "/staff",
     newPost: "/staff/posts/new",
-    crumbs: { staff: "Home", posts: "My posts", new: "Write a post", edit: "Edit post", notices: "Notice board" } as Record<string, string>,
+    crumbs: { staff: "Home", posts: "My posts", new: "Write a post", edit: "Edit post", notices: "Notice board", "my-record": "My staff record" } as Record<string, string>,
   },
 };
 
-/** Pages that need a permission. The server refuses the data regardless;
- *  this shows a clear message instead of a page full of errors. */
+// shows a clear no-access message, the API refuses the data anyway
 const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/bookings", "bookings"],
   ["/admin/calendar", "bookings"],
@@ -146,6 +145,7 @@ const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/employees", "staff.manage"],
   ["/admin/departments", "staff.manage"],
   ["/admin/ranks", "staff.manage"],
+  ["/admin/data-protection", "settings"],
   ["/admin/doctors", "doctors.manage"],
   ["/admin/posts", "posts.write"],
   ["/staff/posts", "posts.write"],
@@ -167,18 +167,12 @@ function crumbsFor(pathname: string, labels: Record<string, string>) {
   let href = "";
   for (const part of pathname.split("/").filter(Boolean)) {
     href += `/${part}`;
-    if (/^\d+$/.test(part)) continue; // ids — "Edit post" follows
+    if (/^\d+$/.test(part)) continue;
     out.push({ href, label: labels[part] ?? part });
   }
   return out;
 }
 
-/**
- * The chrome shared by the admin console and the staff area: sidebar, top bar,
- * page transitions, unsaved-changes guard and toasts. What differs — the
- * navigation, search and notifications — comes from the variant and from the
- * person's permissions. The server enforces those permissions independently.
- */
 export function PortalShell({ variant, children }: { variant: "admin" | "staff"; children: React.ReactNode }) {
   const cfg = VARIANT[variant];
   const pathname = usePathname();
@@ -199,14 +193,12 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
     scrollRef.current?.scrollTo({ top: 0 });
   }, [pathname]);
 
-  // Theme on <html> so fixed overlays are themed too.
   useEffect(() => {
     const el = document.documentElement;
     el.setAttribute("data-admin-theme", theme);
     return () => el.removeAttribute("data-admin-theme");
   }, [theme]);
 
-  // ⌘K / Ctrl+K anywhere; "/" when not typing. Admin console only.
   useEffect(() => {
     if (!isAdmin) return;
     const onKey = (e: KeyboardEvent) => {
@@ -232,8 +224,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   );
   const closePalette = useCallback(() => setPaletteOpen(false), []);
 
-  // Also blocks the admin shell from flashing for staff while the auth guard
-  // redirects them to /staff.
   if (loading || !admin || (isAdmin && !can(perms, "portal.admin"))) {
     return (
       <div className={adminFont.variable}
@@ -249,12 +239,10 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   }
 
   const counts: Record<BadgeKey, number> = {
-    // In the staff area the badge counts the person's own drafts.
     drafts: (isAdmin || !admin.id ? posts : posts.filter((p) => p.authorId === admin.id))
       .filter((p) => p.status === "draft").length,
     pending: bookings.filter((b) => b.status === "pending").length,
     comments: pendingComments,
-    // Staff submissions waiting for someone who can publish them.
     review: can(perms, "posts.publish") ? posts.filter((p) => p.status === "pending").length : 0,
     notices: notices.filter((n) => !n.isRead).length,
     messages: newMessages,
@@ -281,7 +269,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
     <div className={`po-root ${adminFont.variable}`}>
       <div className="po-shell" data-collapsed={sidebarCollapsed}
         style={{ ["--po-side-w" as string]: sidebarCollapsed ? "76px" : "252px" }}>
-        {/* ── Sidebar ── */}
         <aside className="po-sidebar" aria-label={isAdmin ? "Admin navigation" : "Staff navigation"}>
           <div className="po-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -339,7 +326,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
           </nav>
 
           <div className="po-side-foot">
-            {/* Cross-links between the two areas, for people who can use both. */}
             {isAdmin ? (
               <Link href="/staff" className="po-side-link" data-tip={sidebarCollapsed ? "Staff area" : undefined}>
                 <UsersRound size={15} />{!sidebarCollapsed && "Staff area"}
@@ -372,7 +358,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
           </div>
         </aside>
 
-        {/* ── Main column ── */}
         <div className="po-main">
           <header className="po-topbar">
             <nav className="po-crumbs" aria-label="Breadcrumb">
@@ -432,7 +417,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
 
       {isAdmin && <CommandPalette open={paletteOpen} onClose={closePalette} navigate={navigate} />}
 
-      {/* ── Unsaved-changes guard ── */}
       <AnimatePresence>
         {guardTarget && (
           <motion.div className="po-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}
@@ -451,7 +435,6 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
         )}
       </AnimatePresence>
 
-      {/* ── Toast ── */}
       <div className="po-toast-stack" aria-live="polite">
         <AnimatePresence>
           {poppingToast && (() => {

@@ -7,7 +7,6 @@ import { useAdminData } from "@/context/AdminDataContext";
 import { Card, ConfirmDialog, Skeleton } from "@/components/admin/ui";
 import { formatBytes, type NewsletterIssue, type NewsletterPdf } from "@/lib/wp-newsletter";
 
-/** Uploads pass through the website's server, which Vercel caps at ~4.5 MB. */
 const MAX_UPLOAD = 4 * 1024 * 1024;
 const DEFAULT_TITLE = "St. Elizabeth Catholic Hospital Newsletter";
 
@@ -15,11 +14,6 @@ function day(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 }
 
-/**
- * Which PDF the website footer offers as "Read the latest newsletter".
- * Small files upload here; bigger ones go through the WordPress Media Library
- * (no size cap there) and are then picked from the list.
- */
 export function NewsletterIssueCard() {
   const { logout } = useAuth();
   const { addToast } = useAdminData();

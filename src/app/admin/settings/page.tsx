@@ -68,7 +68,6 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>("hospital");
   const [newDept, setNewDept] = useState("");
 
-  /* ── Team (WordPress users) ── */
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -76,12 +75,10 @@ export default function SettingsPage() {
   const [invite, setInvite] = useState({ name: "", email: "", role: "contributor", username: "" });
   const [inviteMode, setInviteMode] = useState<"email" | "temporary">("email");
   const [usernameTouched, setUsernameTouched] = useState(false);
-  /** Shown once, then gone: the portal keeps no copy of a temporary password. */
   const [credentials, setCredentials] = useState<{ name: string; username: string; password: string; reset: boolean } | null>(null);
   const [toReset, setToReset] = useState<AdminUser | null>(null);
   const [resetting, setResetting] = useState(false);
 
-  // Suggest "ama.mensah" from "Ama Mensah" until the admin edits it.
   const suggestUsername = (name: string) =>
     name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "").slice(0, 40);
@@ -186,7 +183,6 @@ export default function SettingsPage() {
     }
   };
 
-  /* ── Password ── */
   const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
   const [showPw, setShowPw] = useState(false);
   const [changingPw, setChangingPw] = useState(false);
@@ -225,7 +221,6 @@ export default function SettingsPage() {
       <PageHeader title="Settings" subtitle="Hospital details, booking rules and who can use the portal" />
 
       <div className="st-layout">
-        {/* Section nav */}
         <nav className="po-card st-nav" aria-label="Settings sections">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -413,7 +408,6 @@ export default function SettingsPage() {
                           <button key={v} type="button" role="tab" className="po-seg-btn" aria-selected={inviteMode === v}
                             onClick={() => {
                               setInviteMode(v);
-                              // Administrators are never created with a temporary password.
                               if (v === "temporary" && !TEMP_PASSWORD_ROLES.includes(invite.role)) setInvite((p) => ({ ...p, role: "contributor" }));
                             }}>
                             {inviteMode === v && <motion.span layoutId="st-invite-mode" className="po-seg-pill" />}
@@ -463,7 +457,6 @@ export default function SettingsPage() {
                       style={{ maxWidth: 460, display: "grid", gap: 14 }}
                       onSubmit={(e) => { e.preventDefault(); if (!mismatch && pw.current && pw.next && pw.confirm) changePassword(); }}
                     >
-                      {/* Hidden username field so password managers file the new password correctly. */}
                       <input type="text" name="username" autoComplete="username" hidden readOnly value="" />
                       {([
                         { label: "Current password", key: "current" as const, auto: "current-password" },
@@ -520,7 +513,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Unsaved-changes bar for WordPress-backed settings */}
       <AnimatePresence>
         {settingsDirty && (
           <motion.div
@@ -605,10 +597,6 @@ export default function SettingsPage() {
   );
 }
 
-/**
- * The one and only time a temporary password is shown. Nothing is stored:
- * closing this dialog is the end of it — resetting again makes a new one.
- */
 function CredentialsDialog({ credentials, onDone, onCopied }: {
   credentials: { name: string; username: string; password: string; reset: boolean } | null;
   onDone: () => void;
@@ -621,8 +609,6 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
 
   const printSlip = () => {
     if (!credentials) return;
-    // A plain slip for handing over, opened in its own window and printed from
-    // there — the password never goes into the page's history or storage.
     const w = window.open("", "_blank", "width=480,height=600");
     if (!w) return;
     const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));

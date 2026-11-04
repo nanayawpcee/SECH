@@ -1,6 +1,5 @@
 import type { Post } from "@/app/admin/data";
 
-/** Shape WPGraphQL returns for a post in the admin list. */
 export interface WpPostNode {
   databaseId: number;
   title: string | null;
@@ -39,12 +38,7 @@ const NAMED_ENTITIES: Record<string, string> = {
   lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”",
 };
 
-/**
- * WordPress sends titles and excerpts "texturized" — apostrophes arrive as
- * &#8217; and so on. The admin renders these as React text, which escapes
- * rather than interprets them, so they must be decoded to show as characters.
- * &amp; is decoded last so "&amp;lt;" becomes the text "&lt;", never "<".
- */
+// WordPress texturizes titles (&#8217; and so on), decode for display
 export function decodeEntities(value: string): string {
   return value
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
@@ -57,10 +51,6 @@ export function stripHtml(value: string | null | undefined): string {
   return decodeEntities((value ?? "").replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
 }
 
-/**
- * WordPress models post type as a category, so derive it from the assigned
- * categories and fall back to "news" when none of them match.
- */
 function deriveType(node: WpPostNode): Post["type"] {
   const slugs = (node.categories?.nodes ?? [])
     .flatMap((c) => [c.slug, c.name])
@@ -70,7 +60,6 @@ function deriveType(node: WpPostNode): Post["type"] {
   return KNOWN_TYPES.find((t) => slugs.includes(t)) ?? "news";
 }
 
-/** WP statuses are publish/draft/future/pending/private. */
 function deriveStatus(status: string | null): Post["status"] {
   if (status === "publish") return "published";
   if (status === "future") return "scheduled";
@@ -78,13 +67,10 @@ function deriveStatus(status: string | null): Post["status"] {
   return "draft";
 }
 
-/** Post plus the featured-image fields the editor needs. */
 export type AdminPost = Post & {
   featuredImageId: number | null;
   featuredImageUrl: string | null;
-  /** False when the post's comments are closed in WordPress. */
   commentsOpen: boolean;
-  /** WordPress user id of the author — ownership checks for staff writers. */
   authorId: number | null;
 };
 
@@ -111,7 +97,6 @@ export function mapWpPost(node: WpPostNode): AdminPost {
   };
 }
 
-/** Our status vocabulary -> WPGraphQL's PostStatusEnum. */
 export function toWpStatus(status: Post["status"]): "PUBLISH" | "DRAFT" | "FUTURE" | "PENDING" {
   if (status === "published") return "PUBLISH";
   if (status === "scheduled") return "FUTURE";
@@ -119,11 +104,7 @@ export function toWpStatus(status: Post["status"]): "PUBLISH" | "DRAFT" | "FUTUR
   return "DRAFT";
 }
 
-/**
- * The status a person is actually allowed to set. Anyone without publishing
- * rights who asks to publish is submitting for review instead — the server
- * decides this, so a staff writer cannot publish by editing the request.
- */
+// writers without publish rights get 'pending' instead
 export function allowedStatus(requested: Post["status"], canPublish: boolean): Post["status"] {
   if (canPublish) return requested;
   return requested === "published" || requested === "scheduled" ? "pending" : requested;
@@ -139,7 +120,6 @@ export const SET_FEATURED_IMAGE = `
   }
 `;
 
-/** A post's extra photos for the article slider (SECH Portal plugin 1.9.0). */
 export const POST_GALLERY_QUERY = `
   query PostGallery($id: ID!) {
     post(id: $id, idType: DATABASE_ID) { galleryImages { databaseId sourceUrl } }
@@ -152,5 +132,4 @@ export const SET_POST_GALLERY = `
   }
 `;
 
-/** Most photos a post's gallery may hold; the plugin enforces the same. */
 export const GALLERY_MAX = 20;

@@ -72,11 +72,6 @@ function timeAgo(iso: string) {
 
 const categoryLabel = (c: NoticeCategory) => NOTICE_CATEGORIES.find((x) => x.value === c)?.label ?? c;
 
-/**
- * The staff notice board. Everyone signed in reads it; content managers and
- * administrators also post, edit and remove notices. All text is rendered as
- * text — notices are typed by staff, and the plugin stores them as plain text.
- */
 export function NoticeBoard() {
   const { admin } = useAuth();
   const {
@@ -93,8 +88,6 @@ export function NoticeBoard() {
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-  // Arriving from a shared link (?open=ID): bring that notice into view,
-  // opened, and count it as read.
   const openParam = useInitialParam("open");
   const openId = openParam ? Number(openParam) : null;
   useEffect(() => {
@@ -105,7 +98,6 @@ export function NoticeBoard() {
       document.getElementById(`notice-${openId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }),
     );
     if (!target.isRead) markNoticeRead(openId);
-    // Once, when the board first loads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openId, noticesLoading]);
 
@@ -272,7 +264,7 @@ function NoticeCard({ notice: n, index, focused, canManage, onRead, onEdit, onDe
 
   const expand = () => {
     setOpen((v) => !v);
-    if (!n.isRead) onRead(); // reading it in full counts as read
+    if (!n.isRead) onRead();
   };
 
   return (
@@ -350,8 +342,6 @@ function NoticeCard({ notice: n, index, focused, canManage, onRead, onEdit, onDe
   );
 }
 
-/* ── Composer ─────────────────────────────────────────────────────────── */
-
 const BLANK = {
   title: "", body: "", category: "general" as NoticeCategory, priority: "normal" as NoticePriority,
   pinned: false, expiresOn: "", audience: "", link: "", resetReads: false, publicHeadline: true,
@@ -371,7 +361,6 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
       pinned: editing.pinned, expiresOn: editing.expiresOn ?? "", audience: editing.audience ?? "",
       link: editing.link ?? "", resetReads: false, publicHeadline: editing.publicHeadline !== false,
     } : BLANK);
-    // Departments for the audience list — the public settings, so any manager can load them.
     fetch("/api/settings").then((r) => r.json()).then((d) => setDepartments(d?.settings?.departments ?? [])).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notice]);
@@ -408,7 +397,7 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
             aria-modal="true"
             aria-label={editing ? "Edit notice" : "Post a notice"}
             initial={{ x: "100%" }}
-            animate={{ x: "0%" }} /* same unit as initial/exit — a 0 ↔ "100%" mix never finished exiting */
+            animate={{ x: "0%" }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >
@@ -552,13 +541,6 @@ const NOTICE_CSS = `
   .nb-toggle { display: flex; gap: 16px; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--po-border); border-radius: 12px; background: var(--po-surface-2); }
 `;
 
-/* ── Share today's notices ────────────────────────────────────────────── */
-
-/**
- * A ready-to-paste message for the staff WhatsApp group: today's headlines
- * (public ones only) and the board link. Staff-only notices are counted but
- * never named, matching what the public page shows.
- */
 function ShareDialog({ open, notices, onClose }: { open: boolean; notices: StaffNotice[]; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
   if (!open) return null;

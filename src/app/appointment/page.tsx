@@ -55,15 +55,12 @@ export default function AppointmentPage() {
             alignItems: "start",
           }}
         >
-          {/* Form */}
           <AnimateIn>
             <AppointmentPageForm />
           </AnimateIn>
 
-          {/* Info sidebar */}
           <AnimateIn delay={150} direction="right">
             <div style={{ position: "sticky", top: 90 }}>
-              {/* Why book */}
               <div style={{ marginBottom: "1.75rem" }}>
                 <h3
                   style={{
@@ -121,7 +118,6 @@ export default function AppointmentPage() {
                 ))}
               </div>
 
-              {/* Call CTA */}
               <div
                 style={{
                   background: "var(--primary)",
@@ -178,7 +174,6 @@ export default function AppointmentPage() {
                 </div>
               </div>
 
-              {/* Departments list */}
               <div
                 style={{
                   background: "var(--off-white)",

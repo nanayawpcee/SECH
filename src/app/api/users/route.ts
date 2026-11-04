@@ -58,11 +58,6 @@ const CREATE_USER = `
   }
 `;
 
-/**
- * Invite a colleague. No password is set here on purpose — WordPress emails
- * them a set-password link, so nobody has to type or transmit someone else's
- * password.
- */
 const CREATE_WITH_TEMP_PASSWORD = `
   mutation CreateStaff(
     $username: String!, $password: String!, $role: String!,
@@ -75,13 +70,6 @@ const CREATE_WITH_TEMP_PASSWORD = `
   }
 `;
 
-/**
- * Create a staff account with a temporary password, for staff without
- * reliable email. The password is generated here, returned once for the
- * administrator to hand over, and never stored or logged by the portal.
- * WordPress flags the account so the person must choose their own at first
- * sign-in.
- */
 async function createWithTempPassword(body: Record<string, unknown>) {
   const name = String(body.name ?? "").trim();
   const username = String(body.username ?? "").trim().toLowerCase();
@@ -117,7 +105,6 @@ async function createWithTempPassword(body: Record<string, unknown>) {
 
   return NextResponse.json(
     { account: data.createStaffAccount.account, temporaryPassword: password },
-    // Never cached anywhere between here and the administrator's screen.
     { headers: { "Cache-Control": "no-store" } },
   );
 }
@@ -143,7 +130,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
     }
 
-    // WordPress usernames cannot be changed later, so derive a stable one.
     const username =
       trimmedEmail.split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "").toLowerCase() ||
       `user${Date.now()}`;

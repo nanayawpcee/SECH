@@ -31,7 +31,6 @@ function toNewsItem(node: WpNode): NewsItem {
   return {
     slug: node.slug,
     title,
-    // WordPress appends "[&hellip;]" to generated excerpts; the card clamps anyway.
     excerpt: stripHtml(node.excerpt).replace(/\s*\[…\]\s*$/, "…"),
     date: node.date,
     category: categoryFor((node.categories?.nodes ?? []).map((c) => c.name)),
@@ -46,7 +45,6 @@ function toNewsItem(node: WpNode): NewsItem {
   };
 }
 
-/** Newest published stories. Returns [] when WordPress is unreachable. */
 export async function getNewsItems(limit = 60): Promise<NewsItem[]> {
   const data = await wpQuery<{ posts: { nodes: WpNode[] } }>(
     `query NewsList($first: Int!) {
@@ -68,15 +66,7 @@ type ArticleNode = WpNode & {
   contentImages?: WpPhoto[] | null;
 };
 
-/**
- * One story, with every photo for its slider, in a single request: the
- * WordPress host rate-limits bursts, so fewer requests per page matters.
- *
- * - The story doesn't exist: returns null (the page shows "not found").
- * - WordPress is unreachable: throws, so Next serves an error now and keeps
- *   any good cached copy, instead of caching a "not found" for a real story.
- * - WordPress lacks plugin 1.9.0 (no gallery fields): retries without them.
- */
+// one request per story, the WP host rate-limits bursts (508s)
 export async function getNewsArticle(slug: string): Promise<NewsArticle | null> {
   const ask = (withPhotos: boolean) =>
     wpQuery<{ postBy: ArticleNode | null }>(
@@ -112,10 +102,7 @@ interface WpPhoto {
   caption: string | null;
 }
 
-/**
- * The slider's photos: the featured image first, then the post's gallery,
- * or for older posts without one, the photos embedded in their text.
- */
+// featured image first, then the gallery (or images from the post body on older posts)
 function articlePhotos(node: ArticleNode, title: string): ArticlePhoto[] {
   const featured = node.featuredImage?.node;
   const photos: (ArticlePhoto & { id?: number })[] = [];
@@ -137,7 +124,7 @@ function articlePhotos(node: ArticleNode, title: string): ArticlePhoto[] {
     photos.push({
       id: p.databaseId,
       src: p.sourceUrl,
-      // Old uploads often carry the camera file name as alt text; don't read that out.
+      // camera file names make useless alt text
       alt: /^(IMG|DSC|PXL|WA)[-_ ]?\d/i.test(p.altText ?? "") || !p.altText ? `Photo from ${title}` : decodeEntities(p.altText),
       width: p.width || 1600,
       height: p.height || 1000,

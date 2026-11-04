@@ -2,31 +2,39 @@ import { NextResponse } from "next/server";
 import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse, WpGraphQLError } from "@/lib/wp-graphql";
 import {
-  SAVE_EMPLOYEE,
   employeeVariables,
+  saveEmployeeCompat,
   STAFF_QUERY,
+  STAFF_QUERY_LEGACY,
   isMissingStaffPlugin,
+  isOutdatedStaffPlugin,
   type Employee,
   type PortalUserOption,
 } from "@/lib/staff";
 
+// staff personal data, never cache
 export const dynamic = "force-dynamic";
 
-/** Everything the staff pages need, in one round trip. Staff managers only, never cached. */
 export async function GET() {
   const gate = await requirePerm("staff.manage");
   if (gate instanceof NextResponse) return gate;
+  type StaffData = { staffSetup: string; employees: Employee[] | null; staffPortalUsers: PortalUserOption[] | null };
   try {
-    const data = await wpGraphQL<{ staffSetup: string; employees: Employee[] | null; staffPortalUsers: PortalUserOption[] | null }>(
-      STAFF_QUERY,
-      {},
-      { authenticated: true },
-    );
+    let data: StaffData;
+    let pluginOutdated = false;
+    try {
+      data = await wpGraphQL<StaffData>(STAFF_QUERY, {}, { authenticated: true });
+    } catch (error) {
+      if (!(error instanceof WpGraphQLError) || !isOutdatedStaffPlugin(error.message)) throw error;
+      data = await wpGraphQL<StaffData>(STAFF_QUERY_LEGACY, {}, { authenticated: true });
+      pluginOutdated = true;
+    }
     const setup = JSON.parse(data.staffSetup || "{}");
     return NextResponse.json({
       setup: { structure: setup.structure, ranks: setup.ranks },
       employees: data.employees ?? [],
       portalUsers: data.staffPortalUsers ?? [],
+      pluginOutdated,
     });
   } catch (error) {
     if (error instanceof WpGraphQLError && isMissingStaffPlugin(error.message)) {
@@ -37,7 +45,6 @@ export async function GET() {
   }
 }
 
-/** Add a staff record. */
 export async function POST(request: Request) {
   const gate = await requirePerm("staff.manage");
   if (gate instanceof NextResponse) return gate;
@@ -47,10 +54,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "First name and surname are required." }, { status: 400 });
   }
   try {
-    const data = await wpGraphQL<{ saveEmployee: { employee: Employee } }>(
-      SAVE_EMPLOYEE,
+    const data = await saveEmployeeCompat(
+      (query, vars) => wpGraphQL<{ saveEmployee: { employee: Employee } }>(query, vars, { authenticated: true }),
       employeeVariables(body),
-      { authenticated: true },
+      (e) => e instanceof WpGraphQLError && isOutdatedStaffPlugin(e.message),
     );
     return NextResponse.json({ employee: data.saveEmployee.employee });
   } catch (error) {

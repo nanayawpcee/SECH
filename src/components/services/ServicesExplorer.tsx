@@ -20,7 +20,6 @@ import {
 export interface CategoryItem {
   name: string;
   slug?: string;
-  /** A section on that service's page, e.g. Biochemistry on Laboratory. */
   anchor?: string;
 }
 
@@ -53,10 +52,8 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
   laboratory: FlaskConical,
 };
 
-/** Items shown before "Show all", so tall lists don't dwarf the short ones. */
 const FOLD = 7;
 
-/** Popular services. Each label matches real items in the lists below. */
 const QUICK_PICKS: { label: string; query: string }[] = [
   { label: "Antenatal (ANC)", query: "antenatal" },
   { label: "Eye", query: "eye" },
@@ -66,11 +63,6 @@ const QUICK_PICKS: { label: string; query: string }[] = [
   { label: "Pharmacy", query: "pharmacy" },
 ];
 
-/**
- * Other words people use for a service, so search finds "ANC Services" when
- * someone types "antenatal", "pregnancy" or "ante-natal". Keyed by the page
- * slug an item links to, or by the item's name when it has no page.
- */
 const ALSO_KNOWN_AS: Record<string, string> = {
   antenatal: "antenatal ante-natal anc pregnancy pregnant maternal",
   postnatal: "postnatal post-natal after delivery mother baby reproductive rch child health weighing immunisation immunization",
@@ -105,7 +97,6 @@ const ALSO_KNOWN_AS: Record<string, string> = {
   "Transfusion Services": "transfusion blood bank donor grouping",
 };
 
-/** Lower-case words, with hyphens and punctuation ignored ("Ante-Natal" = "antenatal"). */
 function words(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9\s]+/g, "").split(/\s+/).filter(Boolean);
 }
@@ -114,20 +105,11 @@ function normalise(s: string) {
   return words(s).join(" ");
 }
 
-/**
- * Every word the visitor typed matches the start of a word in the text, so
- * "cardio" finds "cardiology". Short words (3 letters or fewer, like "ear",
- * "eye", "anc") must match a whole word, so "ear" doesn't find "early". Two
- * neighbouring words count as one ("antenatal" finds "Ante Natal"). Hyphens
- * are ignored throughout ("x-ray" = "xray"), and so are spaces inside a term
- * ("ante natal" = "antenatal").
- */
 function matchesText(haystack: string, query: string) {
   const q = words(query);
   if (!q.length) return true;
   const hay = words(haystack);
   const pairs = hay.slice(1).map((w, i) => hay[i] + w);
-  // "ante natal" typed with a space still finds "Ante-Natal".
   const joined = q.join("");
   if (q.length > 1 && joined.length >= 4 && (hay.some((h) => h.startsWith(joined)) || pairs.some((p) => p.startsWith(joined)))) {
     return true;
@@ -139,18 +121,12 @@ function matchesText(haystack: string, query: string) {
   );
 }
 
-/**
- * The interactive part of /services: search, the four category cards, and
- * the photo gallery of services that have their own page.
- */
 export function ServicesExplorer({ categories, tiles }: { categories: Category[]; tiles: ServiceTile[] }) {
   const [query, setQuery] = useState("");
   const q = normalise(useDeferredValue(query));
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [galleryFilter, setGalleryFilter] = useState("all");
 
-  // What each item can be found by: its name, the page it links to, its
-  // department, and the other names people use.
   const tileBySlug = useMemo(() => new Map(tiles.map((t) => [t.slug, t])), [tiles]);
   const itemText = (c: Category, i: CategoryItem) => {
     const page = i.slug ? tileBySlug.get(i.slug) : undefined;
@@ -173,7 +149,6 @@ export function ServicesExplorer({ categories, tiles }: { categories: Category[]
 
   return (
     <>
-      {/* Search, overlapping the hero */}
       <div className="sv-finder">
         <label className="sv-search">
           <Search size={20} aria-hidden="true" />
@@ -211,7 +186,6 @@ export function ServicesExplorer({ categories, tiles }: { categories: Category[]
         )}
       </div>
 
-      {/* The four category cards */}
       <section className="sv-section" aria-labelledby="sv-cats-title">
         <div className="sv-head">
           <span className="sv-eyebrow">Four departments</span>
@@ -281,7 +255,6 @@ export function ServicesExplorer({ categories, tiles }: { categories: Category[]
         </div>
       </section>
 
-      {/* Photo gallery of services with their own page */}
       <section className="sv-section sv-section--gallery" aria-labelledby="sv-gallery-title">
         <div className="sv-head sv-head--row">
           <div>

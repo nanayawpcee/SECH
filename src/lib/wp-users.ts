@@ -1,4 +1,3 @@
-/** An administrator account as the Settings > Admins tab needs it. */
 export interface AdminUser {
   id: number;
   name: string;
@@ -6,9 +5,7 @@ export interface AdminUser {
   role: string;
   roleSlug: string;
   initials: string;
-  /** True for the account currently signed in — it must not delete itself. */
   isSelf: boolean;
-  /** Still on a temporary password (plugin 1.2.0+). */
   mustChangePassword?: boolean;
 }
 
@@ -55,9 +52,6 @@ export function mapWpUser(node: WpUserNode, viewerId: number | null): AdminUser 
   };
 }
 
-/** Roles the portal offers when inviting or editing a colleague, most
- *  restricted last. Labels describe what the person can do, not WordPress
- *  jargon — see ROLE_LABELS in lib/permissions. */
 export const ASSIGNABLE_ROLES = [
   { slug: "administrator", label: "Administrator" },
   { slug: "sech_hr", label: "HR officer" },
@@ -71,10 +65,8 @@ export function isAssignableRole(role: unknown): role is string {
   return typeof role === "string" && ASSIGNABLE_ROLES.some((r) => r.slug === role);
 }
 
-/** Roles that may be created with a temporary password — never administrators. */
 export const TEMP_PASSWORD_ROLES = ["sech_hr", "editor", "author", "contributor", "subscriber"];
 
-/** WordPress-safe username: letters, numbers, dots, dashes, underscores. */
 export function isValidUsername(u: unknown): u is string {
   return typeof u === "string" && /^[a-z0-9._-]{3,40}$/i.test(u);
 }

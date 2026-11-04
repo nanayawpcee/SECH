@@ -14,20 +14,17 @@ interface Props {
 type Step = "personal" | "appointment" | "review" | "success";
 
 interface FormData {
-  // Personal
   firstName: string;
   lastName: string;
   dob: string;
   gender: string;
   phone: string;
   email: string;
-  // Appointment
   department: string;
   appointmentType: string;
   preferredDate: string;
   preferredTime: string;
   notes: string;
-  // Insurance
   hasInsurance: boolean;
   insuranceName: string;
   insuranceNumber: string;
@@ -78,7 +75,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
   const [reference, setReference] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -108,7 +104,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
     const result = await submitAppointment(data);
     setSubmitting(false);
     if (!result.ok) {
-      // Keep the patient on the review step with their details intact.
       setSubmitError(result.error ?? "Something went wrong.");
       return;
     }
@@ -118,7 +113,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
 
   const stepIndex = STEPS.findIndex(s => s.key === step);
 
-  // ── min date = tomorrow ──
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
@@ -127,12 +121,9 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-box" ref={topRef}>
 
-        {/* Header */}
         <div style={{ background: "var(--primary-dark)", padding: "1.5rem 1.75rem", borderRadius: "12px 12px 0 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              {/* The logo is already a circle on a transparent field, so it needs
-                  no plate behind it. Decorative: the hospital name sits beside it. */}
               <Image src="/images/logo.png" alt="" aria-hidden="true" width={28} height={28} style={{ width: 28, height: 28, flexShrink: 0 }} />
               <span style={{ color: "var(--accent)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>St. Elizabeth Catholic Hospital</span>
             </div>
@@ -145,7 +136,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
           >×</button>
         </div>
 
-        {/* Step indicator */}
         {step !== "success" && (
           <div className="booking-steps" style={{ padding: "1.25rem 1.75rem", background: "var(--off-white)", borderBottom: "1px solid #E2EBE7", display: "flex", gap: 0 }}>
             {STEPS.map((s, i) => (
@@ -160,8 +150,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                     fontWeight: 700, transition: "all 0.3s",
                     border: i === stepIndex ? "2.5px solid var(--accent)" : "2.5px solid transparent",
                   }}>
-                    {/* Upcoming steps sit on a pale disc, where these light-toned
-                        marks would otherwise wash out; darken them just there. */}
                     {i < stepIndex ? <Check size={18} strokeWidth={3} aria-hidden="true" /> : s.icon.startsWith("/")
                       ? <Image src={s.icon} alt="" aria-hidden="true" width={18} height={18} style={{ width: 18, height: 18, objectFit: "contain", filter: i > stepIndex ? "brightness(0.55)" : undefined }} />
                       : <UserRound size={18} aria-hidden="true" />}
@@ -176,10 +164,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
           </div>
         )}
 
-        {/* Body */}
         <div style={{ padding: "1.75rem" }}>
 
-          {/* ── STEP 1: Personal Info ── */}
           {step === "personal" && (
             <div style={{ animation: "slideUp 0.3s ease" }}>
               <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", color: "var(--text-dark)" }}>Your Personal Information</h3>
@@ -221,7 +207,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
                 <input className="form-input" type="email" placeholder="you@example.com" value={data.email} onChange={e => set("email", e.target.value)} />
               </div>
 
-              {/* Insurance toggle */}
               <div style={{ background: "var(--light-green)", borderRadius: "var(--radius-md)", padding: "1rem 1.25rem", marginTop: "0.5rem" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
                   <div
@@ -252,7 +237,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
             </div>
           )}
 
-          {/* ── STEP 2: Appointment ── */}
           {step === "appointment" && (
             <div style={{ animation: "slideUp 0.3s ease" }}>
               <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", color: "var(--text-dark)" }}>Appointment Details</h3>
@@ -311,7 +295,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
             </div>
           )}
 
-          {/* ── STEP 3: Review ── */}
           {step === "review" && (
             <div style={{ animation: "slideUp 0.3s ease" }}>
               <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", color: "var(--text-dark)" }}>Review Your Booking</h3>
@@ -361,7 +344,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
             </div>
           )}
 
-          {/* ── SUCCESS ── */}
           {step === "success" && (
             <div style={{ textAlign: "center", padding: "2rem 1rem", animation: "slideUp 0.4s ease" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--light-green)", border: "3px solid var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 1.25rem" }}><Check size={36} strokeWidth={2.6} color="var(--primary)" aria-hidden="true" /></div>
@@ -377,7 +359,6 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
           )}
         </div>
 
-        {/* Footer actions */}
         {step !== "success" && (
           <div style={{ padding: "1.1rem 1.75rem", borderTop: "1px solid #E2EBE7", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", background: "var(--off-white)", borderRadius: "0 0 12px 12px" }}>
             {submitError && (

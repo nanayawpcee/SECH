@@ -28,7 +28,6 @@ const SECTIONS = [
 ];
 
 export default function DisclaimerPage() {
-  // Office line: weekday office hours only. Emergencies use the 24-hour lines.
   const phone = SITE.phone;
   const tel = telHref(phone);
   const emergency = (

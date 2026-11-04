@@ -1,12 +1,9 @@
-/** Staff notice board — shapes and GraphQL shared by the API routes and UI. */
-
 export type NoticeCategory = "general" | "clinical" | "hr" | "events" | "facilities";
 export type NoticePriority = "normal" | "important" | "urgent";
 
 export interface StaffNotice {
   databaseId: number;
   title: string;
-  /** Plain text. Render as text with white-space: pre-wrap — never as HTML. */
   body: string;
   category: NoticeCategory;
   priority: NoticePriority;
@@ -18,16 +15,12 @@ export interface StaffNotice {
   createdAt: string;
   updatedAt: string;
   isRead: boolean;
-  /** Managers only; null for everyone else. */
   readCount: number | null;
-  /** Title may appear on the public share link (plugin 1.3.0+). */
   publicHeadline: boolean;
 }
 
-/** What anyone with the share link sees — no message, author or department. */
 export interface NoticeHeadline {
   databaseId: number;
-  /** Null when a manager made the headline staff-only. */
   title: string | null;
   category: NoticeCategory;
   priority: NoticePriority;
@@ -86,12 +79,10 @@ export const MARK_NOTICE_READ = `
   }
 `;
 
-/** The plugin predates the notice board if WordPress doesn't know the field. */
 export function isMissingPlugin(message: string) {
   return /Cannot query field "staffNotices"|Cannot query field "saveStaffNotice"|markStaffNoticeRead|deleteStaffNotice/i.test(message);
 }
 
-/** Only the fields the plugin accepts; it validates and sanitises them again. */
 export function noticeVariables(input: Record<string, unknown>, databaseId?: number) {
   const str = (v: unknown) => (typeof v === "string" ? v : undefined);
   return {
@@ -105,7 +96,6 @@ export function noticeVariables(input: Record<string, unknown>, databaseId?: num
     audience: str(input.audience) || "",
     link: str(input.link) || "",
     resetReads: input.resetReads === true,
-    // Only sent when given, so an older caller can't silently change it.
     publicHeadline: typeof input.publicHeadline === "boolean" ? input.publicHeadline : undefined,
   };
 }

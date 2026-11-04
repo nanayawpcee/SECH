@@ -4,11 +4,6 @@ import { UNSUBSCRIBE } from "@/lib/wp-newsletter";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Public: the button on /newsletter/unsubscribe. The token in each email's
- * link is the only credential — long and random, and it can only ever remove
- * that one address from the list.
- */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const token = String(body.token ?? "").replace(/[^A-Za-z0-9]/g, "");

@@ -44,7 +44,6 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Usernames are trimmed; passwords are not — a space can be part of one.
     if (!identifier.trim() || !password) {
       fail("Please enter your username or email and your password.");
       return;
@@ -58,8 +57,6 @@ export default function AdminLoginPage() {
         fail(loginError);
         return;
       }
-      // A full navigation, so the portal starts from a clean session state —
-      // the admin console or the staff area, by the person's permissions.
       window.location.replace(homeAfterLogin(new URLSearchParams(window.location.search).get("next")));
     } catch {
       setSubmitting(false);
@@ -75,7 +72,6 @@ export default function AdminLoginPage() {
 
   return (
     <div className="po-root lg-root">
-      {/* ── Brand panel ─────────────────────────────────────────────── */}
       <aside className="lg-brand">
         <svg className="lg-pattern" aria-hidden="true" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
           <defs>
@@ -139,7 +135,6 @@ export default function AdminLoginPage() {
         </div>
       </aside>
 
-      {/* ── Sign-in ─────────────────────────────────────────────────── */}
       <main className="lg-main">
         <Link href="/" className="lg-back"><ArrowLeft size={15} />Back to website</Link>
 

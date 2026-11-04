@@ -10,15 +10,6 @@ interface PublicComment {
   date: string;
 }
 
-/**
- * Comments on a news or achievement post.
- *
- * Every visitor-supplied string here is rendered as a React text node — never
- * through `dangerouslySetInnerHTML`. That single rule is what makes stored XSS
- * structurally impossible on this surface, and it is why the comment body is
- * plain text rather than HTML: there is no formatting to preserve, so there is
- * no reason to render markup.
- */
 export function CommentSection({ slug }: { slug: string }) {
   const [comments, setComments] = useState<PublicComment[]>([]);
   const [postId, setPostId] = useState<number | null>(null);
@@ -38,7 +29,6 @@ export function CommentSection({ slug }: { slug: string }) {
         setPostId(typeof data.postId === "number" ? data.postId : null);
       })
       .catch(() => {
-        /* Comments are additive — a failure here leaves the article readable. */
       })
       .finally(() => live && setLoading(false));
     return () => {
@@ -150,7 +140,6 @@ export function CommentSection({ slug }: { slug: string }) {
                   marginBottom: 6,
                 }}
               >
-                {/* Text node — the author name is never markup. */}
                 <span style={{ fontWeight: 700, color: "var(--text-dark)", fontSize: "0.92rem" }}>
                   {c.author}
                 </span>
@@ -158,8 +147,6 @@ export function CommentSection({ slug }: { slug: string }) {
                   {formatted(c.date)}
                 </span>
               </div>
-              {/* Text node, and `white-space: pre-wrap` keeps the writer's line
-                  breaks without any markup being involved. */}
               <p
                 style={{
                   margin: 0,
@@ -287,8 +274,6 @@ export function CommentSection({ slug }: { slug: string }) {
               placeholder="Share your thoughts…"
             />
 
-            {/* Honeypot: hidden from people, filled in by bots. Not `display:none`
-                — some bots skip those — and kept out of the tab order. */}
             <div
               aria-hidden="true"
               style={{

@@ -5,14 +5,9 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Images, Pause, Play } from "lucide-react";
 import type { ArticlePhoto } from "@/lib/news";
 
-/**
- * Most of a photo that may be trimmed to fill the frame (0.2 = 20%). Enough
- * for ordinary 4:3 camera photos in the 16:10 frame (about 17%); squares,
- * portraits and posters still show whole.
- */
+// fill the frame if no more than 20% gets cropped (covers 4:3 photos in 16:10)
 const FIT_TRIM = 0.2;
 
-/** How long each photo shows before the slider moves on by itself. */
 const AUTOPLAY_MS = 5000;
 
 function fillsFrame(p: ArticlePhoto, frameRatio: number) {
@@ -20,33 +15,10 @@ function fillsFrame(p: ArticlePhoto, frameRatio: number) {
   return 1 - Math.min(ratio / frameRatio, frameRatio / ratio) <= FIT_TRIM;
 }
 
-/**
- * Photo slider for an article with several photos. Swipe on touch screens,
- * arrows or the keyboard elsewhere, thumbnails underneath. Every photo is
- * shown whole (posters and portrait shots included) over a soft blurred fill
- * of itself, never cropped.
- *
- * It loops round in one direction: after the last photo, "next" slides the
- * first one in from the right (and "previous" on the first slides the last in
- * from the left), rather than rewinding back through every photo. A copy of
- * the last photo sits before the first and a copy of the first after the
- * last; landing on a copy jumps, invisibly, to the real photo.
- *
- * A photo close to the frame's shape fills it edge to edge, like a
- * single-photo post; only those that would lose more than FIT_TRIM to
- * cropping (portraits, posters, squares in a wide frame) are shown whole.
- *
- * It moves on by itself every AUTOPLAY_MS, and holds still while someone is
- * looking closely: the pointer is over it, it has keyboard focus, it's off
- * screen or the tab is hidden. Any manual move restarts the wait. A pause
- * button stops it for good (WCAG 2.2.2), and it doesn't autoplay at all for
- * people who ask their device for reduced motion.
- */
 export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; title: string }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbsRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  // The frame's width / height: 16:10 on wide screens, 4:3 on phones (news.css).
   const [frameRatio, setFrameRatio] = useState(1.6);
   const sectionRef = useRef<HTMLElement>(null);
   const [playing, setPlaying] = useState(true);
@@ -56,7 +28,7 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
   const [pageVisible, setPageVisible] = useState(true);
   const count = photos.length;
   const loop = count > 1;
-  // Track positions: 0 = copy of the last, 1..count = the photos, count + 1 = copy of the first.
+  // copies of the last and first photo at each end, so it loops one way
   const slides = loop ? [photos[count - 1], ...photos, photos[0]] : photos;
   const offset = loop ? 1 : 0;
 
@@ -64,7 +36,7 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
   const position = () => Math.round((trackRef.current?.scrollLeft ?? 0) / width());
   const jumpTo = (pos: number) => { if (trackRef.current) trackRef.current.scrollLeft = pos * width(); };
 
-  /** From a copy, hop to the real photo it shows. Instant, so nothing visibly moves. */
+  // landed on a copy: jump to the real photo without animating
   const settle = useCallback(() => {
     if (!loop) return;
     const pos = position();
@@ -73,7 +45,6 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loop, count]);
 
-  // Start on the first real photo, before the browser paints.
   useLayoutEffect(() => { jumpTo(offset); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [offset]);
 
   useEffect(() => {
@@ -84,11 +55,10 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => setIndex(((position() - offset) % count + count) % count));
-      // Settle once scrolling stops ("scrollend" isn't in every browser yet).
+      // not every browser has scrollend yet, so debounce
       clearTimeout(idle);
       idle = setTimeout(settle, 140);
     };
-    // Keep showing the same photo when the slider changes width.
     const ro = new ResizeObserver(() => {
       jumpTo(position());
       if (el.clientHeight) setFrameRatio(el.clientWidth / el.clientHeight);
@@ -104,12 +74,10 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count, offset, settle]);
 
-  // No autoplay for people who ask their device for reduced motion.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(false);
   }, []);
 
-  // Hold still while the slider is off screen or the tab is in the background.
   useEffect(() => {
     const el = sectionRef.current;
     const io = el ? new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting), { threshold: 0.35 }) : null;
@@ -119,14 +87,12 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     return () => { io?.disconnect(); document.removeEventListener("visibilitychange", onVis); };
   }, []);
 
+  // hold while hovered, keyboard-focused, offscreen or in a background tab
   const running = loop && playing && !hovered && !focused && onScreen && pageVisible;
 
-  // Counts up each time the slider (re)starts running, so the wait and the
-  // progress bar both start afresh.
   const [runId, setRunId] = useState(0);
   useEffect(() => { if (running) setRunId((n) => n + 1); }, [running]);
 
-  // Each new photo, or a fresh start, waits the full time again.
   const stepRef = useRef<(dir: 1 | -1) => void>(() => {});
   useEffect(() => {
     if (!running) return;
@@ -134,8 +100,6 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     return () => clearTimeout(t);
   }, [running, index, runId]);
 
-  // Keep the active thumbnail in view, scrolling only the strip sideways
-  // (scrollIntoView could also scroll the page).
   useEffect(() => {
     const strip = thumbsRef.current;
     const thumb = strip?.children[index] as HTMLElement | undefined;
@@ -151,11 +115,9 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
     trackRef.current?.scrollTo({ left: pos * width(), behavior: reduce ? "auto" : "smooth" });
   };
 
-  /** One photo forward or back, always in that direction, looping round. */
   const step = (dir: 1 | -1) => {
     if (!loop) return;
     let pos = position();
-    // Clicked again while still on a copy: hop to the real photo first.
     if (pos <= 0) { jumpTo(count); pos = count; }
     if (pos >= count + 1) { jumpTo(1); pos = 1; }
     smoothTo(pos + dir);
@@ -163,7 +125,6 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
 
   stepRef.current = step;
 
-  /** Straight to photo i (thumbnails). */
   const goTo = (i: number) => smoothTo(i + offset);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -177,8 +138,6 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
       className="nw-gal"
       aria-roledescription="carousel"
       aria-label={`Photos: ${title}`}
-      // Keyboard focus only: a mouse click leaves focus on the clicked arrow,
-      // which mustn't stop the slideshow until the reader clicks elsewhere.
       onFocus={(e) => setFocused((e.target as HTMLElement).matches(":focus-visible"))}
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false); }}
     >
@@ -229,7 +188,6 @@ export function ArticleGallery({ photos, title }: { photos: ArticlePhoto[]; titl
               {playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}
             </button>
           )}
-          {/* Announced only when someone moves the slider, not on every autoplay step. */}
           <span className="nw-gal-count" aria-live={running ? "off" : "polite"}>
             <Images size={14} aria-hidden="true" />{index + 1} / {count}
           </span>

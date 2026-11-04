@@ -11,11 +11,6 @@ function initials(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
 }
 
-/**
- * One public profile. Each linked service is a link to that service's page.
- * On a service page, pass `currentService` so the card doesn't link back to
- * the page it's on, and links to the full profile instead.
- */
 export function DoctorCard({ doctor, currentService }: { doctor: Doctor; currentService?: string }) {
   const name = doctorName(doctor);
   const days = formatDays(doctor.clinicDays);
@@ -33,7 +28,6 @@ export function DoctorCard({ doctor, currentService }: { doctor: Doctor; current
             sizes="(max-width: 375px) 100vw, 280px"
           />
         ) : (
-          // No photo yet: initials, never a stock image of someone else.
           <div className="dc-monogram" aria-hidden="true"><span>{initials(doctor.name)}</span></div>
         )}
       </div>

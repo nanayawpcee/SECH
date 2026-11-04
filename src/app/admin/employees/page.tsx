@@ -9,12 +9,16 @@ import {
   IdCard,
   RefreshCw,
   Search,
+  ShieldCheck,
   Trash2,
   UserPlus,
   Users,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { useAdminData } from "@/context/AdminDataContext";
+import { can } from "@/lib/permissions";
 import { Avatar, Chip, ConfirmDialog, EmptyState, PageHeader, SkeletonRows, type Tone } from "@/components/admin/ui";
 import { EmployeeEditor } from "@/components/admin/staff/EmployeeEditor";
 import { useStaff } from "@/components/admin/staff/useStaff";
@@ -35,9 +39,9 @@ type Focus = "all" | "temporary" | "licence" | "payroll";
 
 const STATUS_TONE: Record<string, Tone> = { active: "success", on_leave: "warn", study_leave: "info", seconded: "violet", exited: "muted" };
 
-/** Staff records: who works here, where, and at what rank. Administrators and HR officers. */
 export default function EmployeesPage() {
   const { addToast } = useAdminData();
+  const { admin } = useAuth();
   const staff = useStaff();
   const { setup, employees, index } = staff;
   const [focus, setFocus] = useState<Focus>("all");
@@ -51,7 +55,6 @@ export default function EmployeesPage() {
   const [deleting, setDeleting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // "In-charge, Male Ward" and friends, per person, from the structure.
   const roles = useMemo(() => {
     const out = new Map<number, string[]>();
     const add = (id: number, label: string) => id && out.set(id, [...(out.get(id) ?? []), label]);
@@ -121,7 +124,25 @@ export default function EmployeesPage() {
     closeEditor();
   };
 
-  const exportCSV = () => {
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportIds, setExportIds] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  // every export is logged first. no log entry, no file
+  const exportCSV = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/staff/export-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: filtered.length, withIdentifiers: exportIds }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "The export could not be recorded.");
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : "The export could not be recorded.", "danger");
+      setExporting(false);
+      return;
+    }
+    setExporting(false);
     const rows = filtered.map((e) => {
       const rank = index.ranks.get(e.rankId ?? "");
       return [
@@ -131,17 +152,25 @@ export default function EmployeesPage() {
         index.cadres.get(e.cadreId ?? "")?.name, rank?.name, rank?.level,
         index.positions.get(e.positionId ?? "")?.name, (roles.get(e.databaseId) ?? []).join("; "),
         e.phone, e.email, e.dateFirstAppointment, e.dateCurrentRank,
-        e.licenceBody, e.licencePin, e.licenceExpiry, e.cagdStaffId, e.ssnit,
+        e.licenceBody, e.licenceExpiry,
+        ...(exportIds ? [e.licencePin, e.cagdStaffId, e.ssnit] : []),
       ];
     });
     downloadCsv(`sech-staff-${todayKey()}.csv`, [
       "Staff number", "Title", "First name", "Other names", "Surname", "Gender", "Employment type", "Status",
       "Department", "Unit", "Cadre", "Rank", "Pay level", "Management position", "Unit roles",
       "Phone", "Email", "First appointment", "Current rank since",
-      "Licence council", "Licence PIN", "Licence expiry", "CAGD staff ID", "SSNIT",
+      "Licence council", "Licence expiry",
+      ...(exportIds ? ["Licence PIN", "CAGD staff ID", "SSNIT"] : []),
     ], rows);
-    addToast(`Exported ${rows.length} staff record${rows.length === 1 ? "" : "s"}. The file contains payroll IDs, so store it securely.`);
+    setExportOpen(false);
+    setExportIds(false);
+    addToast(
+      `Exported ${rows.length} staff record${rows.length === 1 ? "" : "s"}. ` +
+      (exportIds ? "The file contains payroll IDs: keep it on a hospital device and delete it when done." : "Store the file securely and delete it when done."),
+    );
   };
+  const closeExport = useCallback(() => { setExportOpen(false); setExportIds(false); }, []);
 
   const refresh = async () => { setRefreshing(true); await staff.reload(); setRefreshing(false); };
   const closeDelete = useCallback(() => setToDelete(null), []);
@@ -163,7 +192,10 @@ export default function EmployeesPage() {
             <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
               <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
             </button>
-            <button type="button" className="po-btn" onClick={exportCSV} disabled={!filtered.length}>
+            {can(admin?.perms, "settings") && (
+              <Link href="/admin/data-protection" className="po-btn"><ShieldCheck size={15} />Data protection</Link>
+            )}
+            <button type="button" className="po-btn" onClick={() => setExportOpen(true)} disabled={!filtered.length}>
               <Download size={15} />Export
             </button>
             <button type="button" className="po-btn po-btn--primary" onClick={() => setCreating(true)} disabled={!setup}>
@@ -316,6 +348,27 @@ export default function EmployeesPage() {
           onDelete={(e) => setToDelete(e)}
         />
       )}
+
+      <ConfirmDialog
+        open={exportOpen}
+        title="Export staff records?"
+        tone="primary"
+        icon={Download}
+        text={<>
+          <p style={{ margin: "0 0 12px" }}>
+            The file will hold personal data for <strong>{filtered.length}</strong> staff member{filtered.length === 1 ? "" : "s"}.
+            Export only what you need for the task, keep it on a hospital device, and delete it when you are done.
+          </p>
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", cursor: "pointer" }}>
+            <input type="checkbox" checked={exportIds} onChange={(e) => setExportIds(e.target.checked)} style={{ marginTop: 3 }} />
+            <span>Include payroll and licence identifiers (SSNIT, CAGD staff ID, licence PIN). Only for payroll or licensing work.</span>
+          </label>
+        </>}
+        confirmLabel="Export"
+        busy={exporting}
+        onConfirm={exportCSV}
+        onCancel={closeExport}
+      />
 
       <ConfirmDialog
         open={!!toDelete}

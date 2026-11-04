@@ -47,7 +47,6 @@ type Action = "approved" | "spam" | "delete";
 
 const LINK_RE = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|ru|xyz|info|top|online|site|shop)\b/i;
 
-/** Comments grouped under the post they were left on. */
 function groupByPost(comments: PendingComment[]): PostGroup[] {
   const groups = new Map<number, PostGroup>();
   for (const c of comments) {
@@ -69,14 +68,6 @@ function when(iso: string, withTime = true) {
     : { day: "numeric", month: "short", year: "numeric" });
 }
 
-/**
- * Moderation queue for public comments.
- *
- * Everything here is visitor-supplied, so every value is rendered as a React
- * text node — never dangerouslySetInnerHTML. It is already stripped to plain
- * text server-side; rendering it as text is the second layer, and the one that
- * matters most on an admin page where the reader is a logged-in user.
- */
 export default function CommentsPage() {
   const { addToast, refreshPendingComments } = useAdminData();
   const [comments, setComments] = useState<PendingComment[]>([]);
@@ -143,7 +134,6 @@ export default function CommentsPage() {
       return next;
     });
 
-  /** One request per comment, four at a time, removing each as it succeeds. */
   const moderate = async (ids: number[], action: Action) => {
     if (!ids.length) return;
     setProgress({ done: 0, of: ids.length });
@@ -180,13 +170,10 @@ export default function CommentsPage() {
     if (ok) addToast(`${ok} comment${ok === 1 ? "" : "s"} ${verb}`);
     if (failed) addToast(`${failed} could not be updated. Try again.`, "danger");
     refreshPendingComments();
-    // The queue page holds 50; fetch the next batch once this one is cleared.
     if (ok && comments.length - ok <= 0 && total - ok > 0) load();
   };
 
   const ask = (action: Action, ids: number[]) => {
-    // Single spam/delete clicks are reversible (spam folder, trash); approving
-    // publishes, and bulk anything is worth one confirmation.
     if (ids.length === 1 && action !== "approved") moderate(ids, action);
     else setConfirm({ action, ids });
   };
@@ -266,14 +253,10 @@ export default function CommentsPage() {
             const allInGroup = group.items.every((c) => selected.has(c.id));
             return (
               <section key={group.postId} className="cmt-group">
-                {/* Comments on the left — first in the DOM so the stylesheet can
-                    lift the post above them on narrow screens. */}
                 <div style={{ display: "grid", gap: 10, minWidth: 0 }}>
                   <AnimatePresence initial={false}>
                     {group.items.map((c) => {
                       const hasLink = LINK_RE.test(c.content);
-                      // Same filter that now stops spam on arrival; flags any
-                      // that reached the queue before it was added.
                       const spam = checkComment({ author: c.author, content: c.content }).action === "discard";
                       const isSel = selected.has(c.id);
                       return (
@@ -291,7 +274,6 @@ export default function CommentsPage() {
                             <Avatar name={c.author} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
-                                {/* Text nodes — visitor-supplied, never markup. */}
                                 <span className="po-cell-main">{c.author}</span>
                                 <span className="po-cell-sub">{c.email}</span>
                                 <span className="po-cell-sub" style={{ marginLeft: "auto" }}>{when(c.date)}</span>
@@ -326,7 +308,6 @@ export default function CommentsPage() {
                   </AnimatePresence>
                 </div>
 
-                {/* The post, pinned beside its comments. */}
                 <aside className="cmt-post">
                   <div className="po-card" style={{ overflow: "hidden" }}>
                     <div className="cmt-post-img">
@@ -362,7 +343,6 @@ export default function CommentsPage() {
         </div>
       )}
 
-      {/* Bulk bar / progress */}
       <AnimatePresence>
         {(selected.size > 0 || busy) && (
           <motion.div

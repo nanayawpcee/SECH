@@ -1,14 +1,11 @@
-/**
- * Doctors and specialists directory (SECH Portal plugin 1.8.0, section 15).
- * Shared by the portal, the API routes and the public pages.
- */
+// flip to true to put the doctors directory back on the public site
+export const SHOW_DOCTORS_PUBLICLY = false;
 
 export type Doctor = {
   databaseId: number;
   title: string | null;
   name: string;
   specialty: string | null;
-  /** Website service slugs (see SERVICES in data.tsx) this person works in. */
   services: string[];
   clinicDays: DayCode[];
   clinicHours: string | null;
@@ -51,14 +48,12 @@ export const DOCTOR_TITLES = ["Dr.", "Prof.", "Rev. Dr.", "Sr. Dr.", "Mr.", "Mrs
 
 export const BIO_MAX = 600;
 
-/** "Dr. Ama Mensah", without doubling a title already typed into the name. */
 export function doctorName(d: Pick<Doctor, "title" | "name">) {
   const title = d.title?.trim();
   if (!title || d.name.toLowerCase().startsWith(title.toLowerCase())) return d.name;
   return `${title} ${d.name}`;
 }
 
-/** "Mon, Wed and Fri", or "Mon to Fri" for a run of three or more days. */
 export function formatDays(days: readonly string[]) {
   const idx = DAYS.map((d) => d.code as string);
   const picked = idx.filter((c) => days.includes(c));
@@ -95,7 +90,6 @@ export const SAVE_DOCTOR = `
 
 export const DELETE_DOCTOR = `mutation DeleteDoctor($id: Int!) { deleteDoctor(input: { id: $id }) { ok } }`;
 
-/** WordPress hasn't got plugin 1.8.0 yet. */
 export function isMissingDoctorsPlugin(message: string) {
   return /publicDoctors|doctors|saveDoctor|deleteDoctor/i.test(message) && /Cannot query field|Unknown|not exist/i.test(message);
 }

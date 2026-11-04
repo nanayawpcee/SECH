@@ -26,15 +26,7 @@ const LOGIN = `
   }
 `;
 
-/**
- * Change the signed-in user's own password.
- *
- * WPGraphQL's updateUser does not check the existing password, so a stolen
- * session cookie alone would be enough to lock the real owner out. We verify
- * the current password first by attempting a login with it.
- */
 export async function POST(request: Request) {
-  // Allowed while a temporary password is pending — this is how it gets replaced.
   const gate = await requireSignedInAllowingPasswordChange();
   if (gate instanceof NextResponse) return gate;
   try {
@@ -70,8 +62,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Your session has expired." }, { status: 401 });
     }
 
-    // Verified with a bare fetch, not the shared helper: a failed login is an
-    // expected outcome here, not an error worth surfacing as a WP failure.
     const verifyResponse = await fetch(WP_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,8 +89,6 @@ export async function POST(request: Request) {
       { authenticated: true },
     );
 
-    // The plugin clears the temporary-password flag as the password changes;
-    // drop the cached copy so the very next request sees that.
     forgetViewer(await getAdminToken());
     return NextResponse.json({ success: true });
   } catch (error) {

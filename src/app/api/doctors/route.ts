@@ -6,7 +6,6 @@ import { doctorVariables, revalidateDoctorPages } from "@/lib/doctors-data";
 
 export const dynamic = "force-dynamic";
 
-/** Every profile, including hidden ones, for the portal. */
 export async function GET() {
   const gate = await requirePerm("doctors.manage");
   if (gate instanceof NextResponse) return gate;
@@ -22,7 +21,6 @@ export async function GET() {
   }
 }
 
-/** Add a profile. */
 export async function POST(request: Request) {
   const gate = await requirePerm("doctors.manage");
   if (gate instanceof NextResponse) return gate;

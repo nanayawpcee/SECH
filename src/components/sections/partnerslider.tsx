@@ -4,11 +4,7 @@ import Image from "next/image";
 
 interface Partner {
   name: string;
-  /** Omit and the chip shows a monogram — no request is made for a file that
-   *  doesn't exist. */
   logo?: string;
-  /** The artwork already spells the company name, so the chip shows the logo
-   *  alone rather than printing the name twice. */
   wordmark?: boolean;
 }
 
@@ -26,9 +22,8 @@ const CORPORATE_CLIENTS: Partner[] = [
   { name: "GTS Drilling", logo: "/partnerlogos/gts.png", wordmark: true },
   { name: "Toyota Ghana", logo: "/partnerlogos/toyota.png" },
   { name: "Geodrill", logo: "/partnerlogos/geodrill.png", wordmark: true },
-  // The supplied SOS file is white artwork on transparency — invisible on a
-  // white chip — so it's re-inked in brand green; the original is untouched.
   {
+    // the original logo is white and vanished on the chip, this is a green copy
     name: "International SOS",
     logo: "/partnerlogos/sos-dark.png",
     wordmark: true,
@@ -64,18 +59,11 @@ const PARTNERS_AND_DONORS: Partner[] = [
   { name: "GCB Bank", logo: "/partnerlogos/GCB_Logo.png", wordmark: true },
 ];
 
-/** Marquee pace, in seconds per chip. Rows scale their duration by item count
- *  so every row moves at the same readable speed regardless of length. */
+// duration scales with the chip count so every row moves at the same speed
 const SECONDS_PER_CHIP = 4;
 
-/** Box width for wordmark logos, px. Wide enough for the longest mark to be
- *  legible at chip height without dominating the row. */
 const WORDMARK_WIDTH = 96;
 
-// ---------------------------------------------------------------------------
-
-/** Short all-caps names are acronyms (GTS, AUMS) and read better whole than
- *  truncated to two letters. */
 function getInitials(name: string) {
   const words = name.trim().split(/\s+/);
   if (words.length === 1) {
@@ -87,12 +75,6 @@ function getInitials(name: string) {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-// ---------------------------------------------------------------------------
-// LogoChip
-// ---------------------------------------------------------------------------
-
-/** One treatment for every monogram — brand green with gold initials — so the
- *  badges read as a set instead of a scatter of unrelated colours. */
 function Monogram({ name, size }: { name: string; size: number }) {
   const text = getInitials(name);
   return (
@@ -107,7 +89,6 @@ function Monogram({ name, size }: { name: string; size: number }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // Four-letter acronyms need a touch less size to sit inside the badge.
         fontSize: text.length > 2 ? "0.52rem" : "0.64rem",
         fontWeight: 800,
         color: "var(--accent)",
@@ -138,8 +119,6 @@ function LogoChip({
         gap: 10,
         padding: isAccred ? "10px 20px" : "10px 22px",
         background: "#fff",
-        // Border and transition are in the stylesheet so :hover can change
-        // them; an inline border would override the hover rule.
         borderRadius: 8,
         whiteSpace: "nowrap",
         cursor: "default",
@@ -149,11 +128,6 @@ function LogoChip({
       {!logo ? (
         <Monogram name={name} size={size} />
       ) : (
-        // Wordmarks get a wide box to be read in; symbols and crests stay
-        // square. The box is fixed, not "auto": the three marquee copies must
-        // be identical widths for the loop to be seamless, and an auto-width
-        // image is sized differently before and after it loads. Both go
-        // through next/image — sources run to 200KB+ but render at ~32px.
         <Image
           src={`/images${logo}`}
           alt={name}
@@ -168,7 +142,6 @@ function LogoChip({
         />
       )}
 
-      {/* The name is dropped when the artwork already carries it. */}
       {!wordmark && (
         <span
           style={{
@@ -185,10 +158,6 @@ function LogoChip({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Reusable slider row
-// ---------------------------------------------------------------------------
-
 function SliderRow({
   items,
   variant,
@@ -199,17 +168,11 @@ function SliderRow({
   direction: "left" | "right";
 }) {
   const duration = items.length * SECONDS_PER_CHIP;
-  // The animation itself lives in CSS and only the duration is passed in as a
-  // custom property. Setting the `animation` shorthand inline would out-rank
-  // the stylesheet's pause-on-hover rule, since inline styles beat class rules.
   const trackStyle = {
     "--marquee-duration": `${duration}s`,
   } as React.CSSProperties;
 
-  // Three identical groups, each padded by exactly one gap, so that a third of
-  // the track is *exactly* one repeat. Tripling the chips in a single flex
-  // row left the loop a third of a gap short, and it visibly jumped every
-  // cycle.
+  // three identical groups, so a third of the track is exactly one loop
   const group = (key: string) => (
     <div key={key} className="marquee-set" aria-hidden={key !== "a"}>
       {items.map((p) => (
@@ -220,7 +183,6 @@ function SliderRow({
 
   return (
     <div className="marquee">
-      {/* Side fade masks */}
       <div
         style={{
           position: "absolute",
@@ -242,10 +204,6 @@ function SliderRow({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Row label
-// ---------------------------------------------------------------------------
 
 function RowLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -288,10 +246,6 @@ function RowLabel({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Partners — exported component called from ContactSection
-// ---------------------------------------------------------------------------
 
 export function Partners() {
   return (

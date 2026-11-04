@@ -70,7 +70,6 @@ export async function DELETE(request: Request, { params }: Params) {
       { authenticated: true },
     );
 
-    // Deleting your own account would lock you out mid-session.
     if (viewer.viewer && String(viewer.viewer.databaseId) === String(params.id)) {
       return NextResponse.json(
         { error: "You cannot remove your own account." },
@@ -79,7 +78,6 @@ export async function DELETE(request: Request, { params }: Params) {
     }
 
     const url = new URL(request.url);
-    // Their posts are reassigned rather than deleted along with them.
     const reassignId = url.searchParams.get("reassignId") ?? viewer.viewer?.databaseId;
 
     await wpGraphQL<{ deleteUser: { deletedId: string } }>(

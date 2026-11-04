@@ -1,4 +1,3 @@
-/* ─── SECH Design Tokens ─────────────────────────────────────── */
 :root {
   --primary: #0A4F3C;
   --primary-light: #1A7A5E;
@@ -23,7 +22,6 @@
   --transition: all 0.3s ease;
 }
 
-/* ─── Reset ──────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -65,7 +63,6 @@ select {
   font-family: inherit;
 }
 
-/* ─── Animations ─────────────────────────────────────────────── */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -116,7 +113,6 @@ select {
   }
 }
 
-/* ─── Utility classes ────────────────────────────────────────── */
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -208,7 +204,6 @@ select {
   color: var(--white);
 }
 
-/* ─── Modal overlay ──────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -233,7 +228,6 @@ select {
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.25);
 }
 
-/* ─── Form styles ────────────────────────────────────────────── */
 .form-group {
   margin-bottom: 1.1rem;
 }
@@ -296,7 +290,6 @@ select {
   margin-top: 4px;
 }
 
-/* ─── Cards ──────────────────────────────────────────────────── */
 .card {
   background: var(--white);
   border: 1.5px solid #E2EBE7;
@@ -311,7 +304,6 @@ select {
   border-color: var(--primary);
 }
 
-/* ─── Page hero ──────────────────────────────────────────────── */
 .page-hero {
   background: var(--primary-dark);
   padding: 5rem 2rem 4rem;
@@ -326,7 +318,6 @@ select {
   background-image: radial-gradient(circle at 80% 50%, rgba(232, 184, 75, 0.08) 0%, transparent 60%);
 }
 
-/* ─── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -340,7 +331,6 @@ select {
   border-radius: 3px;
 }
 
-/* ─── Responsive ─────────────────────────────────────────────── */
 * {
   margin: 0;
   padding: 0;
@@ -356,7 +346,6 @@ body {
   line-height: 1.6;
 }
 
-/* Container utility */
 .container {
   width: 100%;
   max-width: 1280px;
@@ -366,7 +355,6 @@ body {
   padding-right: 1rem;
 }
 
-/* Fix common horizontal scroll causes */
 img,
 video,
 iframe {
@@ -380,13 +368,11 @@ table {
   display: block;
 }
 
-/* Remove horizontal scroll from sections */
 section,
 div {
   max-width: 100%;
 }
 
-/* Mobile improvements */
 @media (max-width: 768px) {
   .container {
     padding-left: 1rem;
@@ -402,7 +388,6 @@ div {
   }
 }
 
-/* Mobile Square Cards Only */
 @media (max-width: 767px) {
   .mobile-square-card {
     aspect-ratio: 1 / 1;
@@ -411,7 +396,6 @@ div {
 
 }
 
-/* Larger screens remain normal height */
 @media (min-width: 768px) {
   .mobile-square-card {
     aspect-ratio: auto;
@@ -422,7 +406,6 @@ div {
   display: flex;
   flex-direction: column;
   gap: 3rem;
-  /* Tighter gap for mobile */
   align-items: center;
 }
 
@@ -434,11 +417,6 @@ div {
   }
 }
 
-/* === DISABLE HORIZONTAL SCROLLING GLOBALLY ===
-   `clip`, not `hidden`: hidden turns html/body into scroll containers, and
-   position: sticky then pins to a box that never scrolls — which is why the
-   navbar and the article sidebar used to scroll away. `hidden` stays only as
-   the fallback for browsers without `clip` (Safari < 16). */
 html,
 body {
   overflow-x: hidden !important;
@@ -452,12 +430,10 @@ body {
   }
 }
 
-/* Prevent layout shift from scrollbars */
 html {
   scrollbar-gutter: stable;
 }
 
-/* To prevent container overflow */
 section,
 main,
 div {
@@ -465,11 +441,6 @@ div {
   box-sizing: border-box;
 }
 
-/* Page containers are the exception: on wide screens they stop at a readable
-   width and centre, leaving margins either side, instead of the guard above
-   stretching every page edge to edge. Section backgrounds still run full
-   width — only the content column is capped. !important is what it takes to
-   out-rank the guard. */
 .container {
   max-width: 1280px !important;
 }
@@ -480,7 +451,6 @@ div {
   }
 }
 
-/* Fix common culprits */
 img,
 video,
 iframe {
@@ -488,12 +458,10 @@ iframe {
   height: auto;
 }
 
-/* Fix for carousels, flex, grid that often break */
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Footer grid ────────────────────────────────────────────── */
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -524,7 +492,6 @@ iframe {
   }
 }
 
-/* ─── About — hide floating badge on mobile (overlaps card) ─── */
 @media (max-width: 768px) {
   .about-chag-badge {
     display: none;
@@ -536,7 +503,6 @@ iframe {
   }
 }
 
-/* ─── About Page ─────────────────────────────────────────────── */
 .about-mission-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -572,7 +538,6 @@ iframe {
   }
 }
 
-/* Responsive Form Grid: 1 column on mobile, 2 columns on desktop */
 .form-grid-2col {
   display: grid;
   grid-template-columns: 1fr;
@@ -585,9 +550,6 @@ iframe {
   }
 }
 
-/* ==========================================================================
-   About Page Layout & General Sections
-   ========================================================================== */
 .about-mission-section {
   padding: 5.5rem 0;
   background: #fff;
@@ -659,7 +621,6 @@ iframe {
   line-height: 1.65;
 }
 
-/* Timeline Layout */
 .timeline-section {
   padding: 7rem 2rem;
   background: var(--off-white);
@@ -747,7 +708,6 @@ iframe {
   box-shadow: 0 0 0 4px var(--accent);
 }
 
-/* Responsive adjustment for older viewports */
 @media (max-width: 768px) {
   .timeline-row {
     grid-template-columns: 1fr;
@@ -773,9 +733,6 @@ iframe {
   }
 }
 
-/* ==========================================================================
-   Team Section - Hover-only Overlay with Icons
-   ========================================================================== */
 .team-section {
   --team-pad: 2rem;
   padding: 5.5rem var(--team-pad);
@@ -789,10 +746,6 @@ iframe {
   }
 }
 
-/* Team cards behave exactly like the homepage service cards (.services-grid):
-   one fixed card size at every screen width; 4 in a row when they fit, a
-   swipeable row with arrows on tablets and larger phones, and one per row,
-   full width, on phones 375px wide and narrower. */
 .team-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -802,7 +755,6 @@ iframe {
 .team-custom-grid {
   --team-card-w: 300px;
   display: grid;
-  /* 4 a row, or 3 when that makes even rows (TeamGrid sets --team-cols). */
   grid-template-columns: repeat(var(--team-cols, 4), var(--team-card-w));
   justify-content: center;
   gap: 1.25rem;
@@ -810,7 +762,6 @@ iframe {
   margin-top: 3rem;
 }
 
-/* 4 cards need 4 x 300 + 3 x 20 = 1260px; 2 need 620px. */
 @container (max-width: 1259px) {
   .team-custom-grid { grid-template-columns: repeat(2, var(--team-card-w)); }
 }
@@ -827,8 +778,6 @@ iframe {
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    /* Room for the card shadow, which a scroll box would clip, and a bleed
-       past the section's right padding. */
     margin: 0 calc(-1 * var(--team-pad)) -28px 0;
     padding: 12px var(--team-pad) 28px 2px;
   }
@@ -844,15 +793,11 @@ iframe {
   @media (max-width: 683px) { .team-custom-grid { grid-template-columns: var(--team-card-w); } }
 }
 
-/* Arrow buttons share the services rail's button style (.services-rail-btn). */
 .team-rail-nav {
   display: none;
   justify-content: flex-end;
   gap: 8px;
   margin: -2.75rem 0 0;
-  /* Pulled up beside the heading, whose animation wrapper would otherwise
-     sit on top and swallow clicks. Only the buttons take clicks, so the row
-     never blocks the heading area. */
   position: relative;
   z-index: 3;
   pointer-events: none;
@@ -870,9 +815,6 @@ iframe {
   max-width: var(--team-card-w) !important;
 }
 
-/* Leadership card: photo (or monogram) on top, then name, role and contact
-   buttons. Same border, corners and hover lift as the service cards, and the
-   contact buttons are always visible, so they work on touch screens too. */
 .team-card {
   position: relative;
   height: 100%;
@@ -908,7 +850,6 @@ iframe {
   transform: scale(1.04);
 }
 
-/* Stand-in until a member's real photo is supplied. */
 .team-monogram {
   position: absolute;
   inset: 0;
@@ -963,7 +904,6 @@ iframe {
   padding: 1.15rem 1.25rem 1.25rem;
 }
 
-/* Gold accent bar that stretches on hover. */
 .team-body::before {
   content: '';
   width: 32px;
@@ -978,8 +918,6 @@ iframe {
   width: 56px;
 }
 
-/* Names reserve two lines on every card, so the cards stay one size whether
-   a name wraps or not. */
 .team-member-name {
   margin: 0 0 0.3rem;
   min-height: 2.6em;
@@ -1055,21 +993,17 @@ iframe {
   }
 }
 
-/* Hide sidebar layout adjustments for mobile screens */
 @media (max-width: 760px) {
   .desktop-only-sidebar {
     display: none !important;
   }
 
-  /* Prevent layout stretching issues on smaller grids */
   .container {
     grid-template-columns: 1fr !important;
     gap: 2rem !important;
   }
 }
 
-/* delete later */
-/* Infinite Horizontal Track Animation */
 @keyframes infiniteScroll {
   0% {
     transform: translateX(0);
@@ -1077,7 +1011,6 @@ iframe {
 
   100% {
     transform: translateX(-50%);
-    /* Moves exactly halfway (length of one full list) */
   }
 }
 
@@ -1088,12 +1021,10 @@ iframe {
   animation: infiniteScroll 35s linear infinite;
 }
 
-/* Pause the scrolling animation when a user hovers over a logo */
 .logo-slider-track:hover {
   animation-play-state: paused;
 }
 
-/* Slider Individual Items */
 .logo-slider-item {
   display: flex;
   align-items: center;
@@ -1113,9 +1044,6 @@ iframe {
   border-color: rgba(232, 184, 75, 0.3);
 }
 
-/* Extracted component-level styles (migrated from inline <style> blocks) */
-
-/* Navbar mobile helpers */
 @media (max-width: 768px) {
   .hide-mobile {
     display: none !important;
@@ -1132,7 +1060,6 @@ iframe {
   }
 }
 
-/* Partners slider keyframes and hover state */
 @keyframes scrollLeft {
   0% {
     transform: translateX(0);
@@ -1153,7 +1080,6 @@ iframe {
   }
 }
 
-/* Emergency Banner */
 .emergency-banner {
   background: var(--red);
   padding: 2.5rem 2rem;
@@ -1276,7 +1202,6 @@ iframe {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Hero Carousel base classes */
 .hero-section {
   position: relative;
   height: 580px;
@@ -1391,9 +1316,6 @@ iframe {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2)
 }
 
-/* The 24-hour emergency line: red outline and a softly glowing red siren.
-   A brighter red than the site's banner red, so it holds up on the dark
-   green hero. */
 .hero-emergency {
   --hero-red: #FF5A5F;
   display: inline-flex;
@@ -1504,7 +1426,6 @@ iframe {
   background: #fff
 }
 
-/* Contact section */
 .contact-section {
   padding: 6rem 0 4rem 0;
   background: var(--primary-dark);
@@ -1617,7 +1538,6 @@ iframe {
   justify-content: center
 }
 
-/* Services grid */
 .services-section {
   --services-pad: 2rem;
   padding: 6rem var(--services-pad);
@@ -1652,9 +1572,6 @@ iframe {
   line-height: 1.7
 }
 
-/* Service cards keep one fixed shape at every screen width. The grid picks
-   4, 2 or 1 columns from the space available, so the cards always form even
-   rows (4, 2x2, or a single column), never 3 with one left over. */
 .services-container {
   container-type: inline-size;
 }
@@ -1670,18 +1587,12 @@ iframe {
   width: 100%;
 }
 
-/* 4 cards need 4 x 300 + 3 x 20 = 1260px; 2 need 620px. */
 @container (max-width: 1259px) {
   .services-grid { grid-template-columns: repeat(2, var(--service-card-w)); }
 }
 @container (max-width: 619px) {
   .services-grid { grid-template-columns: var(--service-card-w); }
 }
-/* Whenever all four don't fit in a row (tablets and phones): rather than
-   cards stranded in the middle, a swipeable row that starts in line with the
-   heading and runs to the edge of the screen, with the next card peeking in.
-   Cards snap into place. Phones 375px wide and narrower stack them instead
-   (the container is the screen less 2 x 16px, so 344px = a 376px screen). */
 @container (min-width: 344px) and (max-width: 1259px) {
   .services-grid {
     display: flex;
@@ -1692,8 +1603,6 @@ iframe {
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    /* Room for the hover lift and shadow, which a scroll box would clip,
-       and a bleed past the section's right padding. */
     margin: -12px calc(-1 * var(--services-pad)) -28px 0;
     padding: 12px var(--services-pad) 28px 2px;
   }
@@ -1701,12 +1610,9 @@ iframe {
   .service-cell { flex: 0 0 var(--service-card-w); scroll-snap-align: start; }
   .services-container .services-rail-nav { display: flex; }
 }
-/* Small phones (375px screens and below): one card per row, stacked
-   vertically, each the full width so it lines up with the heading. */
 @container (max-width: 343px) {
   .services-grid { --service-card-w: 100cqi; }
 }
-/* Browsers without container queries fall back to the window width. */
 @supports not (container-type: inline-size) {
   @media (max-width: 1323px) { .services-grid { grid-template-columns: repeat(2, var(--service-card-w)); } }
   @media (max-width: 683px) { .services-grid { grid-template-columns: var(--service-card-w); } }
@@ -1717,8 +1623,6 @@ iframe {
   justify-content: flex-end;
   gap: 8px;
   margin: -2.25rem 0 1rem;
-  /* Same as .team-rail-nav: above the header's animation wrapper, but only
-     the buttons take clicks, so "View All Services" stays clickable. */
   position: relative;
   z-index: 3;
   pointer-events: none;
@@ -1784,7 +1688,6 @@ iframe {
   color: #fff
 }
 
-/* A fixed box, so every icon sits at the same size and position. */
 .service-media {
   flex-shrink: 0;
   width: 56px;
@@ -1799,8 +1702,6 @@ iframe {
   object-fit: contain;
 }
 
-/* Titles and descriptions reserve the same number of lines on every card,
-   so the buttons line up no matter how long the text is. */
 .service-card h3 {
   font-family: var(--font-serif);
   font-size: 1.08rem;
@@ -1855,25 +1756,17 @@ iframe {
   color: var(--primary)
 }
 
-/* WhatWeDo: small helper for slide transform left/right — dynamic transform stays inline */
 .what-we-do {
   padding-top: 3rem;
   padding-bottom: 6rem
 }
 
-/* End of component-level styles */
-/* ── Partner marquee ──────────────────────────────────────────────────── */
 .marquee {
   position: relative;
   width: 100%;
   overflow: hidden;
 }
 
-/* The site-wide `div { max-width: 100% !important }` overflow guard (above)
-   would cap this strip at the viewport, so the animation slid a third of a
-   clipped track and snapped back each cycle — most chips never came into
-   view. A marquee is *meant* to be wider than its container; the !important
-   here is what it takes to out-rank that guard. */
 .marquee-track {
   display: flex;
   width: max-content;
@@ -1886,8 +1779,6 @@ iframe {
   animation: scrollRight var(--marquee-duration, 20s) linear infinite;
 }
 
-/* Each group is one full set plus a trailing gap, so three groups translate
-   by exactly one group with no seam. */
 .marquee-set {
   display: flex;
   gap: 1rem;
@@ -1896,14 +1787,11 @@ iframe {
   max-width: none !important;
 }
 
-/* Let people stop it to read — hover or keyboard focus. */
 .marquee:hover .marquee-track,
 .marquee:focus-within .marquee-track {
   animation-play-state: paused;
 }
 
-/* The chip stays a solid white card on hover — previously it faded to 10%
-   white, which left dark text on dark green and made the name vanish. */
 .logo-chip {
   border: 1px solid transparent;
   transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
@@ -1921,7 +1809,6 @@ iframe {
     justify-content: center;
     width: 100%;
   }
-  /* One copy is enough when nothing scrolls. */
   .marquee-set[aria-hidden="true"] {
     display: none;
   }
@@ -1932,7 +1819,6 @@ iframe {
   }
 }
 
-/* PhotoCarousel keyframes and mobile overrides */
 @keyframes pulse-icon {
 
   0%,
@@ -1957,7 +1843,6 @@ iframe {
   }
 }
 
-/* MOBILE OVERRIDES (max-width: 768px) for PhotoCarousel */
 @media (max-width: 768px) {
   .carousel-main-container {
     padding: 1rem 1rem 2rem !important;
@@ -1965,7 +1850,6 @@ iframe {
 
   .carousel-viewport {
     height: 380px !important;
-    /* Perfect visual match to screenshot ratio */
   }
 
   .carousel-image-side {
@@ -2014,7 +1898,6 @@ iframe {
   }
 }
 
-/* Admin login shake animation */
 @keyframes shake {
 
   0%,
@@ -2033,17 +1916,10 @@ iframe {
   }
 }
 
-/* Small icon size fix used on About page */
 .icon img {
   width: 10%;
   height: auto;
 }
-
-
-/* ─── Organogram ─────────────────────────────────────────────
-   Page shell. Padding is deliberately tight on small screens: the chart sits
-   inside section + .container + shell, and three levels of 2rem left only
-   ~180px of usable width on a 375px device.                                */
 
 .organogram-section {
   padding: 0 2rem 5rem;
@@ -2067,11 +1943,6 @@ iframe {
     border-radius: 8px;
   }
 }
-
-/* ─── Organogram chart ───────────────────────────────────────
-   Tree connectors are drawn with CSS pseudo-elements, so the markup stays a
-   plain nested <ul> (semantic + screen-reader friendly). --org-line is set
-   per node in OrgChart.tsx so each branch keeps its own colour.            */
 
 .org__controls {
   display: flex;
@@ -2171,10 +2042,6 @@ iframe {
   position: relative;
 }
 
-/* width:max-content is load-bearing. A centred flex container that overflows
-   pushes content off BOTH edges, and scrollLeft cannot go negative — so the
-   left-most branch would be permanently unreachable. Sizing the root to its
-   content keeps it centred when it fits and scrollable when it doesn't. */
 .org-tree {
   padding-top: 0;
   width: max-content;
@@ -2192,8 +2059,6 @@ iframe {
   list-style: none;
 }
 
-/* Connector segments: ::before is the left half of the sibling bar, ::after
-   the right half plus the drop into this node. */
 .org-item::before,
 .org-item::after {
   content: "";
@@ -2234,7 +2099,6 @@ iframe {
   border-radius: 6px 0 0 0;
 }
 
-/* Drop line from a parent card into its row of children. */
 .org-children::before {
   content: "";
   position: absolute;
@@ -2245,7 +2109,6 @@ iframe {
   border-left: 2px solid var(--org-line, #C8D8CC);
 }
 
-/* Internal Audit sits outside the management chain. */
 .org-item--dotted::before,
 .org-item--dotted::after {
   border-top-style: dashed;
@@ -2274,8 +2137,6 @@ iframe {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  /* break-word, not anywhere: `anywhere` collapses min-content to a single
-     character, letting flex shrink cards until labels break mid-syllable. */
   overflow-wrap: break-word;
 }
 
@@ -2323,10 +2184,6 @@ iframe {
   outline-offset: 2px;
 }
 
-/* Wide all-leaf branches wrap rather than stretching the chart.
-   An explicit width is required: the <ul> is a block child of a narrow <li>,
-   so max-width alone would collapse it to one item per row. It is then
-   re-centred under its parent card. */
 .org-children--grid {
   flex-wrap: wrap;
   width: 748px;
@@ -2344,7 +2201,6 @@ iframe {
   display: none;
 }
 
-/* ── Mobile: switch the tree to an indented outline ── */
 @media (max-width: 899px) {
 
   .org-tree,
@@ -2355,14 +2211,11 @@ iframe {
     padding-top: 0;
   }
 
-  /* Outline mode fills the available width instead of sizing to content. */
   .org-tree {
     width: auto;
     margin: 0;
   }
 
-  /* Indent stays small — it compounds at every level and the tree runs six
-     deep, which would otherwise leave no room for the labels. */
   .org-children {
     margin-left: 7px;
     padding-left: 11px;
@@ -2407,7 +2260,6 @@ iframe {
     flex: 1 1 auto;
   }
 
-  /* Sits in flow at the end of the row rather than overlaying the label. */
   .org-card__toggle {
     position: static;
     transform: none;
@@ -2423,20 +2275,12 @@ iframe {
   }
 }
 
-/* ── Booking form step indicator ──────────────────────────────────────────
-   Phones show only the step you are on, centred; the trail of three needs
-   more width than a phone has, and shrinking it made the labels illegible.
-   Tablets and up keep the full three-step trail with its connectors.
-   `flex` lives here rather than inline so the media query can override it —
-   an inline style would win over this rule. */
 .booking-step {
   flex: 1;
   display: flex;
   align-items: center;
 }
 
-/* 767.98 rather than 768: iPad portrait is exactly 768 and should get the
-   full trail, so the phone rule has to stop just short of it. */
 @media (max-width: 767.98px) {
   .booking-steps {
     justify-content: center;

@@ -1,17 +1,10 @@
 import { SITE } from "@/lib/data";
 
-/**
- * Patient FAQs, shown on /faq (all of them) and on /contact (the `featured` ones).
- * Answers only state what the hospital has confirmed elsewhere on the site:
- * check with the hospital before adding policies such as visiting hours or fees.
- */
-
 export type FaqLink = { href: string; label: string };
 
 export type FaqItem = {
   id: string;
   question: string;
-  /** Plain-text paragraphs. Also used for the search-engine FAQ markup. */
   answer: string[];
   links?: FaqLink[];
   featured?: boolean;
@@ -207,7 +200,6 @@ export const FAQ_TOPICS: FaqTopic[] = [
 
 export const FEATURED_FAQS: FaqItem[] = FAQ_TOPICS.flatMap((t) => t.items).filter((i) => i.featured);
 
-/** schema.org FAQPage markup, so search engines can show answers directly. */
 export function faqJsonLd(topics: FaqTopic[] = FAQ_TOPICS) {
   return {
     "@context": "https://schema.org",

@@ -31,13 +31,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-// The hospital's pin on Google Maps.
 const LAT_LNG = `${SITE.geo.lat},${SITE.geo.lng}`;
 const MAPS_PLACE = SITE.mapsUrl;
 const MAPS_DIRECTIONS = `https://www.google.com/maps/dir/?api=1&destination=${LAT_LNG}`;
 
 export default function ContactPage() {
-  // The office line closes at 5pm and at weekends; emergencies use the 24-hour lines.
   const officePhone = SITE.phone;
   const officeTel = telHref(officePhone);
 
@@ -52,7 +50,6 @@ export default function ContactPage() {
 
       <section className="ct-page">
         <div className="ct-container">
-          {/* The four ways people most often need to reach us. */}
           <div className="ct-quick">
             <div className="ct-card" data-tone="emergency">
               <span className="ct-card-icon"><Siren size={22} aria-hidden="true" /></span>

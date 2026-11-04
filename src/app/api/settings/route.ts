@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 const GET_SETTINGS = `query HospitalSettingsQuery { hospitalSettings { ${SETTINGS_FIELDS} } }`;
 
-/** Readable without auth — the plugin exposes no private data here. */
 export async function GET() {
   try {
     const data = await wpGraphQL<{ hospitalSettings: HospitalSettings }>(GET_SETTINGS);

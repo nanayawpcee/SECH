@@ -1,13 +1,5 @@
 import { TEAM } from "@/lib/data";
 
-/**
- * Organogram of the Goaso Diocesan Health Service.
- *
- * Transcribed from the official diocesan chart. This tree is the single source
- * of truth for the organogram page — adding, moving or renaming a post is an
- * edit here, not a change to the renderer.
- */
-
 export type OrgCategory =
   | "governance"
   | "medical"
@@ -17,13 +9,10 @@ export type OrgCategory =
   | "audit";
 
 export interface OrgNode {
-  /** Stable id — drives expand/collapse state, so keep it if a label changes. */
   id: string;
   label: string;
   category: OrgCategory;
-  /** Matches a TEAM[].role so the chart can name the current post-holder. */
   roleKey?: string;
-  /** Reports outside the direct line hierarchy; rendered with a dashed link. */
   dotted?: boolean;
   children?: OrgNode[];
 }
@@ -157,9 +146,7 @@ export const ORG_CHART: OrgNode = {
               children: [medicalDirector, chaplain, administrator, nurseManager],
             },
             {
-              // Drawn on the official chart as a separate line running back up to
-              // the Director — internal audit sits outside the management chain
-              // so it can report independently.
+              // dotted line on the official chart: reports to the director, outside the chain
               id: "internal-auditor",
               label: "Internal Auditor",
               category: "audit",
@@ -172,23 +159,18 @@ export const ORG_CHART: OrgNode = {
   ],
 };
 
-/** The person currently holding a post, if the chart node names one. */
 export function findPostHolder(roleKey?: string) {
   if (!roleKey) return null;
   const key = roleKey.trim().toLowerCase();
-  // TEAM roles carry stray whitespace/prefixes ("Chaplain ", "AG. Medical
-  // Director"), so match on the normalised string rather than the label.
   return TEAM.find((m) => m.role.trim().toLowerCase() === key) ?? null;
 }
 
-/** Every node id in the tree, depth-first. */
 export function collectNodeIds(node: OrgNode, acc: string[] = []): string[] {
   acc.push(node.id);
   node.children?.forEach((c) => collectNodeIds(c, acc));
   return acc;
 }
 
-/** Ids of nodes that actually have children — the only ones that can collapse. */
 export function collectParentIds(node: OrgNode, acc: string[] = []): string[] {
   if (node.children?.length) {
     acc.push(node.id);
@@ -197,7 +179,6 @@ export function collectParentIds(node: OrgNode, acc: string[] = []): string[] {
   return acc;
 }
 
-/** Total posts in the chart, for the page summary. */
 export function countNodes(node: OrgNode): number {
   return 1 + (node.children?.reduce((sum, c) => sum + countNodes(c), 0) ?? 0);
 }

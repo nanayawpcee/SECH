@@ -6,9 +6,8 @@ import { STAFF_NOTICES_QUERY, SAVE_NOTICE, isMissingPlugin, noticeVariables, typ
 
 export const dynamic = "force-dynamic";
 
-/** The notice board — any signed-in staff account. Never public. */
 export async function GET(request: Request) {
-  const gate = await requirePerm(); // signed in; no extra permission needed to read
+  const gate = await requirePerm();
   if (gate instanceof NextResponse) return gate;
   const includeExpired =
     new URL(request.url).searchParams.get("all") === "1" && gate.perms.includes("notices.manage");
@@ -21,7 +20,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ notices: data.staffNotices ?? [] });
   } catch (error) {
     if (error instanceof WpGraphQLError && isMissingPlugin(error.message)) {
-      // Not an outage: WordPress just hasn't got plugin 1.1.0 yet.
       return NextResponse.json({ notices: [], needsPlugin: true });
     }
     const { body, status } = toErrorResponse(error);
@@ -29,7 +27,6 @@ export async function GET(request: Request) {
   }
 }
 
-/** Post a new notice — content managers and administrators. */
 export async function POST(request: Request) {
   const gate = await requirePerm("notices.manage");
   if (gate instanceof NextResponse) return gate;
@@ -43,7 +40,7 @@ export async function POST(request: Request) {
       noticeVariables(input),
       { authenticated: true },
     );
-    revalidatePath("/notices", "layout"); // the public share pages
+    revalidatePath("/notices", "layout");
     return NextResponse.json({ notice: data.saveStaffNotice.notice });
   } catch (error) {
     const { body, status } = toErrorResponse(error);

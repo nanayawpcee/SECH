@@ -10,14 +10,6 @@ import {
   type OrgNode,
 } from "@/lib/org-chart";
 
-/**
- * Renders the organogram tree from `ORG_CHART`. The shape of the chart lives
- * entirely in that data file — this component only knows how to draw a node
- * and recurse, so new posts never require changes here.
- */
-
-/** Branches wider than this whose children are all leaves wrap into a grid
- *  instead of one very wide row (Administration alone has 15 direct reports). */
 const GRID_THRESHOLD = 6;
 
 function OrgNodeView({
@@ -41,8 +33,6 @@ function OrgNodeView({
   return (
     <li
       className={`org-item${node.dotted ? " org-item--dotted" : ""}`}
-      // Drives the connector colour so each branch keeps its own line colour,
-      // matching the source chart.
       style={{ ["--org-line" as string]: meta.line } as React.CSSProperties}
     >
       <div
@@ -106,13 +96,11 @@ export function OrgChart() {
   const allExpanded = collapsed.size === 0;
 
   const legend = (Object.keys(ORG_CATEGORY_META) as OrgCategory[]).filter(
-    // Administration and Governance share a palette; show the pair once.
     (c) => c !== "administration",
   );
 
   return (
     <div className="org">
-      {/* ── Controls ── */}
       <div className="org__controls">
         <div className="org__buttons">
           <button
@@ -137,7 +125,6 @@ export function OrgChart() {
         </p>
       </div>
 
-      {/* ── Legend ── */}
       <ul className="org__legend">
         {legend.map((key) => {
           const meta = ORG_CATEGORY_META[key];
@@ -157,7 +144,6 @@ export function OrgChart() {
         </li>
       </ul>
 
-      {/* ── Chart ── */}
       <div className="org__scroll">
         <ul className="org-tree">
           <OrgNodeView

@@ -5,10 +5,7 @@ import { requirePerm } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
-// `stati` must be spelled out. With no status (or `status: null`) WPGraphQL
-// falls back to published posts only, so drafts — including everything saved
-// from the editor as a draft — silently never reached the admin table. WordPress
-// still drops any status the signed-in user is not allowed to read.
+// stati has to be listed or WPGraphQL only returns published posts
 const LIST_POSTS = `
   query AdminPosts($first: Int!) {
     posts(
@@ -23,7 +20,6 @@ const LIST_POSTS = `
   }
 `;
 
-/** A staff writer's own posts only — filtered by WordPress, not after the fact. */
 const LIST_OWN_POSTS = `
   query OwnPosts($first: Int!, $author: Int!) {
     posts(
@@ -39,7 +35,6 @@ const LIST_OWN_POSTS = `
   }
 `;
 
-/** List posts for the admin table. Includes drafts, so it needs the JWT. */
 export async function GET() {
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
@@ -100,10 +95,8 @@ export async function POST(request: Request) {
         title: String(title).trim(),
         content: content ?? "",
         excerpt: excerpt ?? "",
-        // Staff writers who ask to publish are submitting for review.
         status: toWpStatus(allowedStatus(status === "published" || status === "pending" ? status : "draft", gate.perms.includes("posts.publish"))),
         categoryName: type || "news",
-        // Default to open when the caller says nothing, matching WordPress.
         commentStatus: commentsOpen === false ? "closed" : "open",
       },
       { authenticated: true },
@@ -111,8 +104,7 @@ export async function POST(request: Request) {
 
     const created = data.createPost.post;
 
-    // WPGraphQL's CreatePostInput has no featuredImageId on this site, so the
-    // thumbnail is attached in a second call via the portal plugin.
+    // CreatePostInput has no featuredImageId here, the plugin sets it in a second call
     if (featuredImageId) {
       try {
         await wpGraphQL(
@@ -121,8 +113,6 @@ export async function POST(request: Request) {
           { authenticated: true },
         );
       } catch (imageError) {
-        // The post itself saved — report the partial success rather than
-        // failing the whole operation and stranding the author's work.
         return NextResponse.json({
           success: true,
           post: created,

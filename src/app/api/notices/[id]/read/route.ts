@@ -5,7 +5,6 @@ import { MARK_NOTICE_READ, type StaffNotice } from "@/lib/wp-notices";
 
 export const dynamic = "force-dynamic";
 
-/** "I've read this" — any signed-in staff member, for themselves only. */
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm();
   if (gate instanceof NextResponse) return gate;

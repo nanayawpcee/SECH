@@ -5,10 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, MapPin, Phone, Siren } from "lucide-react";
 import { SITE, telHref } from "@/lib/data";
+import { SHOW_DOCTORS_PUBLICLY } from "@/lib/doctors";
 import { NewsletterSignup } from "@/components/layout/NewsletterSignup";
 import type { NewsletterIssue } from "@/lib/wp-newsletter";
 
-/** Rendered height of the accreditation crests, in px. */
 const LOGO_HEIGHT = 30;
 
 
@@ -17,19 +17,19 @@ const ACCREDITATIONS = [
     short: "CHAG",
     name: "Christian Health Association of Ghana",
     logo: "/images/partnerlogos/chag.png",
-    width: 25, // 460 × 543
+    width: 25,
   },
   {
     short: "GHS",
     name: "Ghana Health Service",
     logo: "/images/partnerlogos/ghs.png",
-    width: 23, // 278 × 360
+    width: 23,
   },
   {
     short: "MOH",
     name: "Ministry of Health, Ghana",
     logo: "/images/partnerlogos/moh.png",
-    width: 30, // 300 × 300
+    width: 30,
   },
 ];
 
@@ -44,7 +44,7 @@ const FOOTER_LINKS = {
   Hospital: [
     { label: "About Us", href: "/about" },
     { label: "Our Team", href: "/about#team" },
-    { label: "Doctors & Specialists", href: "/doctors" },
+    ...(SHOW_DOCTORS_PUBLICLY ? [{ label: "Doctors & Specialists", href: "/doctors" }] : []),
     { label: "News", href: "/news" },
     { label: "Contact", href: "/contact" },
     { label: "Appointment", href: "/appointment" },
@@ -65,7 +65,6 @@ export function Footer({ newsletter = null }: { newsletter?: NewsletterIssue | n
       <div className="container">
         <NewsletterSignup latest={newsletter} />
 
-        {/* FIX: grid columns handled via className + globals.css — avoids hydration mismatch */}
         <div className="footer-grid" style={{ marginBottom: "2.5rem" }}>
           <div>
             <Link
@@ -134,9 +133,6 @@ export function Footer({ newsletter = null }: { newsletter?: NewsletterIssue | n
                     alignItems: "center",
                     justifyContent: "center",
                     padding: "7px 11px",
-                    // The crests are full-colour marks drawn for light stock,
-                    // so they sit on a light plate rather than the near-black
-                    // footer — matching how the partner strip presents them.
                     background: "rgba(255,255,255,0.94)",
                     border: "1px solid rgba(255,255,255,0.16)",
                     borderRadius: 4,

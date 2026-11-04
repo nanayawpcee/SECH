@@ -6,12 +6,6 @@ import { indexSetup, type Employee, type PortalUserOption, type StaffRanks, type
 
 type SaveResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
-/**
- * Loads staff records and the structure they hang off, for the three staff
- * pages. Each page mounts its own copy; the data is small and a fresh read
- * after navigating keeps two HR officers from overwriting each other's work
- * with a stale list.
- */
 export function useStaff() {
   const { logout } = useAuth();
   const [setup, setSetup] = useState<StaffSetup | null>(null);
@@ -79,7 +73,6 @@ export function useStaff() {
       const r = await request<{ ok: boolean }>(`/api/staff/${id}`, { method: "DELETE" });
       if (!r.ok) return r;
       setEmployees((list) => list.filter((e) => e.databaseId !== id));
-      // The plugin clears them from any in-charge slot; mirror that locally.
       setSetup((s) =>
         s && {
           ...s,

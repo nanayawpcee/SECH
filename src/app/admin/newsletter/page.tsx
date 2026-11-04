@@ -32,7 +32,6 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** The footer sign-up list. Administrators only — it is personal data. */
 export default function NewsletterPage() {
   const { logout } = useAuth();
   const { addToast } = useAdminData();
@@ -82,8 +81,6 @@ export default function NewsletterPage() {
     );
   }, [subscribers, filter, query]);
 
-  // Only ever export or copy people who are still subscribed — a mailing
-  // made from this list must never reach someone who left it.
   const mailable = filtered.filter((s) => s.status === "subscribed");
 
   const exportCSV = () => {
@@ -130,9 +127,6 @@ export default function NewsletterPage() {
 
   const closeDelete = useCallback(() => setToDelete(null), []);
 
-  // For someone who emails asking to be taken off: same route as their own
-  // unsubscribe link, so the record is kept as "unsubscribed" and can't be
-  // mailed from a later export.
   const unsubscribe = async (s: NewsletterSubscriber) => {
     try {
       const res = await fetch("/api/newsletter/unsubscribe", {

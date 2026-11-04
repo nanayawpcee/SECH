@@ -16,7 +16,6 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  // Fetch data on the server side
   const posts = await getNewsItems(3);
 
   return (

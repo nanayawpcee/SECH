@@ -58,7 +58,6 @@ export function WhatWeDo() {
   return (
     <section className="py-12 sm:py-16 lg:py-24 bg-background overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
-        {/* Section Header */}
         <motion.div
           className="text-center mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -84,7 +83,6 @@ export function WhatWeDo() {
           </h2>
         </motion.div>
 
-        {/* Slider */}
         <motion.div
           className="relative max-w-5xl mx-auto overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl"
           onMouseEnter={() => setIsPaused(true)}
@@ -94,7 +92,6 @@ export function WhatWeDo() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          {/* Slides Container */}
           <div
             className="flex transition-transform duration-700 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -132,7 +129,6 @@ export function WhatWeDo() {
             ))}
           </div>
 
-          {/* Progress Indicators */}
           <div className="absolute bottom-3 sm:bottom-4 md:bottom-6 right-3 sm:right-4 md:right-6 flex items-center gap-1.5 sm:gap-2">
             {slides.map((_, index) => (
               <motion.button

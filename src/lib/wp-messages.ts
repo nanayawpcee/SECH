@@ -1,12 +1,8 @@
-/** Contact-form messages — shapes, labels and GraphQL documents (plugin 1.5.0+). */
-
-/** The contact form is for short enquiries; longer ones go to the hospital's email. */
 export const MESSAGE_MAX = 500;
 
 export type MessageTopic =
   | "general" | "appointments" | "feedback" | "complaint" | "billing" | "records" | "media" | "other";
 
-/** In the order the form offers them. The plugin validates against the same keys. */
 export const MESSAGE_TOPICS: { value: MessageTopic; label: string }[] = [
   { value: "general", label: "General enquiry" },
   { value: "appointments", label: "Appointments" },
@@ -56,7 +52,6 @@ export const DELETE_MESSAGE = `
   }
 `;
 
-/** WordPress is still on a plugin older than 1.5.0. */
 export function isMissingMessagesPlugin(message: string) {
   return /contactMessages|submitContactMessage|updateContactMessage|deleteContactMessage/i.test(message);
 }

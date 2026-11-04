@@ -12,7 +12,6 @@ export const metadata: Metadata = {
     "The organisational structure of St. Elizabeth Catholic Hospital, part of the Goaso Diocesan Health Service.",
 };
 
-/** Leadership tier, in the order it appears on the diocesan chart. */
 const LEADERSHIP = [
   {
     label: "Bishop of Goaso Diocese",
@@ -67,7 +66,6 @@ export default function OrganogramPage() {
         )} posts across six reporting lines.`}
       />
 
-      {/* Intro strip */}
       <section style={{ background: "#fff", padding: "4rem 2rem 0" }}>
         <div className="container">
           <AnimateIn>
@@ -131,7 +129,6 @@ export default function OrganogramPage() {
         </div>
       </section>
 
-      {/* Org chart */}
       <section className="organogram-section" style={{ background: "#fff" }}>
         <div className="container" style={{ maxWidth: "100%" }}>
           <AnimateIn>
@@ -142,7 +139,6 @@ export default function OrganogramPage() {
         </div>
       </section>
 
-      {/* Download note */}
       <section
         style={{ background: "var(--light-green)", padding: "3rem 2rem" }}
       >

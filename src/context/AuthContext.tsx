@@ -5,16 +5,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { homeFor, ROLE_LABELS, type Perm } from "@/lib/permissions";
 
 interface Admin {
-  /** WordPress user id — "my posts" in the staff area. */
   id?: number;
   name: string;
   email: string;
-  /** Human label for the person's WordPress role, e.g. "Staff writer". */
   role: string;
   avatar: string;
-  /** What the portal shows them. The server re-checks every request. */
   perms: Perm[];
-  /** Signed in with a temporary password; must choose their own first. */
   mustChangePassword?: boolean;
 }
 
@@ -31,7 +27,6 @@ function initials(name: string) {
 
 interface AuthCtx {
   admin: Admin | null;
-  /** After a successful password change: clear the flag and carry on. */
   passwordChanged: () => void;
   loading: boolean;
   login: (identifier: string, password: string) => Promise<string | null>;
@@ -51,13 +46,9 @@ export function useAuth() {
 }
 
 const SESSION_KEY = "sech_admin_session";
-const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
-/**
- * A post-login destination from ?next=, accepted only if it stays inside the
- * portal. Anything else — another site, "//evil.example", "/\\host" — is
- * ignored, so a shared link can't be used to bounce staff somewhere hostile.
- */
+// only allow ?next= paths inside the portal, never another site
 export function safeNext(raw: string | null | undefined): string | null {
   if (!raw) return null;
   if (!/^\/(staff|admin)(\/|\?|$)/.test(raw)) return null;
@@ -65,14 +56,12 @@ export function safeNext(raw: string | null | undefined): string | null {
   return raw;
 }
 
-/** Where the person who just signed in belongs — read after login(). */
 export function homeAfterLogin(next?: string | null): string {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     const stored = raw ? JSON.parse(raw) : {};
     if (stored.mustChangePassword) return SET_PASSWORD_PATH;
     const target = safeNext(next);
-    // A staff-area link works for everyone; an admin link only for admins.
     if (target && (target.startsWith("/staff") || homeFor(stored.perms) === "/admin")) return target;
     return homeFor(stored.perms);
   } catch {
@@ -86,12 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   
-  // Use a mutable ref to hold the inactivity timeout ID across re-renders
   const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  /* 1. Restore the session, then confirm it — and the person's current
-        permissions — with the server. A role an administrator changed since
-        sign-in applies here; a session the server no longer accepts ends. */
   useEffect(() => {
     let stored: Admin | null = null;
     try {
@@ -105,8 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetch("/api/auth/me")
       .then(async (res) => {
         if (!res.ok) {
-          // Only a definite "not signed in" ends the session; a network blip
-          // or server hiccup keeps the stored one.
+          // only a real 401 signs out, a network blip keeps the session
           if (res.status === 401) {
             sessionStorage.removeItem(SESSION_KEY);
             setAdmin(null);
@@ -132,8 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  /* 2. Route guard for the portals. Signed-out visitors go to the login page;
-        signed-in people go to the portal their permissions allow. */
   useEffect(() => {
     if (loading) return;
     const isLoginPage = pathname === "/admin/login";
@@ -145,9 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.replace("/admin/login");
       return;
     }
-    // A temporary password must be replaced before anything else. The server
-    // refuses other requests meanwhile; this keeps the person on the one page
-    // that works.
+    // temporary password: keep them on the set-password page
     if (admin?.mustChangePassword && (inAdmin || inStaff || isLoginPage)) {
       router.replace(SET_PASSWORD_PATH);
       return;
@@ -157,26 +137,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     if (isLoginPage && admin && !admin.mustChangePassword) {
-      // Already signed in and following a shared link: go straight there.
       const target = safeNext(new URLSearchParams(window.location.search).get("next"));
       router.replace(target && (target.startsWith("/staff") || homeFor(admin.perms) === "/admin") ? target : homeFor(admin.perms));
       return;
     }
-    // Staff without console access who land on an /admin URL.
     if (inAdmin && admin && homeFor(admin.perms) === "/staff") {
       router.replace("/staff");
     }
   }, [admin, loading, pathname, router]);
 
-  /* 3. Core logout mechanism */
   const logout = useCallback(() => {
     setAdmin(null);
     sessionStorage.removeItem(SESSION_KEY);
     
-    // Clear out server token secure cookie asynchronously
     fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     
-    // Clear any pending inactivity timeout if logging out manually
     if (activityTimeoutRef.current) {
       clearTimeout(activityTimeoutRef.current);
     }
@@ -184,9 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/admin/login");
   }, [router]);
 
-  /* 4. Automated 1-Minute Inactivity Timer Loop */
   useEffect(() => {
-    // Only set up listeners if an administrator is authenticated and logged in
     if (!admin) {
       if (activityTimeoutRef.current) clearTimeout(activityTimeoutRef.current);
       return;
@@ -197,25 +170,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(activityTimeoutRef.current);
       }
       
-      // Schedule auto-logout after 1 minute of dead time
       activityTimeoutRef.current = setTimeout(() => {
         console.warn("Session expired: 1 minute of system inactivity reached.");
         logout();
       }, INACTIVITY_LIMIT);
     };
 
-    // Global system events that indicate user interaction
     const activityEvents = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
 
-    // Register active listeners to keep resetting the 1-minute countdown clock
     activityEvents.forEach((event) => {
       window.addEventListener(event, resetTimer);
     });
 
-    // Run the initial tracker setup immediately on mount
     resetTimer();
 
-    // Cleanup: strip out window event tracking elements when context shifts or unmounts
     return () => {
       activityEvents.forEach((event) => {
         window.removeEventListener(event, resetTimer);
@@ -226,7 +194,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [admin, logout]);
 
-  /* 5. Authentication handler accepting Username or Email strings universally */
   const login = useCallback(async (identifier: string, password: string): Promise<string | null> => {
     try {
       const res = await fetch("/api/auth/login", {
@@ -244,7 +211,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return data.error || "Invalid credentials. Please try again.";
       }
 
-      // Convert backend profile details cleanly into your UI's context layout structure
       const adminUser: Admin = {
         id: typeof data.user?.databaseId === "number" ? data.user.databaseId : undefined,
         name: data.user?.name || "Staff member",
@@ -258,7 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAdmin(adminUser);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(adminUser));
       
-      return null; // Return null to flag successful execution chains
+      return null;
     } catch (err) {
       return "A network error occurred. Please check your connection and try again.";
     }

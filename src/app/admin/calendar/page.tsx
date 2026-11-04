@@ -25,10 +25,10 @@ const STATUS_COLOR: Record<AdminBooking["status"], string> = {
   cancelled: "var(--po-danger)",
 };
 
-/** Six rows of seven days, Monday first, including the neighbouring months. */
 function monthGrid(year: number, month: number) {
   const first = new Date(year, month, 1);
-  const offset = (first.getDay() + 6) % 7; // Monday = 0
+  // monday = 0
+  const offset = (first.getDay() + 6) % 7;
   const start = new Date(year, month, 1 - offset);
   return Array.from({ length: 42 }, (_, i) => {
     const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
@@ -86,7 +86,6 @@ export default function CalendarPage() {
     setSelected(today);
   };
 
-  // Arrow keys page through months when nothing else has focus.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -206,7 +205,6 @@ export default function CalendarPage() {
           )}
         </section>
 
-        {/* Day detail */}
         <aside className="po-cal-side">
           <section className="po-card">
             <div className="po-card-head" style={{ paddingBottom: 8 }}>

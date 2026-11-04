@@ -7,14 +7,9 @@ interface Props {
   title: string;
   subtitle?: string;
   accent?: string;
-  backgroundImage?: string; // ← New prop
-  overlayOpacity?: number; // Optional: control darkness (0.4 - 0.8 recommended)
+  backgroundImage?: string;
+  overlayOpacity?: number;
   dotGrid?: boolean;
-  /**
-   * A taller header (about 16:9, up to 680px) so more of a photo shows.
-   * Service pages use it; their 4:3 photos lost their top and bottom in the
-   * standard 40vh strip.
-   */
   tall?: boolean;
 }
 
@@ -51,7 +46,6 @@ export function PageHero({
         />
       )}
 
-      {/* Dark overlay */}
       {backgroundImage && (
         <div
           style={{
@@ -64,7 +58,6 @@ export function PageHero({
         />
       )}
 
-      {/* Sits above the photo and its overlay, below the copy. */}
       {dotGrid && (
         <PatternField
           pattern="dots"

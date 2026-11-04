@@ -82,7 +82,6 @@ function Slide({
         pointerEvents: active ? "auto" : "none",
       }}
     >
-      {/* BACKGROUND IMAGE CONTAINER */}
       <div
         className="carousel-image-side"
         style={{
@@ -99,14 +98,11 @@ function Slide({
           zIndex: 1,
         }}
       >
-        {/* Through next/image, so visitors get a resized AVIF/WebP copy
-            rather than the full-size JPEG a CSS background would load. */}
         <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
           <Image src={photo.image} alt="" fill sizes="(max-width: 768px) 100vw, 65vw" style={{ objectFit: "cover" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3))" }} />
         </div>
 
-        {/* Desktop floating center icon */}
         <div
           className="carousel-icon-badge"
           style={{
@@ -125,8 +121,6 @@ function Slide({
             animation: active ? "pulse-icon 3s ease-in-out infinite" : "none",
           }}
         >
-          {/* Slides carry either an SVG path or an emoji, so the badge renders
-              whichever it was given rather than printing a path as text. */}
           {photo.icon.startsWith("/") ? (
             <img
               src={photo.icon}
@@ -141,7 +135,6 @@ function Slide({
           )}
         </div>
 
-        {/* Small floating desktop hospital token */}
         <div
           className="carousel-floating-badge"
           style={{
@@ -178,7 +171,6 @@ function Slide({
         </div>
       </div>
 
-      {/* TEXT LAYER */}
       <div
         className="carousel-text-side"
         style={{
@@ -236,7 +228,6 @@ function Slide({
           }}
         />
 
-        {/* Text layout inner box */}
         <div style={{ position: "relative", zIndex: 3, width: "100%" }}>
           <div
             className="carousel-subheading"

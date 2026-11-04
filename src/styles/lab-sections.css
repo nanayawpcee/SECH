@@ -1,5 +1,3 @@
-/* Laboratory sections on /services/laboratory. Prefix lab-. */
-
 .lab-sections { padding: 4.5rem 2rem; background: #F7F9F7; }
 .lab-sections-inner { max-width: 1240px !important; margin: 0 auto; }
 
@@ -23,7 +21,6 @@
 
 .lab-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
 
-/* Arrived here from a section link on the Services page. */
 .lab-card:target,
 .lab-card[data-hash-target] { border-color: var(--primary); box-shadow: 0 0 0 3px var(--accent), var(--shadow-hover); }
 
@@ -58,7 +55,6 @@
 .lab-body h3 { margin: 0 0 0.35rem; font-family: var(--font-serif); font-size: 1.12rem; font-weight: 700; color: var(--text-dark); }
 .lab-body p { margin: 0; color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; }
 
-/* Smaller services without their own section (Endocrinology). */
 .lab-extras {
   display: grid;
   gap: 10px;
@@ -94,9 +90,7 @@
   .lab-card:hover { transform: none; }
 }
 
-/* "What We Offer" items on the Laboratory page link to their section card. */
 .svc-feature-link { color: inherit; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .svc-feature-link:hover { color: var(--primary); }
 
-/* "Other Services" follows on the same light background; a hairline keeps them apart. */
 .lab-sections + section { border-top: 1px solid #E2EBE7; }

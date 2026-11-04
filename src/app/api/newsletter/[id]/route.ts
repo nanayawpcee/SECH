@@ -5,7 +5,6 @@ import { DELETE_SUBSCRIBER } from "@/lib/wp-newsletter";
 
 export const dynamic = "force-dynamic";
 
-/** Erase a subscriber entirely — for data-protection requests. Administrators only. */
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;

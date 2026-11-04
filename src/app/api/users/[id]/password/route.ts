@@ -11,12 +11,6 @@ const RESET = `
   }
 `;
 
-/**
- * Give a staff member a new temporary password — for someone who has
- * forgotten theirs and has no email to reset it. WordPress signs them out
- * everywhere and requires a new password at their next sign-in. It refuses
- * for administrators and for your own account.
- */
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("team");
   if (gate instanceof NextResponse) return gate;

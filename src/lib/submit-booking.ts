@@ -1,9 +1,3 @@
-/**
- * Shared submit for the two patient-facing appointment forms (the full page
- * and the modal). Both collect the same fields, so the mapping to the API
- * lives here rather than being duplicated and drifting apart.
- */
-
 export interface AppointmentFormValues {
   firstName: string;
   lastName: string;

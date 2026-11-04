@@ -10,7 +10,6 @@ function idFrom(params: { id: string }) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/** Mark a message new, read or done. Administrators only. */
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("messages");
   if (gate instanceof NextResponse) return gate;
@@ -32,7 +31,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-/** Delete a message for good. Administrators only. */
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("messages");
   if (gate instanceof NextResponse) return gate;

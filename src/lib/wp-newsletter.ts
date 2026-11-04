@@ -1,5 +1,3 @@
-/** Newsletter list — GraphQL documents and shapes (plugin 1.4.0+). */
-
 export interface NewsletterSubscriber {
   databaseId: number;
   email: string;
@@ -37,17 +35,13 @@ export const DELETE_SUBSCRIBER = `
   }
 `;
 
-/** WordPress is still on a plugin older than 1.4.0. */
 export function isMissingNewsletterPlugin(message: string) {
   return /newsletterSubscribers|subscribeNewsletter|unsubscribeNewsletter|deleteNewsletterSubscriber/i.test(message);
 }
 
-/** Same shape check the browser does, so bad input never reaches WordPress. */
 export function isPlausibleEmail(email: string) {
   return email.length <= 190 && /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]{2,}$/.test(email);
 }
-
-/* ── Current issue: the downloadable newsletter PDF (plugin 1.6.0+) ── */
 
 export interface NewsletterIssue {
   title: string;
@@ -92,7 +86,6 @@ export function isMissingIssuePlugin(message: string) {
   return /currentNewsletter|newsletterPdfs|setCurrentNewsletter|clearCurrentNewsletter/i.test(message);
 }
 
-/** "3.2 MB" — for the download link, so people on mobile data know what they're getting. */
 export function formatBytes(bytes: number | null | undefined) {
   if (!bytes) return "";
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;

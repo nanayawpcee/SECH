@@ -1,8 +1,3 @@
-/**
- * LinkedIn "in" mark. Lucide dropped its brand icons, so this is drawn
- * directly. Fills with `currentColor` so it tints like the Lucide icons
- * beside it (including the hover state on the team cards).
- */
 export function LinkedInIcon({ size = 20 }: { size?: number }) {
   return (
     <svg

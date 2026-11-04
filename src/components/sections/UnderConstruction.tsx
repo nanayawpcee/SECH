@@ -4,9 +4,7 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { BookButton } from "@/components/ui/BookButton";
 
 interface Props {
-  /** What is being updated, in the reader's terms — "our history and team". */
   subject: string;
-  /** One or two sentences on why, so the page does not read as broken. */
   message: string;
 }
 
@@ -16,10 +14,6 @@ const ELSEWHERE = [
   { href: "/contact", icon: Phone, label: "Contact us", hint: "Phone, email and directions" },
 ];
 
-/**
- * A holding notice for a page whose content is being revised. Server-rendered
- * and self-contained, so it can stand in for any page behind a single flag.
- */
 export function UnderConstruction({ subject, message }: Props) {
   return (
     <section className="uc-section">

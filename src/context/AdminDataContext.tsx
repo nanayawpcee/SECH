@@ -17,9 +17,6 @@ import { useAuth } from "@/context/AuthContext";
 import { can } from "@/lib/permissions";
 import type { StaffNotice } from "@/lib/wp-notices";
 
-/** Viewport width at which the admin console is treated as a laptop rather than
- *  a tablet. 1024px is the conventional divide — iPad portrait (768) and most
- *  tablets fall below it, laptops at or above. */
 const LAPTOP_MIN_WIDTH = 1024;
 
 export type ToastKind = "success" | "warn" | "danger";
@@ -46,13 +43,10 @@ interface AdminDataCtx {
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
 
-  /** Includes featured image and comment settings from WordPress. */
   posts: AdminPost[];
   postsLoading: boolean;
   postsError: string | null;
   refreshPosts: () => Promise<void>;
-  /** Resolves with the post as WordPress actually stored it — which may
-   *  differ from the request, e.g. a writer's "publish" becomes "pending". */
   updatePost: (id: number, patch: Partial<Post>) => Promise<AdminPost>;
   deletePost: (id: number) => Promise<void>;
   togglePostStatus: (id: number) => Promise<void>;
@@ -64,34 +58,26 @@ interface AdminDataCtx {
   confirmBooking: (databaseId: number) => Promise<void>;
   cancelBooking: (databaseId: number) => Promise<void>;
 
-  /** Staff notice board — every signed-in person. */
   notices: StaffNotice[];
   noticesLoading: boolean;
-  /** WordPress doesn't have plugin 1.1.0 yet, so the board can't load. */
   noticesNeedPlugin: boolean;
   refreshNotices: () => Promise<void>;
   markNoticeRead: (id: number) => Promise<void>;
-  /** Create (no id) or update. Returns the saved notice, or null on failure. */
   saveNotice: (input: Partial<StaffNotice> & { title: string; resetReads?: boolean }, id?: number) => Promise<StaffNotice | null>;
   deleteNotice: (id: number) => Promise<boolean>;
 
-  /** Comments awaiting moderation — drives the nav badge and the bell. */
   pendingComments: number;
   refreshPendingComments: () => Promise<void>;
 
-  /** Unread contact-form messages — drives the Messages nav badge. */
   newMessages: number;
   setNewMessages: (n: number) => void;
 
-  /** Hospital profile + booking config, persisted in WordPress. */
   settings: HospitalSettings;
   settingsLoading: boolean;
   settingsError: string | null;
   settingsDirty: boolean;
-  /** Edits locally; nothing is written until saveSettings() runs. */
   patchSettings: (patch: Partial<HospitalSettings>) => void;
   saveSettings: () => Promise<void>;
-  /** Reload from WordPress — also how unsaved edits are discarded. */
   refreshSettings: () => Promise<void>;
   savingSettings: boolean;
 
@@ -108,8 +94,6 @@ interface AdminDataCtx {
   toggleToastPanel: () => void;
   addToast: (msg: string, kind?: ToastKind) => void;
 
-  /** Unsaved-changes guard for the post editor — lets the sidebar nav
-   *  intercept a route change instead of silently discarding edits. */
   editorDirty: boolean;
   setEditorDirty: (dirty: boolean) => void;
   guardTarget: string | null;
@@ -130,8 +114,6 @@ export function useAdminData() {
 
 export function AdminDataProvider({ children }: { children: ReactNode }) {
   const { logout, admin } = useAuth();
-  // Only load what this person may see. Staff never request patient bookings
-  // or settings at all — the server would refuse, but not asking is better.
   const canPosts = can(admin?.perms, "posts.write");
   const canBookings = can(admin?.perms, "bookings");
   const canSettings = can(admin?.perms, "settings");
@@ -139,8 +121,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const canMessages = can(admin?.perms, "messages");
   const logoutRef = useRef(logout);
   logoutRef.current = logout;
-  /** A 401 means WordPress no longer accepts the session: sign out cleanly
-   *  rather than leave the console showing stale data and error banners. */
   const expired = (res: Response) => {
     if (res.status !== 401) return false;
     logoutRef.current();
@@ -173,12 +153,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed((v) => !v), []);
 
-  /* ── Responsive sidebar ──
-   * Tablets and below get the icon rail; laptops and up get the full sidebar.
-   * Driven by matchMedia rather than a resize handler so it only fires when the
-   * viewport actually crosses the breakpoint — a manual toggle therefore sticks
-   * for as long as the user stays in that size class, instead of being undone
-   * by every stray resize event. */
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${LAPTOP_MIN_WIDTH - 0.02}px)`);
     setSidebarCollapsed(mq.matches);
@@ -219,7 +193,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const updatePost = useCallback(
     async (id: number, patch: Partial<Post>) => {
       const previous = posts;
-      // Optimistic: the table updates immediately, and rolls back if WP refuses.
       setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
       try {
         const res = await fetch(`/api/posts/${id}`, {
@@ -266,7 +239,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         await updatePost(id, { status: next });
         addToast(next === "published" ? "Post published" : "Moved to drafts");
       } catch {
-        // updatePost has already surfaced the failure and rolled back.
       }
     },
     [posts, updatePost, addToast],
@@ -325,7 +297,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     [setBookingStatus],
   );
 
-  /* ── Staff notice board ── */
   const signedIn = !!admin;
   const refreshNotices = useCallback(async () => {
     try {
@@ -336,7 +307,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
       setNotices(Array.isArray(data.notices) ? data.notices : []);
       setNoticesNeedPlugin(!!data.needsPlugin);
     } catch {
-      /* keep what we have */
     } finally {
       setNoticesLoading(false);
     }
@@ -349,7 +319,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   }, [signedIn, refreshNotices]);
 
   const markNoticeRead = useCallback(async (id: number) => {
-    // Optimistic: the unread dot clears at once.
     setNotices((list) => list.map((n) => (n.databaseId === id ? { ...n, isRead: true } : n)));
     try {
       const res = await fetch(`/api/notices/${id}/read`, { method: "POST" });
@@ -377,7 +346,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         if (expired(res)) return null;
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Could not save the notice.");
-        await refreshNotices(); // re-sort: pinned, then newest
+        await refreshNotices();
         addToast(id ? "Notice updated" : "Notice posted to the board");
         return data.notice as StaffNotice;
       } catch (err: any) {
@@ -410,17 +379,16 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     [notices, addToast],
   );
 
-  /* ── Comment moderation count ── */
   const refreshPendingComments = useCallback(async () => {
     try {
       const res = await fetch("/api/comments/pending");
-      if (expired(res) || !res.ok) return; // A badge is not worth an error toast.
+      // a badge count isn't worth an error toast
+      if (expired(res) || !res.ok) return;
       const data = await res.json();
       setPendingComments(
         typeof data.total === "number" ? data.total : Array.isArray(data.comments) ? data.comments.length : 0,
       );
     } catch {
-      // Leave the last known count in place.
     }
   }, []);
 
@@ -428,12 +396,11 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     if (canComments) refreshPendingComments();
   }, [canComments, refreshPendingComments]);
 
-  /* ── Unread contact messages (badge only; the inbox loads its own list) ── */
   useEffect(() => {
     if (!canMessages) return;
     fetch("/api/contact")
       .then(async (res) => {
-        if (expired(res) || !res.ok) return; // A badge is not worth an error toast.
+        if (expired(res) || !res.ok) return;
         const data = await res.json();
         const list: { status?: string }[] = Array.isArray(data.messages) ? data.messages : [];
         setNewMessages(list.filter((m) => m.status === "new").length);
@@ -442,7 +409,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canMessages]);
 
-  /* ── Hospital settings ── */
   const refreshSettings = useCallback(async () => {
     setSettingsLoading(true);
     try {
@@ -480,7 +446,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not save settings.");
-      // Trust WordPress's copy over ours, so sanitisation is reflected.
       setSettings(data.settings as HospitalSettings);
       setSettingsDirty(false);
       addToast("Settings saved");
@@ -521,7 +486,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     setSettingsDirty(true);
   }, []);
 
-  /* ── Theme ── */
   useEffect(() => {
     const stored = localStorage.getItem("sech_admin_theme");
     if (stored === "dark" || stored === "light") setTheme(stored);
@@ -539,8 +503,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const setEditorDirty = useCallback((dirty: boolean) => setEditorDirtyState(dirty), []);
 
-  /** Returns true when navigation should proceed immediately; false means
-   *  it was intercepted and a confirm dialog is now pending. */
   const requestLeave = useCallback(
     (href: string) => {
       if (editorDirty) {

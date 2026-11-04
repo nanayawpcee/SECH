@@ -5,11 +5,6 @@ import { SAVE_RANKS, SAVE_STRUCTURE } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Save departments & units ({ kind: "structure" }) or cadres, ranks and
- * positions ({ kind: "ranks" }). The plugin cleans the lists and refuses to
- * drop anything staff are still assigned to.
- */
 export async function PUT(request: Request) {
   const gate = await requirePerm("staff.manage");
   if (gate instanceof NextResponse) return gate;

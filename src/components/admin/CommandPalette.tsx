@@ -30,7 +30,6 @@ import { can, type Perm } from "@/lib/permissions";
 
 interface Command {
   id: string;
-  /** Hidden unless the person has this permission. */
   perm?: Perm;
   group: "Pages" | "Actions" | "Posts" | "Bookings";
   title: string;
@@ -40,7 +39,6 @@ interface Command {
   run: () => void;
 }
 
-/** Every term must appear somewhere; order does not matter. */
 function matches(cmd: Command, query: string) {
   if (!query) return true;
   const hay = `${cmd.title} ${cmd.sub ?? ""} ${cmd.keywords ?? ""}`.toLowerCase();
@@ -54,7 +52,6 @@ export function CommandPalette({
 }: {
   open: boolean;
   onClose: () => void;
-  /** Routes through the layout's unsaved-changes guard. */
   navigate: (href: string) => void;
 }) {
   const { posts, bookings, theme, toggleTheme, refreshPosts, refreshBookings, addToast } = useAdminData();
@@ -69,7 +66,6 @@ export function CommandPalette({
     if (open) {
       setQuery("");
       setActive(0);
-      // After the enter animation has mounted the input.
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
@@ -81,6 +77,7 @@ export function CommandPalette({
       { id: "p-posts", group: "Pages", title: "News & Blogs", perm: "posts.write", icon: Newspaper, keywords: "posts articles", run: go("/admin/posts") },
       { id: "p-comments", group: "Pages", title: "Comments", perm: "comments", icon: MessageSquare, keywords: "moderation approve", run: go("/admin/comments") },
       { id: "p-employees", group: "Pages", title: "Employees", perm: "staff.manage", icon: UserRound, keywords: "staff records nurses hr personnel", run: go("/admin/employees") },
+      { id: "p-data-protection", group: "Pages", title: "Data protection", perm: "settings", icon: UserRound, keywords: "privacy activity log audit retention encryption act 843", run: go("/admin/data-protection") },
       { id: "p-departments", group: "Pages", title: "Departments and units", perm: "staff.manage", icon: LayoutGrid, keywords: "wards units in-charge", run: go("/admin/departments") },
       { id: "p-ranks", group: "Pages", title: "Ranks and positions", perm: "staff.manage", icon: FileText, keywords: "grades cadres scheme of service", run: go("/admin/ranks") },
       { id: "p-messages", group: "Pages", title: "Messages", perm: "messages", icon: Inbox, keywords: "contact inbox enquiries complaints", run: go("/admin/messages") },
@@ -136,8 +133,6 @@ export function CommandPalette({
     return [...pages, ...actions, ...postCmds, ...bookingCmds].filter((c) => !c.perm || can(perms, c.perm));
   }, [posts, bookings, theme, toggleTheme, refreshPosts, refreshBookings, addToast, navigate, onClose, perms]);
 
-  // With no query, show pages and actions only — the full post and booking
-  // lists would bury them. Typing searches everything, capped per group.
   const results = useMemo(() => {
     const q = query.trim();
     const pool = q ? commands : commands.filter((c) => c.group === "Pages" || c.group === "Actions");

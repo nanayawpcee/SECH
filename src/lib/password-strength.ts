@@ -1,4 +1,3 @@
-/** A rough strength score, only to guide — WordPress enforces its own rules. */
 export function passwordStrength(pw: string) {
   let score = 0;
   if (pw.length >= 12) score++;

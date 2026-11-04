@@ -5,7 +5,6 @@ import { AnimateIn } from "@/components/ui/AnimateIn";
 import { NewsCard } from "@/components/news/NewsCard";
 import type { NewsItem } from "@/lib/news";
 
-/** The homepage's "latest news" strip: the three newest stories. */
 export function NewsSection({ posts = [] }: { posts: NewsItem[] }) {
   const displayed = posts.slice(0, 3);
   if (!displayed.length) return null;

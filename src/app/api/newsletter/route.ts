@@ -12,7 +12,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** The mailing list — administrators only, never cached. */
 export async function GET() {
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;
@@ -36,10 +35,6 @@ const rateLimited = createRateLimiter({ max: 5, windowMs: 10 * 60_000 });
 
 const DONE = { ok: true, message: "Thank you, you’re on the list." };
 
-/**
- * Public sign-up from the site footer. Unauthenticated by necessity, so like
- * bookings it is gated on the shared key that only this server holds.
- */
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
@@ -48,7 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please enter your email address." }, { status: 400 });
   }
 
-  // Honeypot: a field people never see. Bots fill it; pretend it worked.
   if (String(body.website ?? "").trim()) return NextResponse.json(DONE);
 
   if (rateLimited(request)) {
@@ -75,14 +69,12 @@ export async function POST(request: Request) {
       { email, name: String(body.name ?? "").trim().slice(0, 80) || null, source: "website-footer" },
       { headers: { "X-SECH-BOOKING-KEY": key } },
     );
-    // The same reply whether or not the address was already on the list.
     return NextResponse.json(DONE);
   } catch (error) {
     const { body: err, status } = toErrorResponse(error);
     if (error instanceof WpGraphQLError && isMissingNewsletterPlugin(error.message)) {
       console.error("Newsletter sign-up failed: WordPress needs sech-portal 1.4.0.");
     }
-    // Validation messages are written for the public; anything else is not.
     const friendly = status === 400 && /valid email|Too many sign-ups/i.test(err.error);
     return NextResponse.json(
       { error: friendly ? err.error : "We couldn’t sign you up just now. Please try again later." },

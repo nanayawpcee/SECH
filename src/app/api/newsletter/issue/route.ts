@@ -13,7 +13,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** The current downloadable issue plus the PDFs it could be switched to. Administrators only. */
 export async function GET() {
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;
@@ -33,7 +32,6 @@ export async function GET() {
   }
 }
 
-/** Make a PDF from the Media Library the current issue. */
 export async function PUT(request: Request) {
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;
@@ -51,7 +49,6 @@ export async function PUT(request: Request) {
       { attachmentId, title, issue: issue || null },
       { authenticated: true },
     );
-    // The download link lives in the footer on every public page.
     revalidatePath("/", "layout");
     return NextResponse.json({ current: data.setCurrentNewsletter.newsletter });
   } catch (error) {
@@ -60,7 +57,6 @@ export async function PUT(request: Request) {
   }
 }
 
-/** Stop offering a download (the PDF itself stays in the Media Library). */
 export async function DELETE() {
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;

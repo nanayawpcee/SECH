@@ -51,18 +51,11 @@ const TYPE_TONE: Record<AdminPost["type"], Tone> = {
 
 const TYPES: AdminPost["type"][] = ["news", "blog", "event", "announcement"];
 
-/**
- * The post list, shared by the admin console (every post) and the staff area
- * (the writer's own). What each person may do comes from their permissions;
- * the server applies the same rules, so this only decides what to offer.
- */
 export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
   const { posts: allPosts, postsLoading, postsError, refreshPosts, updatePost, deletePost, addToast } = useAdminData();
   const { admin } = useAuth();
   const canPublish = can(admin?.perms, "posts.publish");
   const isStaff = base === "/staff/posts";
-  // "My posts" means the person's own, even for an admin who can see every
-  // post. (Staff writers only ever receive their own from the server anyway.)
   const posts = useMemo(
     () => (isStaff && admin?.id ? allPosts.filter((p) => p.authorId === admin.id) : allPosts),
     [allPosts, isStaff, admin?.id],
@@ -82,16 +75,15 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
     if (initialStatus === "draft" || initialStatus === "published" || initialStatus === "pending") setStatus(initialStatus);
   }, [initialStatus]);
 
-  // The view choice is a per-browser convenience.
   useEffect(() => {
     try {
       const v = localStorage.getItem("sech_posts_view");
       if (v === "grid" || v === "table") setView(v);
-    } catch { /* storage unavailable */ }
+    } catch {}
   }, []);
   const chooseView = (v: "table" | "grid") => {
     setView(v);
-    try { localStorage.setItem("sech_posts_view", v); } catch { /* ignore */ }
+    try { localStorage.setItem("sech_posts_view", v); } catch {}
   };
 
   const filtered = useMemo(() => {
@@ -103,8 +95,6 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
     );
   }, [posts, status, type, query]);
 
-  // Drop selections that the filter has hidden, so bulk actions only ever
-  // touch rows the editor can see.
   useEffect(() => {
     setSelected((prev) => {
       const visible = new Set(filtered.map((p) => p.id));
@@ -138,15 +128,12 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
     setBusy(true);
     let ok = 0;
     let held = 0;
-    // One at a time: WordPress handles these fine sequentially, and a failure
-    // part-way leaves the rest untouched rather than half-applied in parallel.
     for (const p of targets) {
       try {
         const saved = await updatePost(p.id, { status: next });
-        // Report what WordPress stored, not what was asked for.
         if (saved.status === next) ok++;
         else if (saved.status === "pending") held++;
-      } catch { /* updatePost has already reported it */ }
+      } catch {}
     }
     setBusy(false);
     setSelected(new Set());
@@ -202,7 +189,6 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
       />
 
       <section className="po-card">
-        {/* Toolbar */}
         <div className="po-toolbar">
           <Segmented<StatusFilter>
             id="posts-status"
@@ -354,7 +340,6 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
         )}
       </section>
 
-      {/* Bulk action bar */}
       <AnimatePresence>
         {selected.size > 0 && (
           <motion.div
@@ -383,7 +368,6 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                 <Send size={14} />Submit for review
               </button>
             )}
-            {/* Live posts can only be removed by someone who can publish. */}
             <button type="button" className="po-btn po-btn--sm po-btn--danger-soft"
               disabled={busy || (!canPublish && !selectedPosts.some((p) => p.status !== "published"))}
               onClick={() => setToDelete(canPublish ? selectedPosts : selectedPosts.filter((p) => p.status !== "published"))}>
@@ -421,7 +405,6 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
         .po-post-card { display: flex; flex-direction: column; overflow: hidden; }
         .po-post-card[data-selected="true"] { box-shadow: 0 0 0 2px var(--po-brand-ink); }
         .po-post-card-status { position: absolute; right: 10px; top: 10px; }
-        /* Over a photo the soft badge tint vanishes; give it a solid backing. */
         .po-post-card-status .po-badge { background: var(--po-surface); box-shadow: var(--po-shadow-md); }
         .po-post-card-cb { position: absolute; left: 10px; top: 10px; width: 18px; height: 18px; }
         .po-thumb { flex-shrink: 0; border-radius: 10px; overflow: hidden; background: var(--po-surface-3); display: grid; place-items: center; color: var(--po-text-3); }
@@ -455,7 +438,6 @@ function RowActions({ post, base, canPublish, onStatus, onDelete, busy }: {
   busy: boolean;
 }) {
   const published = post.status === "published";
-  // A staff writer can no longer change a post once it is live.
   const editable = canPublish || !published;
   return (
     <div className="po-row-actions">

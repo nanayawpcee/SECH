@@ -21,7 +21,6 @@ export function CategoryChip({ category, onImage = false }: { category: NewsCate
   );
 }
 
-/** Photo, or a branded panel for the rare story without one. */
 export function NewsImage({ item, sizes, priority = false }: { item: NewsItem; sizes: string; priority?: boolean }) {
   if (!item.image) {
     const Icon = CATEGORY_ICONS[item.category];

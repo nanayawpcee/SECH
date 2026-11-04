@@ -1,10 +1,6 @@
 import "server-only";
 
-/**
- * Best-effort per-visitor limit for the public forms. In-memory, so each
- * server instance counts on its own — enough to stop one person hammering a
- * form; the WordPress plugin also caps the total per hour.
- */
+// in-memory and per server instance. a speed bump, not real protection
 export function createRateLimiter({ max, windowMs }: { max: number; windowMs: number }) {
   const hits = new Map<string, number[]>();
   return function limited(request: Request): boolean {

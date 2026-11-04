@@ -2,14 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * Prev/next arrows for a horizontally scrolling row of cards. The arrows only
- * show when the CSS turns the grid into a swipeable row; these track whether
- * there is anything further to scroll to in each direction.
- *
- * @param cellSelector one card in the row, used to step by a card's width
- * @param gap         the gap between cards, in px
- */
 export function useScrollRail<T extends HTMLElement = HTMLDivElement>(cellSelector: string, gap = 20) {
   const railRef = useRef<T>(null);
   const [canPrev, setCanPrev] = useState(false);

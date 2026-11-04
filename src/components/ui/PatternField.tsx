@@ -4,11 +4,9 @@ import { useEffect, useRef } from "react";
 
 export type FieldPattern = "dots" | "cross" | "wave";
 
-/** "pointer" reacts to the cursor; "ambient" plays on its own and ignores it. */
 export type FieldMotion = "pointer" | "ambient";
 
 interface Props {
-  /**  Unknown values fall back to dots. when there is no hero section to draw */
   pattern?: string;
   motion?: FieldMotion;
   color?: string;
@@ -21,7 +19,6 @@ interface Props {
 
   maxOffset?: number;
 
-  /** Pointer mode only: a click sends a soft ripple through the field. */
   ripple?: boolean;
 }
 const WAVE_STEP = 8;
@@ -33,16 +30,12 @@ const WAVE_ROW_PHASE = 0.5;
 const RAIN_SPEED = 15;
 const CROSS_DRIFT = 14;
 
-/*
-  Click ripple: an expanding ring that gently nudges points outward as it
-  passes through them, then fades, like a drop of water rather than a burst.
-  Same feel as the dot grid on the Acherensua SHS site.
-*/
-const RIPPLE_SPEED = 260; // px per second
-const RIPPLE_WIDTH = 70; // thickness of the ring's zone of influence
-const RIPPLE_MAX_RADIUS = 320; // a ripple is dropped once it grows past this
-const RIPPLE_OFFSET = 7; // peak displacement, px
-const RIPPLE_RADIUS_BOOST = 1; // dots swell slightly right on the ring
+// px per second
+const RIPPLE_SPEED = 260;
+const RIPPLE_WIDTH = 70;
+const RIPPLE_MAX_RADIUS = 320;
+const RIPPLE_OFFSET = 7;
+const RIPPLE_RADIUS_BOOST = 1;
 
 const DEFAULT_SPACING: Record<FieldPattern, number> = {
   dots: 28,
@@ -95,7 +88,6 @@ export function PatternField({
       oy: number;
       x: number;
       y: number;
-      /** Extra offset and size from any ripple passing through, this frame. */
       rx?: number;
       ry?: number;
       pulse?: number;
@@ -226,9 +218,6 @@ export function PatternField({
       }
 
       if (kind === "cross") {
-        {/* Endless grid drift: the mesh slides diagonally by less than one celll 
-          so the wrap is seamless and the grid reads  as infinite.
-          */}
         const off = (t * CROSS_DRIFT) % pitch;
         ctx.save();
         ctx.translate(off, off);
@@ -242,12 +231,6 @@ export function PatternField({
         return;
       }
 
-      {/*
-        Rain: columns fall at their own pace and size, which reads as depth.
-        Travel spans one pitch past both eddges so dots enter and leavee out of 
-        sight instead of popping in at the boundary;
-        
-        */}
       const span = height + pitch * 2;
       for (let r = 0; r < rows.length; r++) {
         for (let c = 0; c < rows[r].length; c++) {
@@ -299,8 +282,6 @@ export function PatternField({
           p.x += (targetX - p.x) * EASE;
           p.y += (targetY - p.y) * EASE;
 
-          // Layer any active ripple rings on top: a soft outward nudge as
-          // each ring sweeps past this point.
           let rx = 0;
           let ry = 0;
           let pulse = 0;
@@ -360,7 +341,7 @@ export function PatternField({
     function stop() {
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
-      t0 = 0; // resume from where the clock left off rather than jumping
+      t0 = 0;
     }
 
     function resize() {
@@ -397,7 +378,7 @@ export function PatternField({
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
       ripples.push({ x: e.clientX - rect.left, y: e.clientY - rect.top, t0: performance.now() });
-      if (ripples.length > 6) ripples.shift(); // rapid clicking stays light
+      if (ripples.length > 6) ripples.shift();
       start();
     }
 

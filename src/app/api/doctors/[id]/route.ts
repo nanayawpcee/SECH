@@ -11,7 +11,6 @@ function idFrom(params: { id: string }) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/** Update a profile. */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("doctors.manage");
   if (gate instanceof NextResponse) return gate;
@@ -34,7 +33,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-/** Remove a profile for good. Hiding it (unpublishing) keeps it for later. */
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("doctors.manage");
   if (gate instanceof NextResponse) return gate;

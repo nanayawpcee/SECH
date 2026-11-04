@@ -20,11 +20,7 @@ interface Props {
   params: { slug: string };
 }
 
-// WP content is rendered raw via dangerouslySetInnerHTML below — strip
-// scripts/event handlers/js: URIs before it ever reaches the client.
-// img/figure/figcaption are dropped rather than allowed-then-hidden: the
-// featured image, the gallery and any photos embedded in the text are all
-// shown in the slider above the article body instead.
+// rendered with dangerouslySetInnerHTML: strip scripts, handlers and js: links. images show in the slider instead
 function sanitizeArticleContent(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: [
@@ -44,11 +40,8 @@ function sanitizeArticleContent(html: string): string {
   });
 }
 
+// nothing prerendered, building every story at once trips the host's 508 limit
 export async function generateStaticParams() {
-  // Nothing is prerendered: each story is rendered on its first visit and
-  // then cached. Prerendering fetched every recent story at once during the
-  // build, and the WordPress host answers such bursts with 508 "resource
-  // limit reached", which baked "not found" pages into the build.
   return [];
 }
 
@@ -56,7 +49,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getNewsArticle(params.slug);
   if (!article) return { title: "Article Not Found" };
 
-  // What WhatsApp, Facebook and X show when a link to this story is shared.
   const images = article.image
     ? [{ url: article.image.src, width: article.image.width, height: article.image.height, alt: article.image.alt }]
     : undefined;
@@ -64,8 +56,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: article.title,
     description: article.excerpt,
     alternates: { canonical: `/news/${article.slug}` },
-    // A page's openGraph replaces the root one rather than merging, so the
-    // site-wide fields are repeated here.
     openGraph: {
       type: "article",
       url: `/news/${article.slug}`,
@@ -85,7 +75,6 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound();
 
   const more = recent.filter((p) => p.slug !== article.slug).slice(0, 3);
-  // A tall poster would fill the whole screen at full width; keep it framed.
   const portrait = article.image ? article.image.height > article.image.width : false;
 
   const articleUrl = absoluteUrl(`/news/${article.slug}`);

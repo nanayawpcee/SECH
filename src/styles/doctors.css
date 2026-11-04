@@ -1,6 +1,3 @@
-/* Doctors and specialists: /doctors and the specialists strip on each
-   service page. Prefix dc-. Cards share the team cards' look. */
-
 .dc-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 280px);
@@ -31,7 +28,6 @@
   border-color: var(--primary);
 }
 
-/* Arriving from a service page's "Full profile" link. */
 .dc-card:target { box-shadow: 0 0 0 3px var(--accent), var(--shadow-hover); }
 
 .dc-photo {
@@ -170,13 +166,12 @@
 
 .dc-service--ghost:hover { background: var(--light-green); color: var(--primary); }
 
-/* /doctors page */
 .dc-page { background: #F7F9F7; padding: 4rem 0 5rem; }
 .dc-container { width: 100%; max-width: 1240px !important; margin: 0 auto; padding: 0 2rem; }
 .dc-intro { max-width: 680px; margin: 0 auto 2.5rem; text-align: center; color: var(--text-mid); line-height: 1.7; }
 
 .dc-empty {
-  max-width: 640px !important; /* beats the global div { max-width: 100% !important } */
+  max-width: 640px !important;
   margin: 0 auto;
   padding: 2.5rem 2rem;
   border-radius: 20px;
@@ -239,7 +234,6 @@
 .dc-cta h2 { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.35rem; font-weight: 800; color: var(--text-dark); }
 .dc-cta p { margin: 0; color: var(--text-mid); }
 
-/* Specialists strip on a service page */
 .dc-strip { padding: 4rem 2rem; background: #F7F9F7; }
 .dc-strip-head {
   display: flex;

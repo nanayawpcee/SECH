@@ -22,14 +22,8 @@ function toForm(d: Doctor | null): DoctorInput {
   };
 }
 
-/** Services sorted by name, for the link picker. */
 const SERVICE_OPTIONS = [...SERVICES].sort((a, b) => a.title.localeCompare(b.title));
 
-/**
- * Add or edit one public profile, in a side drawer. Everything here can
- * appear on the public website, so there are no contact details: patients
- * reach doctors through the hospital's own lines and booking form.
- */
 export function DoctorEditor({
   open,
   doctor,
@@ -123,7 +117,7 @@ export function DoctorEditor({
             aria-modal="true"
             aria-label={doctor ? `Edit ${display}` : "Add a doctor or specialist"}
             initial={{ x: "100%" }}
-            animate={{ x: "0%" }} /* same unit as initial/exit, or the exit never completes */
+            animate={{ x: "0%" }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 38 }}
           >

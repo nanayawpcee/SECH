@@ -28,7 +28,7 @@ export async function PATCH(request: Request, { params }: Params) {
       noticeVariables(input, id),
       { authenticated: true },
     );
-    revalidatePath("/notices", "layout"); // the public share pages
+    revalidatePath("/notices", "layout");
     return NextResponse.json({ notice: data.saveStaffNotice.notice });
   } catch (error) {
     const { body, status } = toErrorResponse(error);
@@ -36,7 +36,6 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-/** Moves the notice to the WordPress trash (recoverable for 30 days). */
 export async function DELETE(_request: Request, { params }: Params) {
   const gate = await requirePerm("notices.manage");
   if (gate instanceof NextResponse) return gate;

@@ -13,13 +13,11 @@ function idFrom(params: { id: string }) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/** WordPress hasn't got plugin 1.9.0 yet. */
 function missingPlugin(error: unknown) {
   return error instanceof WpGraphQLError && /galleryImages|setPostGallery/.test(error.message)
     && /Cannot query field|Unknown|not exist/i.test(error.message);
 }
 
-/** The post's gallery, for the editor. */
 export async function GET(_request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
@@ -39,7 +37,6 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 }
 
-/** Replace the gallery with these media ids, in order. WordPress checks the author may edit this post. */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;

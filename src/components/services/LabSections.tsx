@@ -4,7 +4,6 @@ import { Activity, Dna, Droplet, Droplets, FlaskConical, Microscope, ShieldPlus,
 import { LAB_EXTRAS, LAB_SECTIONS } from "@/lib/data";
 import { HashHighlight } from "@/components/ui/HashHighlight";
 
-/** Stand-in icons for sections that don't have a photo yet. */
 const ICONS: Record<string, LucideIcon> = {
   haematology: Droplet,
   microbiology: Microscope,
@@ -15,11 +14,6 @@ const ICONS: Record<string, LucideIcon> = {
   immunology: ShieldPlus,
 };
 
-/**
- * The laboratory's sections on /services/laboratory. Each card has an id, so
- * the Laboratory links on the Services page ("Biochemistry" and so on) open
- * the page at that section.
- */
 export function LabSections() {
   return (
     <section className="lab-sections" aria-labelledby="lab-sections-title">

@@ -40,7 +40,6 @@ export const SETTINGS_FIELDS = `
   notifications { email sms newBooking cancellation daily }
 `;
 
-/** Used until the first fetch resolves, so inputs are never uncontrolled. */
 export const EMPTY_SETTINGS: HospitalSettings = {
   hospitalName: "",
   shortName: "",
@@ -64,7 +63,6 @@ export const EMPTY_SETTINGS: HospitalSettings = {
   },
 };
 
-/** The Hospital Info tab's text fields, in display order. */
 export const HOSPITAL_FIELDS: { key: keyof HospitalSettings; label: string }[] = [
   { key: "hospitalName", label: "Hospital name" },
   { key: "shortName", label: "Short name" },

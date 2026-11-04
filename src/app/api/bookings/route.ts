@@ -3,6 +3,7 @@ import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 import { BOOKING_FIELDS, mapWpBooking, type WpBookingNode } from "@/lib/wp-bookings";
 
+// patient data, never cache
 export const dynamic = "force-dynamic";
 
 const LIST_BOOKINGS = `
@@ -13,7 +14,6 @@ const LIST_BOOKINGS = `
   }
 `;
 
-/** Patient records — always authenticated, never cached. */
 export async function GET() {
   const gate = await requirePerm("bookings");
   if (gate instanceof NextResponse) return gate;
@@ -69,18 +69,10 @@ const SUBMIT_BOOKING = `
   }
 `;
 
-/**
- * Public endpoint — this is what the patient-facing appointment form posts to.
- *
- * Unauthenticated by necessity (patients have no WordPress account), so the
- * write is gated on a shared secret that lives only on the server. The key is
- * never sent to the browser.
- */
 export async function POST(request: Request) {
   try {
     const key = process.env.SECH_BOOKING_KEY;
     if (!key) {
-      // Fail loudly rather than silently dropping a patient's booking.
       console.error("SECH_BOOKING_KEY is not set, so booking submissions cannot be saved.");
       return NextResponse.json(
         { error: "Online booking is temporarily unavailable. Please call the hospital." },
@@ -128,7 +120,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const { body, status } = toErrorResponse(error);
-    // Never surface WordPress internals to a patient.
     return NextResponse.json(
       {
         error:

@@ -25,7 +25,6 @@ const KIND_ICON: Record<ToastKind, { icon: typeof CheckCircle2; tone: string }> 
 };
 
 function ago(id: number) {
-  // Toast ids are Date.now() + a fraction, so they double as timestamps.
   const s = Math.max(0, Math.round((Date.now() - id) / 1000));
   if (s < 45) return "just now";
   const m = Math.round(s / 60);
@@ -33,10 +32,6 @@ function ago(id: number) {
   return `${Math.round(m / 60)} h ago`;
 }
 
-/**
- * Two things in one panel: what needs attention right now (from live data),
- * and what happened this session (the toast history).
- */
 export function NotificationBell() {
   const { toasts, toastPanelOpen, toggleToastPanel, bookings, posts, pendingComments } = useAdminData();
   const wrapRef = useRef<HTMLDivElement>(null);

@@ -12,12 +12,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
 import { LabSections } from "@/components/services/LabSections";
 import { getDoctorsForService } from "@/lib/doctors-data";
+import { SHOW_DOCTORS_PUBLICLY } from "@/lib/doctors";
 import { breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import fs from "node:fs";
 import path from "node:path";
 import { Activity, Baby, Check, Dumbbell, ScanLine, Scissors, Stethoscope, type LucideIcon } from "lucide-react";
 
-/** Drawn icons for services whose icon image doesn't exist yet. */
+// drawn icons for services that don't have an icon file yet
 const FALLBACK_ICON: Record<string, LucideIcon> = { ecg: Activity, ultrasound: ScanLine, surgery: Scissors, physiotherapy: Dumbbell, paediatrics: Baby };
 
 function iconExists(src: string) {
@@ -32,7 +33,6 @@ interface Props {
   params: { slug: string };
 }
 
-// Specialist profiles refresh every 5 minutes, and straight away when one is saved.
 export const revalidate = 300;
 
 export async function generateStaticParams() {
@@ -43,7 +43,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const svc = SERVICES.find((s) => s.slug === params.slug);
   if (!svc) return { title: "Service Not Found" };
   const url = `/services/${svc.slug}`;
-  // Share previews use the service photo when there is one, else the site default.
   const photo = svc.image && (/^https?:\/\//.test(svc.image) || iconExists(svc.image)) ? svc.image : null;
   return {
     title: svc.title,
@@ -64,8 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ServiceDetailPage({ params }: Props) {
   const svc = SERVICES.find((s) => s.slug === params.slug);
   if (!svc) notFound();
-  const specialists = await getDoctorsForService(svc.slug);
-  // On the Laboratory page, each section in "What We Offer" jumps to its card.
+  const specialists = SHOW_DOCTORS_PUBLICLY ? await getDoctorsForService(svc.slug) : [];
+  // lab page only: each feature links to its section card
   const featureAnchors = new Map<string, string>(
     svc.slug === "laboratory" ? [...LAB_SECTIONS, ...LAB_EXTRAS].map((x) => [x.name, x.id]) : [],
   );
@@ -99,7 +98,6 @@ export default async function ServiceDetailPage({ params }: Props) {
             alignItems: "start",
           }}
         >
-          {/* Main Content */}
           <AnimateIn>
             <div
               style={{
@@ -139,7 +137,6 @@ export default async function ServiceDetailPage({ params }: Props) {
             >
               About This Service
             </h2>
-            {/* A blank line in fullDesc starts a new paragraph. */}
             <div style={{ marginBottom: "2.5rem" }}>
               {svc.fullDesc.split(/\n\s*\n/).map((para, i) => (
                 <p
@@ -217,7 +214,6 @@ export default async function ServiceDetailPage({ params }: Props) {
             <BookButton dept={svc.title} />
           </AnimateIn>
 
-          {/* Sidebar - Controlled by CSS responsive visibility */}
           <aside
             className="desktop-only-sidebar"
             style={{ position: "sticky", top: 90 }}
@@ -311,10 +307,8 @@ export default async function ServiceDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* The laboratory's own sections come before "Other Services". */}
       {svc.slug === "laboratory" && <LabSections />}
 
-      {/* Other services */}
       <section
         style={{ padding: "4rem 2rem 5rem", background: "var(--off-white)" }}
       >
@@ -386,7 +380,6 @@ export default async function ServiceDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Published profiles linked to this service in the portal (Doctors). */}
       {specialists.length > 0 && (
         <section className="dc-strip" aria-labelledby="dc-strip-title">
           <div className="dc-strip-head">

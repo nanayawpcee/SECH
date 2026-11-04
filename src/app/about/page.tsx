@@ -10,8 +10,6 @@ import { UnderConstruction } from "@/components/sections/UnderConstruction";
 
 const UNDER_CONSTRUCTION = false;
 
-/** The local dev server always shows the real page so it can be worked on;
- *  production builds show the notice while UNDER_CONSTRUCTION is true. */
 const SHOW_NOTICE = UNDER_CONSTRUCTION && process.env.NODE_ENV === "production";
 
 export const metadata: Metadata = {
@@ -108,7 +106,6 @@ export default function AboutPage() {
         dotGrid
       />
 
-      {/* Mission & Vision Section */}
       <section className="about-mission-section">
         <div className="container">
           <div className="about-mission-grid">
@@ -160,10 +157,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <StatsBar />
 
-      {/* Timeline Section */}
       <section className="timeline-section">
         <div className="container">
           <AnimateIn>
@@ -192,7 +187,6 @@ export default function AboutPage() {
                   <div className="timeline-year">{m.year}</div>
                   <h3 className="timeline-title">{m.title}</h3>
                   <p className="timeline-desc">{m.desc}</p>
-                  {/* Only real photographs of the hospital; a milestone without one shows text alone. */}
                   {m.image && (
                     <div className="timeline-image-wrapper">
                       <Image

@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default async function NewsPage() {
-  // [] when the CMS is unreachable, so the page still renders its empty state.
   const items = await getNewsItems(60);
 
   return (
