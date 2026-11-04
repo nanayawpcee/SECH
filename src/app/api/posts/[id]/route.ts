@@ -45,14 +45,16 @@ export async function GET(_request: Request, { params }: Params) {
   }
 }
 
-const UPDATE_POST = `
+// categories only go in when a type is given: append:false with no name wipes them
+function updatePostMutation(withCategory: boolean) {
+  return `
   mutation UpdateExistingPost(
     $id: ID!
     $title: String
     $content: String
     $excerpt: String
     $status: PostStatusEnum
-    $categoryName: String
+    ${withCategory ? "$categoryName: String" : ""}
     $commentStatus: String
   ) {
     updatePost(
@@ -62,7 +64,7 @@ const UPDATE_POST = `
         content: $content
         excerpt: $excerpt
         status: $status
-        categories: { append: false, nodes: [{ name: $categoryName }] }
+        ${withCategory ? "categories: { append: false, nodes: [{ name: $categoryName }] }" : ""}
         commentStatus: $commentStatus
       }
     ) {
@@ -70,6 +72,7 @@ const UPDATE_POST = `
     }
   }
 `;
+}
 
 export async function PATCH(request: Request, { params }: Params) {
   const gate = await requirePerm("posts.write");
@@ -83,8 +86,9 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ error: "A title is required." }, { status: 400 });
     }
 
+    const withCategory = typeof patch.type === "string" && patch.type.trim() !== "";
     const data = await wpGraphQL<{ updatePost: { post: WpPostNode } }>(
-      UPDATE_POST,
+      updatePostMutation(withCategory),
       {
         id: params.id,
         title: patch.title !== undefined ? String(patch.title).trim() : undefined,
@@ -94,7 +98,7 @@ export async function PATCH(request: Request, { params }: Params) {
           patch.status === undefined
             ? undefined
             : toWpStatus(allowedStatus(patch.status, gate.perms.includes("posts.publish"))),
-        categoryName: patch.type,
+        ...(withCategory ? { categoryName: patch.type } : {}),
         commentStatus:
           patch.commentsOpen === undefined
             ? undefined
