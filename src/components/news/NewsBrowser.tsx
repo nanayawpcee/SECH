@@ -31,8 +31,9 @@ export function NewsBrowser({ items }: { items: NewsItem[] }) {
   );
 
   const browsing = category === "All" && !q;
-  const lead = browsing ? filtered[0] : undefined;
-  const rest = lead ? filtered.slice(1) : filtered;
+  // the story chosen in the portal leads, otherwise the newest
+  const lead = browsing ? filtered.find((i) => i.featured) ?? filtered[0] : undefined;
+  const rest = lead ? filtered.filter((i) => i !== lead) : filtered;
   const visible = rest.slice(0, shown);
 
   const pick = (c: NewsCategory | "All") => {

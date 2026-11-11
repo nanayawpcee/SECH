@@ -20,6 +20,7 @@ import {
   PenLine,
   RefreshCw,
   Search,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
@@ -70,6 +71,43 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
   const [toDelete, setToDelete] = useState<AdminPost[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  // the story leading the News page; editors and admins can change it
+  const mayFeature = !isStaff && can(admin?.perms, "posts.editOthers");
+  const [featureReady, setFeatureReady] = useState(false);
+  const [featuredId, setFeaturedId] = useState<number | null>(null);
+  const canFeature = mayFeature && featureReady;
+
+  useEffect(() => {
+    if (!mayFeature) return;
+    fetch("/api/posts/featured", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || d.needsPlugin) return;
+        setFeaturedId(d.featuredPostId ?? null);
+        setFeatureReady(true);
+      })
+      .catch(() => {});
+  }, [mayFeature]);
+
+  const toggleFeatured = async (post: AdminPost) => {
+    const next = featuredId === post.id ? null : post.id;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/posts/featured", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: next }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not change the featured story.");
+      setFeaturedId(data.featuredPostId ?? null);
+      addToast(next ? `“${post.title}” now leads the News page` : "The News page leads with the newest story again");
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : "Could not change the featured story.", "danger");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (initialStatus === "draft" || initialStatus === "published" || initialStatus === "pending") setStatus(initialStatus);
@@ -284,13 +322,15 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <StatusBadge status={p.status} label={p.status === "pending" ? "In review" : undefined} />
+                        {featuredId === p.id && <Chip tone="gold">Featured</Chip>}
                         <span title={p.commentsOpen ? "Comments open" : "Comments closed"} style={{ color: "var(--po-text-3)", display: "inline-flex" }}>
                           {p.commentsOpen ? <MessageSquare size={14} /> : <MessageSquareOff size={14} />}
                         </span>
                       </div>
                     </td>
                     <td>
-                      <RowActions post={p} base={base} canPublish={canPublish} onStatus={(next) => setStatusFor([p], next)} onDelete={() => setToDelete([p])} busy={busy} />
+                      <RowActions post={p} base={base} canPublish={canPublish} onStatus={(next) => setStatusFor([p], next)} onDelete={() => setToDelete([p])} busy={busy}
+                        featured={featuredId === p.id} onFeature={canFeature ? () => toggleFeatured(p) : undefined} />
                     </td>
                   </tr>
                 ))}
@@ -322,6 +362,7 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                 <div style={{ padding: "14px 16px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <Chip tone={TYPE_TONE[p.type]}>{p.type}</Chip>
+                    {featuredId === p.id && <Chip tone="gold">Featured</Chip>}
                     <span className="po-cell-sub">{p.date || "Undated"}</span>
                   </div>
                   <Link href={`${base}/${p.id}/edit`} className="po-post-link" style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.35 }}>{p.title}</Link>
@@ -331,7 +372,8 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
                 <div style={{ padding: "8px 10px", display: "flex", alignItems: "center" }}>
                   <span className="po-cell-sub" style={{ paddingLeft: 6 }}>{p.author}</span>
                   <div style={{ marginLeft: "auto" }}>
-                    <RowActions post={p} base={base} canPublish={canPublish} onStatus={(next) => setStatusFor([p], next)} onDelete={() => setToDelete([p])} busy={busy} />
+                    <RowActions post={p} base={base} canPublish={canPublish} onStatus={(next) => setStatusFor([p], next)} onDelete={() => setToDelete([p])} busy={busy}
+                        featured={featuredId === p.id} onFeature={canFeature ? () => toggleFeatured(p) : undefined} />
                   </div>
                 </div>
               </motion.article>
@@ -429,13 +471,15 @@ function Thumb({ post, size }: { post: AdminPost; size: number | "cover" }) {
   );
 }
 
-function RowActions({ post, base, canPublish, onStatus, onDelete, busy }: {
+function RowActions({ post, base, canPublish, onStatus, onDelete, busy, featured, onFeature }: {
   post: AdminPost;
   base: string;
   canPublish: boolean;
   onStatus: (next: AdminPost["status"]) => void;
   onDelete: () => void;
   busy: boolean;
+  featured: boolean;
+  onFeature?: () => void;
 }) {
   const published = post.status === "published";
   const editable = canPublish || !published;
@@ -464,6 +508,14 @@ function RowActions({ post, base, canPublish, onStatus, onDelete, busy }: {
           <Send size={15} />
         </button>
       ) : null}
+      {onFeature && published && (
+        <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={onFeature} disabled={busy} aria-pressed={featured}
+          title={featured ? "Stop featuring on the News page" : "Feature at the top of the News page"}
+          aria-label={featured ? `Stop featuring ${post.title}` : `Feature ${post.title} on the News page`}
+          style={featured ? { color: "var(--po-gold-ink)" } : undefined}>
+          <Star size={15} fill={featured ? "currentColor" : "none"} />
+        </button>
+      )}
       {published && post.slug && (
         <a href={`/news/${post.slug}`} target="_blank" rel="noopener noreferrer" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" title="View on website" aria-label={`View ${post.title} on the website`}>
           <ExternalLink size={15} />

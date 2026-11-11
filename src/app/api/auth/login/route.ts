@@ -1,14 +1,27 @@
 import { NextResponse } from "next/server";
 import { WP_ENDPOINT, ADMIN_COOKIE, SESSION_SECONDS } from "@/lib/wp-graphql";
 import { viewerForToken } from "@/lib/access";
+import { createRateLimiter } from "@/lib/rate-limit";
+
+const rateLimited = createRateLimiter({ max: 10, windowMs: 15 * 60_000 });
 
 export async function POST(request: Request) {
+  if (rateLimited(request)) {
+    return NextResponse.json({ error: "Too many sign-in attempts. Please wait 15 minutes and try again." }, { status: 429 });
+  }
   try {
     const { identifier, password } = await request.json();
 
+    // with the shared key, WordPress counts failed attempts per visitor instead of per Vercel server
+    const key = process.env.SECH_BOOKING_KEY;
+    const clientIp = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
     const wpResponse = await fetch(WP_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(key ? { "X-SECH-BOOKING-KEY": key } : {}),
+        ...(key && clientIp ? { "X-SECH-CLIENT-IP": clientIp } : {}),
+      },
       body: JSON.stringify({
         query: `
           mutation LoginUser($username: String!, $password: String!) {

@@ -17,6 +17,7 @@ import {
   ExternalLink,
   FilePen,
   FilePlus2,
+  HandCoins,
   Home,
   IdCard,
   Megaphone,
@@ -27,6 +28,7 @@ import {
   MessageSquare,
   Newspaper,
   Plus,
+  Receipt,
   Search,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -87,6 +89,14 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/data-protection", icon: ShieldCheck, label: "Data protection", perm: "settings" },
     ],
   },
+  {
+    section: "Accounts",
+    items: [
+      { href: "/admin/accounts", icon: Receipt, label: "Accounts office", perm: "accounts", exact: true },
+      { href: "/admin/accounts/advances", icon: HandCoins, label: "Salary advances", perm: "accounts" },
+      { href: "/admin/accounts/rent", icon: Home, label: "Staff rent", perm: "accounts" },
+    ],
+  },
   { section: "Staff", items: [{ href: "/admin/notices", icon: Megaphone, label: "Notice board", badgeKey: "notices" }] },
   { section: "System", items: [{ href: "/admin/settings", icon: SettingsIcon, label: "Settings", perm: "settings" }] },
 ];
@@ -122,6 +132,7 @@ const VARIANT = {
       notices: "Notice board", newsletter: "Newsletter", messages: "Messages",
       employees: "Employees", departments: "Departments and units", ranks: "Ranks and positions",
       doctors: "Doctors", "data-protection": "Data protection",
+      accounts: "Accounts office", advances: "Salary advances", rent: "Staff rent", receipt: "Receipt", activity: "Activity log",
     } as Record<string, string>,
   },
   staff: {
@@ -146,6 +157,7 @@ const ROUTE_PERMS: [string, Perm][] = [
   ["/admin/departments", "staff.manage"],
   ["/admin/ranks", "staff.manage"],
   ["/admin/data-protection", "settings"],
+  ["/admin/accounts", "accounts"],
   ["/admin/doctors", "doctors.manage"],
   ["/admin/posts", "posts.write"],
   ["/staff/posts", "posts.write"],

@@ -55,13 +55,14 @@ export default function DashboardPage() {
   const { admin } = useAuth();
   const router = useRouter();
   const perms = admin?.perms ?? [];
-  const staffOnly =
-    can(perms, "staff.manage") &&
-    !(["bookings", "comments", "posts.write", "settings"] as const).some((p) => can(perms, p));
+  const noDashboard = !(["bookings", "comments", "posts.write", "settings"] as const).some((p) => can(perms, p));
+  const staffOnly = noDashboard && can(perms, "staff.manage");
+  const accountsOnly = noDashboard && !staffOnly && can(perms, "accounts");
   useEffect(() => {
     if (staffOnly) router.replace("/admin/employees");
-  }, [staffOnly, router]);
-  return staffOnly ? null : <Dashboard />;
+    else if (accountsOnly) router.replace("/admin/accounts");
+  }, [staffOnly, accountsOnly, router]);
+  return staffOnly || accountsOnly ? null : <Dashboard />;
 }
 
 function Dashboard() {

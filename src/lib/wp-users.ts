@@ -55,6 +55,7 @@ export function mapWpUser(node: WpUserNode, viewerId: number | null): AdminUser 
 export const ASSIGNABLE_ROLES = [
   { slug: "administrator", label: "Administrator" },
   { slug: "sech_hr", label: "HR officer" },
+  { slug: "sech_accounts", label: "Accounts officer" },
   { slug: "editor", label: "Content manager" },
   { slug: "author", label: "Staff author" },
   { slug: "contributor", label: "Staff writer" },
@@ -65,7 +66,7 @@ export function isAssignableRole(role: unknown): role is string {
   return typeof role === "string" && ASSIGNABLE_ROLES.some((r) => r.slug === role);
 }
 
-export const TEMP_PASSWORD_ROLES = ["sech_hr", "editor", "author", "contributor", "subscriber"];
+export const TEMP_PASSWORD_ROLES = ["sech_hr", "sech_accounts", "editor", "author", "contributor", "subscriber"];
 
 export function isValidUsername(u: unknown): u is string {
   return typeof u === "string" && /^[a-z0-9._-]{3,40}$/i.test(u);

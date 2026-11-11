@@ -1,5 +1,7 @@
 export interface NewsItem {
   slug: string;
+  /** chosen in the portal to lead the News page */
+  featured?: boolean;
   title: string;
   excerpt: string;
   date: string;

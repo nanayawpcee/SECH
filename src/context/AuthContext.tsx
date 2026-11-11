@@ -62,7 +62,7 @@ export function homeAfterLogin(next?: string | null): string {
     const stored = raw ? JSON.parse(raw) : {};
     if (stored.mustChangePassword) return SET_PASSWORD_PATH;
     const target = safeNext(next);
-    if (target && (target.startsWith("/staff") || homeFor(stored.perms) === "/admin")) return target;
+    if (target && (target.startsWith("/staff") || homeFor(stored.perms) !== "/staff")) return target;
     return homeFor(stored.perms);
   } catch {
     return "/staff";
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     if (isLoginPage && admin && !admin.mustChangePassword) {
       const target = safeNext(new URLSearchParams(window.location.search).get("next"));
-      router.replace(target && (target.startsWith("/staff") || homeFor(admin.perms) === "/admin") ? target : homeFor(admin.perms));
+      router.replace(target && (target.startsWith("/staff") || homeFor(admin.perms) !== "/staff") ? target : homeFor(admin.perms));
       return;
     }
     if (inAdmin && admin && homeFor(admin.perms) === "/staff") {

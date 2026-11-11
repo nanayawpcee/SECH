@@ -46,15 +46,20 @@ function toNewsItem(node: WpNode): NewsItem {
 }
 
 export async function getNewsItems(limit = 60): Promise<NewsItem[]> {
-  const data = await wpQuery<{ posts: { nodes: WpNode[] } }>(
-    `query NewsList($first: Int!) {
-      posts(first: $first, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
-        nodes { ${LIST_FIELDS} }
-      }
-    }`,
-    { first: limit },
-  );
-  return (data?.posts?.nodes ?? []).map(toNewsItem);
+  const ask = (withFeatured: boolean) =>
+    wpQuery<{ posts: { nodes: WpNode[] }; featuredPostId?: number | null }>(
+      `query NewsList($first: Int!) {
+        ${withFeatured ? "featuredPostId" : ""}
+        posts(first: $first, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
+          nodes { ${LIST_FIELDS} }
+        }
+      }`,
+      { first: limit },
+    );
+  // plugin older than 1.13.0 doesn't know featuredPostId
+  const data = (await ask(true)) ?? (await ask(false));
+  const featured = data?.featuredPostId ?? null;
+  return (data?.posts?.nodes ?? []).map((n) => ({ ...toNewsItem(n), featured: !!featured && n.databaseId === featured }));
 }
 
 const PHOTO_FIELDS = "databaseId sourceUrl width height altText caption";

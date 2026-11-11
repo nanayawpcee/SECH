@@ -13,7 +13,9 @@ export type Perm =
   | "newsletter"
   | "messages"
   | "staff.manage"
-  | "doctors.manage";
+  | "doctors.manage"
+  // accounts office collections, payments and receipts
+  | "accounts";
 
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
   bookings: (c) => c.has("manage_options"),
@@ -30,13 +32,14 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   messages: (c) => c.has("manage_options"),
   "staff.manage": (c) => c.has("sech_manage_staff"),
   "doctors.manage": (c) => c.has("edit_others_posts"),
+  accounts: (c) => c.has("sech_accounts"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {
   const caps = new Set(capabilities);
   const perms: Perm[] = (Object.keys(CAP_MAP) as (keyof typeof CAP_MAP)[]).filter((p) => CAP_MAP[p](caps));
   // the console is for anyone who manages more than their own posts
-  if (perms.some((p) => p === "bookings" || p === "settings" || p === "comments" || p === "posts.editOthers" || p === "staff.manage")) {
+  if (perms.some((p) => p === "bookings" || p === "settings" || p === "comments" || p === "posts.editOthers" || p === "staff.manage" || p === "accounts")) {
     perms.push("portal.admin");
   }
   return perms;
@@ -46,13 +49,18 @@ export function can(perms: readonly Perm[] | undefined, perm: Perm): boolean {
   return !!perms?.includes(perm);
 }
 
-export function homeFor(perms: readonly Perm[] | undefined): "/admin" | "/staff" {
-  return can(perms, "portal.admin") ? "/admin" : "/staff";
+// accounts officers with nothing else to manage go straight to their page
+const DASHBOARD_PERMS: Perm[] = ["bookings", "settings", "comments", "posts.editOthers", "staff.manage"];
+
+export function homeFor(perms: readonly Perm[] | undefined): "/admin" | "/admin/accounts" | "/staff" {
+  if (!can(perms, "portal.admin")) return "/staff";
+  return can(perms, "accounts") && !DASHBOARD_PERMS.some((p) => can(perms, p)) ? "/admin/accounts" : "/admin";
 }
 
 export const ROLE_LABELS: Record<string, { label: string; description: string }> = {
   administrator: { label: "Administrator", description: "Everything, including bookings, settings and team access" },
   sech_hr: { label: "HR officer", description: "Employee records, departments and ranks only" },
+  sech_accounts: { label: "Accounts officer", description: "Accounts office collections, payments and receipts only" },
   editor: { label: "Content manager", description: "All posts and comment moderation, but no bookings or settings" },
   author: { label: "Staff author", description: "Writes and publishes their own posts" },
   contributor: { label: "Staff writer", description: "Writes their own posts; an administrator reviews and publishes" },
