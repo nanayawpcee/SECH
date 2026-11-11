@@ -73,7 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
+  // only null on the static 500 page (src/pages), which never renders this
+  const pathname = usePathname() ?? "";
   
   const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

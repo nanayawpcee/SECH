@@ -1,17 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { HERO_SLIDES, SITE, telHref } from "@/lib/data";
+import type { NewsItem } from "@/lib/news";
 import { useAppointmentModal } from "@/components/ui/AppointmentModalProvider";
 import { PatternField } from "@/components/ui/PatternField";
 import { Siren } from "lucide-react";
 
-export function HeroCarousel() {
+type Slide = (typeof HERO_SLIDES)[number] & { kicker?: string; image?: NewsItem["image"] };
+
+export function HeroCarousel({ story }: { story?: NewsItem | null }) {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
   const { openModal } = useAppointmentModal();
-  const slide = HERO_SLIDES[current];
+  // the story chosen to lead the News page goes first
+  const slides: Slide[] = useMemo(
+    () => story
+      ? [{
+          heading: story.title,
+          sub: story.excerpt,
+          cta: "Read the story",
+          ctaHref: `/news/${story.slug}`,
+          bg: "#063328",
+          accent: "#E8B84B",
+          pattern: "dots",
+          kicker: `Featured ${story.category === "Events" ? "event" : "story"}`,
+          image: story.image,
+        }, ...HERO_SLIDES]
+      : HERO_SLIDES,
+    [story],
+  );
+  const slide = slides[current];
+  const isStory = !!slide.kicker;
 
   const goTo = (idx: number) => {
     if (animating || idx === current) return;
@@ -21,7 +43,7 @@ export function HeroCarousel() {
   };
 
   useEffect(() => {
-    const t = setInterval(() => goTo((current + 1) % HERO_SLIDES.length), 8000);
+    const t = setInterval(() => goTo((current + 1) % slides.length), 8000);
     return () => clearInterval(t);
   }, [current, animating]);
 
@@ -48,7 +70,7 @@ export function HeroCarousel() {
       />
       <div className="hero-ring small" />
 
-      <div className="container hero-container">
+      <div className={`container hero-container${isStory ? " hero-container--story" : ""}`}>
         <div
           style={{
             display: "flex",
@@ -68,17 +90,23 @@ export function HeroCarousel() {
               transition: "color 0.7s",
             }}
           >
-            St. Elizabeth Catholic Hospital
+            {slide.kicker ?? "St. Elizabeth Catholic Hospital"}
           </span>
           
 
         </div>
 
-        <h1 key={`h-${current}`} className="hero-heading">
-          {slide.heading}
-        </h1>
+        {/* a story title isn't the page's main heading, so it gets an h2 */}
+        {isStory ? (
+          <>
+            <h1 className="sr-only">St. Elizabeth Catholic Hospital, Hwidiem</h1>
+            <h2 key={`h-${current}`} className="hero-heading hero-heading--story">{slide.heading}</h2>
+          </>
+        ) : (
+          <h1 key={`h-${current}`} className="hero-heading">{slide.heading}</h1>
+        )}
 
-        <p key={`s-${current}`} className="hero-sub">
+        <p key={`s-${current}`} className={`hero-sub${isStory ? " hero-sub--story" : ""}`}>
           {slide.sub}
         </p>
 
@@ -109,6 +137,11 @@ export function HeroCarousel() {
             Emergency {SITE.emergencyPhones[0]}
           </a>
         </div>
+        {isStory && slide.image && (
+          <Link key={`img-${current}`} href={slide.ctaHref} className="hero-story-photo" tabIndex={-1} aria-hidden="true">
+            <Image src={slide.image.src} alt="" fill sizes="(max-width: 1100px) 40vw, 440px" style={{ objectFit: "contain" }} priority />
+          </Link>
+        )}
       </div>
 
       <div
@@ -122,7 +155,7 @@ export function HeroCarousel() {
           zIndex: 3,
         }}
       >
-        {HERO_SLIDES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i)}

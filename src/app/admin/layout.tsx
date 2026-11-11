@@ -8,7 +8,8 @@ import { PortalShell } from "@/components/admin/PortalShell";
 import { adminFont } from "./fonts";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  // only null on the static 500 page (src/pages), which never renders this
+  const pathname = usePathname() ?? "";
 
   useEffect(() => {
     if (pathname === "/admin/login" || pathname === "/admin/set-password") document.documentElement.removeAttribute("data-admin-theme");

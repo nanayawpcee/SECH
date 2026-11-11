@@ -38,3 +38,36 @@
 @media (max-width: 480px) {
   .nf-actions { flex-direction: column; align-items: center; }
 }
+
+/* error page (src/app/error.tsx) shares the 404 layout */
+.err-icon {
+  display: block;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  color: var(--primary);
+  opacity: 0.1;
+}
+.nf .btn-primary:disabled { opacity: 0.75; cursor: progress; }
+.err-spin { animation: err-spin 0.9s linear infinite; }
+@keyframes err-spin { to { transform: rotate(360deg); } }
+.err-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid rgba(192, 57, 43, 0.35);
+  border-radius: 8px;
+  color: #B03A2E;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.err-call:hover { background: rgba(192, 57, 43, 0.06); }
+.err-ref { margin: 2rem 0 0; font-size: 0.72rem; color: rgba(107, 143, 130, 0.7); letter-spacing: 0.04em; }
+@media (min-width: 1024px) {
+  .err-icon { width: 190px; height: 190px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .err-spin { animation: none; }
+}

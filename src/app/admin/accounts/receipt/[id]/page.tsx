@@ -72,7 +72,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
   }, [t]);
 
   useEffect(() => {
-    if (t && search.get("print") === "1" && !autoPrinted.current && t.printCount === 0) {
+    if (t && search?.get("print") === "1" && !autoPrinted.current && t.printCount === 0) {
       autoPrinted.current = true;
       print();
     }

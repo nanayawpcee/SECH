@@ -17,7 +17,8 @@ const NAV_LINKS = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
+  // only null on the static 500 page (src/pages), which never renders this
+  const pathname = usePathname() ?? "";
   const { openModal } = useAppointmentModal();
 
   useEffect(() => {

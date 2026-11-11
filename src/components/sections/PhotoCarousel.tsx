@@ -1,9 +1,42 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { PHOTOS } from "@/lib/data";
-import { Pause } from "lucide-react";
+import type { NewsItem } from "@/lib/news";
+import { ArrowRight, Pause } from "lucide-react";
+
+type CarouselSlide = {
+  id: string | number;
+  label: string;
+  caption: string;
+  color: string;
+  icon: string;
+  image: string;
+  pattern: string;
+  accent: string;
+  /** the featured news story: shown whole, with a link to read it */
+  story?: { href: string; kicker: string; alt: string };
+};
+
+function storySlide(story: NewsItem): CarouselSlide {
+  return {
+    id: `story-${story.slug}`,
+    label: story.title,
+    caption: story.excerpt,
+    color: "#063328",
+    icon: "",
+    image: story.image!.src,
+    pattern: "dots",
+    accent: "#E8B84B",
+    story: {
+      href: `/news/${story.slug}`,
+      kicker: `Featured ${story.category === "Events" ? "event" : "story"}`,
+      alt: story.image!.alt || story.title,
+    },
+  };
+}
 
 function drawPattern(canvas: HTMLCanvasElement, type: string, color: string) {
   const ctx = canvas.getContext("2d");
@@ -52,7 +85,7 @@ function Slide({
   active,
   direction,
 }: {
-  photo: (typeof PHOTOS)[0];
+  photo: CarouselSlide;
   active: boolean;
   direction: "left" | "right";
 }) {
@@ -98,10 +131,41 @@ function Slide({
           zIndex: 1,
         }}
       >
-        <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-          <Image src={photo.image} alt="" fill sizes="(max-width: 768px) 100vw, 65vw" style={{ objectFit: "cover" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3))" }} />
-        </div>
+        {photo.story ? (
+          <>
+            <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
+              <Image src={photo.image} alt="" fill sizes="40vw" style={{ objectFit: "cover", filter: "blur(22px)", transform: "scale(1.15)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "rgba(6,51,40,0.6)" }} />
+            </div>
+            <Link
+              href={photo.story.href}
+              className="carousel-story-flyer"
+              tabIndex={active ? 0 : -1}
+              aria-label={`Read the story: ${photo.label}`}
+              style={{ position: "absolute", inset: 0, zIndex: 1 }}
+            >
+              <span style={{ position: "relative", display: "block", width: "100%", height: "100%" }}>
+                <Image
+                  src={photo.image}
+                  alt={photo.story.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 70vw"
+                  className="carousel-story-img"
+                  // fills the photo side like the facility photos; on phones
+                  // globals.css shows the whole flyer instead (the title sits below it)
+                  style={{ objectFit: "cover" }}
+                />
+              </span>
+            </Link>
+          </>
+        ) : (
+          <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            <Image src={photo.image} alt="" fill sizes="(max-width: 768px) 100vw, 65vw" style={{ objectFit: "cover" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.3))" }} />
+          </div>
+        )}
+
+        {!photo.story && (<>
 
         <div
           className="carousel-icon-badge"
@@ -169,6 +233,7 @@ function Slide({
             SECH
           </span>
         </div>
+        </>)}
       </div>
 
       <div
@@ -247,13 +312,14 @@ function Slide({
                 textTransform: "uppercase",
               }}
             >
-              St. Elizabeth Catholic Hospital
+              {photo.story ? photo.story.kicker : "St. Elizabeth Catholic Hospital"}
             </span>
           </div>
           <h3
+            className={photo.story ? "carousel-story-title" : undefined}
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "clamp(1.3rem, 2.5vw, 1.9rem)",
+              fontSize: photo.story ? "clamp(1.2rem, 2.1vw, 1.65rem)" : "clamp(1.3rem, 2.5vw, 1.9rem)",
               fontWeight: 900,
               color: "#fff",
               lineHeight: 1.2,
@@ -264,6 +330,7 @@ function Slide({
             {photo.label}
           </h3>
           <p
+            className={photo.story ? "carousel-story-excerpt" : undefined}
             style={{
               color: "rgba(255,255,255,0.85)",
               fontSize: "0.95rem",
@@ -276,6 +343,30 @@ function Slide({
             {photo.caption}
           </p>
 
+          {photo.story ? (
+            <Link
+              href={photo.story.href}
+              className="carousel-story-cta"
+              tabIndex={active ? 0 : -1}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                marginTop: 20,
+                padding: "10px 18px",
+                borderRadius: 8,
+                background: photo.accent,
+                color: photo.color,
+                fontSize: "0.85rem",
+                fontWeight: 800,
+                textDecoration: "none",
+                animation: active ? "slideUp 0.5s ease 0.3s both" : "none",
+              }}
+            >
+              Read the story
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          ) : (
           <div
             className="carousel-pills"
             style={{
@@ -303,13 +394,18 @@ function Slide({
               </span>
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export function PhotoCarousel() {
+export function PhotoCarousel({ story }: { story?: NewsItem | null }) {
+  const slides: CarouselSlide[] = useMemo(
+    () => (story?.image ? [storySlide(story), ...PHOTOS] : PHOTOS),
+    [story],
+  );
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("right");
   const [paused, setPaused] = useState(false);
@@ -328,9 +424,9 @@ export function PhotoCarousel() {
   );
 
   const prev = () =>
-    goTo((current - 1 + PHOTOS.length) % PHOTOS.length, "left");
+    goTo((current - 1 + slides.length) % slides.length, "left");
   const next = useCallback(
-    () => goTo((current + 1) % PHOTOS.length, "right"),
+    () => goTo((current + 1) % slides.length, "right"),
     [current, goTo],
   );
 
@@ -363,7 +459,7 @@ export function PhotoCarousel() {
     return () => window.removeEventListener("keydown", handler);
   }, [current]);
 
-  const photo = PHOTOS[current];
+  const photo = slides[current] ?? slides[0];
 
   return (
     <section
@@ -445,13 +541,13 @@ export function PhotoCarousel() {
               position: "relative",
               borderRadius: 12,
               overflow: "hidden",
-              height: 420,
+              height: 460,
               boxShadow: "0 24px 64px rgba(10,79,60,0.2)",
               cursor: "default",
             }}
             className="carousel-viewport"
           >
-            {PHOTOS.map((p, i) => (
+            {slides.map((p, i) => (
               <Slide
                 key={p.id}
                 photo={p}
@@ -547,7 +643,7 @@ export function PhotoCarousel() {
                 className="carousel-dots-wrapper"
                 style={{ display: "flex", gap: 8, alignItems: "center" }}
               >
-                {PHOTOS.map((p, i) => (
+                {slides.map((p, i) => (
                   <button
                     key={p.id}
                     onClick={() => goTo(i)}
@@ -583,7 +679,7 @@ export function PhotoCarousel() {
                   {String(current + 1).padStart(2, "0")}
                 </span>
                 <span style={{ opacity: 0.5 }}>/</span>
-                <span>{String(PHOTOS.length).padStart(2, "0")}</span>
+                <span>{String(slides.length).padStart(2, "0")}</span>
               </div>
             </div>
 
@@ -642,7 +738,7 @@ export function PhotoCarousel() {
               paddingBottom: 4,
             }}
           >
-            {PHOTOS.map((p, i) => (
+            {slides.map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => goTo(i)}
@@ -699,7 +795,7 @@ export function PhotoCarousel() {
                     zIndex: 2,
                   }}
                 >
-                  {p.label.split(" ").slice(0, 2).join(" ")}
+                  {p.story ? p.story.kicker : p.label.split(" ").slice(0, 2).join(" ")}
                 </div>
               </button>
             ))}

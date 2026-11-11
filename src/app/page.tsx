@@ -8,7 +8,7 @@ import { ContactSection } from "@/components/sections/ContactSection";
 import { PhotoCarousel } from "@/components/sections/PhotoCarousel";
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getNewsItems } from "@/lib/news-data";
+import { getHomeNews } from "@/lib/news-data";
 import { hospitalJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -16,14 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const posts = await getNewsItems(3);
+  const { posts, featured } = await getHomeNews(3);
 
   return (
     <>
       <JsonLd data={hospitalJsonLd()} />
-      <HeroCarousel />
+      <HeroCarousel story={featured} />
       <StatsBar />
-      <PhotoCarousel />
+      <PhotoCarousel story={featured} />
       <ServicesGrid preview />
       <AboutSection />
       <EmergencyBanner />

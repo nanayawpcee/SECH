@@ -10,7 +10,7 @@ import { EmptyState, Skeleton } from "@/components/admin/ui";
 export function EditPostRoute({ base }: { base: "/admin/posts" | "/staff/posts" }) {
   const params = useParams<{ id: string }>();
   const { posts, postsLoading } = useAdminData();
-  const post = posts.find((p) => p.id === Number(params.id));
+  const post = posts.find((p) => p.id === Number(params?.id));
 
   if (!post && postsLoading) {
     return (

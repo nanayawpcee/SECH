@@ -46,7 +46,10 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = await getNewsArticle(params.slug);
+  // an error here skips error.tsx and shows Next's bare 500 screen, so let the
+  // page body hit the same failure and show the branded error page instead
+  const article = await getNewsArticle(params.slug).catch(() => undefined);
+  if (article === undefined) return { title: "News" };
   if (!article) return { title: "Article Not Found" };
 
   const images = article.image

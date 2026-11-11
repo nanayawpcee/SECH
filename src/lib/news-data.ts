@@ -1,4 +1,5 @@
 import "server-only";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { wpQuery } from "@/lib/wp-graphql";
 import { decodeEntities, stripHtml } from "@/lib/wp-posts";
 import { categoryFor, type ArticlePhoto, type NewsArticle, type NewsItem } from "@/lib/news";
@@ -45,6 +46,49 @@ function toNewsItem(node: WpNode): NewsItem {
   };
 }
 
+/** latest stories plus the one chosen to lead (it may be older than the latest few) */
+/**
+ * WordPress didn't answer (a 508 from the host, a timeout). While `next build`
+ * runs, the page is built without it so one bad moment can't fail a deploy, and
+ * the 60-second refresh fills it in. After that, throwing makes Next discard the
+ * refresh and keep serving the last good page, then try again on a later visit,
+ * so visitors never see the news vanish.
+ */
+function orKeepLastGood<T>(data: T | null, what: string): T | null {
+  if (data === null && process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) {
+    throw new Error(`WordPress could not be reached for ${what}; keeping the last good page.`);
+  }
+  return data;
+}
+
+export async function getHomeNews(limit = 3): Promise<{ posts: NewsItem[]; featured: NewsItem | null }> {
+  const ask = (withFeatured: boolean) =>
+    wpQuery<{ posts: { nodes: WpNode[] }; featuredPostId?: number | null }>(
+      `query HomeNews($first: Int!) {
+        ${withFeatured ? "featuredPostId" : ""}
+        posts(first: $first, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
+          nodes { ${LIST_FIELDS} }
+        }
+      }`,
+      { first: limit },
+    );
+  const data = orKeepLastGood((await ask(true)) ?? (await ask(false)), "the homepage news");
+  const nodes = data?.posts?.nodes ?? [];
+  const posts = nodes.map(toNewsItem);
+  const featuredId = data?.featuredPostId ?? null;
+  if (!featuredId) return { posts, featured: null };
+  const inList = nodes.find((n) => n.databaseId === featuredId);
+  if (inList) return { posts, featured: { ...toNewsItem(inList), featured: true } };
+  const one = orKeepLastGood(
+    await wpQuery<{ post: WpNode | null }>(
+      `query FeaturedPost($id: ID!) { post(id: $id, idType: DATABASE_ID) { ${LIST_FIELDS} } }`,
+      { id: String(featuredId) },
+    ),
+    "the featured story",
+  );
+  return { posts, featured: one?.post ? { ...toNewsItem(one.post), featured: true } : null };
+}
+
 export async function getNewsItems(limit = 60): Promise<NewsItem[]> {
   const ask = (withFeatured: boolean) =>
     wpQuery<{ posts: { nodes: WpNode[] }; featuredPostId?: number | null }>(
@@ -57,7 +101,7 @@ export async function getNewsItems(limit = 60): Promise<NewsItem[]> {
       { first: limit },
     );
   // plugin older than 1.13.0 doesn't know featuredPostId
-  const data = (await ask(true)) ?? (await ask(false));
+  const data = orKeepLastGood((await ask(true)) ?? (await ask(false)), "the news list");
   const featured = data?.featuredPostId ?? null;
   return (data?.posts?.nodes ?? []).map((n) => ({ ...toNewsItem(n), featured: !!featured && n.databaseId === featured }));
 }

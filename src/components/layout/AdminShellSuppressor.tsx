@@ -16,7 +16,8 @@ export function AdminShellSuppressor({
   children: React.ReactNode;
   newsletter?: NewsletterIssue | null;
 }) {
-  const pathname = usePathname();
+  // only null on the static 500 page (src/pages), which never renders this
+  const pathname = usePathname() ?? "";
   const isAdmin =
     pathname.startsWith("/admin") ||
     pathname === "/staff" || pathname.startsWith("/staff/") ||

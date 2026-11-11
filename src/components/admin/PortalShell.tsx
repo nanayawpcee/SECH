@@ -187,7 +187,8 @@ function crumbsFor(pathname: string, labels: Record<string, string>) {
 
 export function PortalShell({ variant, children }: { variant: "admin" | "staff"; children: React.ReactNode }) {
   const cfg = VARIANT[variant];
-  const pathname = usePathname();
+  // only null on the static 500 page (src/pages), which never renders this
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { admin, loading, logout } = useAuth();

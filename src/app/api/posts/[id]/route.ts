@@ -87,27 +87,45 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const withCategory = typeof patch.type === "string" && patch.type.trim() !== "";
-    const data = await wpGraphQL<{ updatePost: { post: WpPostNode } }>(
-      updatePostMutation(withCategory),
-      {
-        id: params.id,
-        title: patch.title !== undefined ? String(patch.title).trim() : undefined,
-        content: patch.body ?? patch.content,
-        excerpt: patch.excerpt,
-        status:
-          patch.status === undefined
-            ? undefined
-            : toWpStatus(allowedStatus(patch.status, gate.perms.includes("posts.publish"))),
-        ...(withCategory ? { categoryName: patch.type } : {}),
-        commentStatus:
-          patch.commentsOpen === undefined
-            ? undefined
-            : patch.commentsOpen
-              ? "open"
-              : "closed",
-      },
-      { authenticated: true },
+    const touchesPost = ["title", "body", "content", "excerpt", "status", "type", "commentsOpen"].some(
+      (key) => patch[key] !== undefined,
     );
+
+    // a change that is only the featured image skips updatePost altogether
+    let updated: WpPostNode | null = null;
+    if (touchesPost) {
+      // WPGraphQL's updatePost saves a post sent without a status as a DRAFT,
+      // which silently unpublished a live story once. So an edit that doesn't
+      // mention status sends the post's current status back unchanged.
+      let status: string | undefined;
+      if (patch.status !== undefined) {
+        status = toWpStatus(allowedStatus(patch.status, gate.perms.includes("posts.publish")));
+      } else {
+        const current = await wpGraphQL<{ post: WpPostNode | null }>(GET_POST, { id: params.id }, { authenticated: true });
+        if (!current.post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
+        status = current.post.status ? String(current.post.status).toUpperCase() : undefined;
+      }
+
+      const data = await wpGraphQL<{ updatePost: { post: WpPostNode } }>(
+        updatePostMutation(withCategory),
+        {
+          id: params.id,
+          title: patch.title !== undefined ? String(patch.title).trim() : undefined,
+          content: patch.body ?? patch.content,
+          excerpt: patch.excerpt,
+          status,
+          ...(withCategory ? { categoryName: patch.type } : {}),
+          commentStatus:
+            patch.commentsOpen === undefined
+              ? undefined
+              : patch.commentsOpen
+                ? "open"
+                : "closed",
+        },
+        { authenticated: true },
+      );
+      updated = data.updatePost.post;
+    }
 
     if (patch.featuredImageId !== undefined) {
       await wpGraphQL(
@@ -126,7 +144,12 @@ export async function PATCH(request: Request, { params }: Params) {
       if (fresh.post) return NextResponse.json({ post: mapWpPost(fresh.post) });
     }
 
-    return NextResponse.json({ post: mapWpPost(data.updatePost.post) });
+    if (!updated) {
+      const current = await wpGraphQL<{ post: WpPostNode | null }>(GET_POST, { id: params.id }, { authenticated: true });
+      if (!current.post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
+      updated = current.post;
+    }
+    return NextResponse.json({ post: mapWpPost(updated) });
   } catch (error) {
     const { body, status } = toErrorResponse(error);
     return NextResponse.json(body, { status });
