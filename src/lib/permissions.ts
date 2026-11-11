@@ -49,6 +49,14 @@ export function can(perms: readonly Perm[] | undefined, perm: Perm): boolean {
   return !!perms?.includes(perm);
 }
 
+// Areas kept out of the sidebar and the command palette for now. The pages and
+// their API still work for anyone allowed, so emptying this list brings them back.
+const HIDDEN_FROM_MENUS: readonly Perm[] = ["accounts"];
+
+export function inMenus(perms: readonly Perm[] | undefined, perm: Perm): boolean {
+  return can(perms, perm) && !HIDDEN_FROM_MENUS.includes(perm);
+}
+
 // accounts officers with nothing else to manage go straight to their page
 const DASHBOARD_PERMS: Perm[] = ["bookings", "settings", "comments", "posts.editOthers", "staff.manage"];
 

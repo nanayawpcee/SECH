@@ -17,7 +17,7 @@ import { absoluteUrl, breadcrumbJsonLd, DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import { SITE } from "@/lib/data";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // rendered with dangerouslySetInnerHTML: strip scripts, handlers and js: links. images show in the slider instead
@@ -48,7 +48,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // an error here skips error.tsx and shows Next's bare 500 screen, so let the
   // page body hit the same failure and show the branded error page instead
-  const article = await getNewsArticle(params.slug).catch(() => undefined);
+  const { slug } = await params;
+  const article = await getNewsArticle(slug).catch(() => undefined);
   if (article === undefined) return { title: "News" };
   if (!article) return { title: "Article Not Found" };
 
@@ -74,7 +75,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const [article, recent] = await Promise.all([getNewsArticle(params.slug), getNewsItems(4)]);
+  const { slug } = await params;
+  const [article, recent] = await Promise.all([getNewsArticle(slug), getNewsItems(4)]);
   if (!article) notFound();
 
   const more = recent.filter((p) => p.slug !== article.slug).slice(0, 3);
@@ -156,7 +158,7 @@ export default async function ArticlePage({ params }: Props) {
               </Link>
             </div>
 
-            {article.commentsOpen && <CommentSection slug={params.slug} />}
+            {article.commentsOpen && <CommentSection slug={slug} />}
           </div>
 
           <aside className="nw-article-aside">

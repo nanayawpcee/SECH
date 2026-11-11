@@ -4,7 +4,7 @@ import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 const SET_STATUS = `
   mutation SetBookingStatus($databaseId: Int!, $status: String!) {
@@ -17,7 +17,8 @@ const SET_STATUS = `
 
 const ALLOWED = ["pending", "confirmed", "cancelled"];
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("bookings");
   if (gate instanceof NextResponse) return gate;
   try {

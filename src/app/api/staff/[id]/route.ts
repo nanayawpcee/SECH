@@ -10,7 +10,8 @@ function idFrom(params: { id: string }) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("staff.manage");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);
@@ -29,7 +30,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("staff.manage");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);

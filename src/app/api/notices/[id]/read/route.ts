@@ -5,7 +5,8 @@ import { MARK_NOTICE_READ, type StaffNotice } from "@/lib/wp-notices";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+export async function POST(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm();
   if (gate instanceof NextResponse) return gate;
   const id = Number(params.id);

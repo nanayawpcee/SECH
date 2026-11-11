@@ -6,14 +6,15 @@ import { SAVE_NOTICE, DELETE_NOTICE, noticeVariables, type StaffNotice } from "@
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-function noticeId(params: Params["params"]) {
+function noticeId(params: Awaited<Params["params"]>) {
   const id = Number(params.id);
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("notices.manage");
   if (gate instanceof NextResponse) return gate;
   const id = noticeId(params);
@@ -36,7 +37,8 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("notices.manage");
   if (gate instanceof NextResponse) return gate;
   const id = noticeId(params);

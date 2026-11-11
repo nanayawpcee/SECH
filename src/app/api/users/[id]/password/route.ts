@@ -11,7 +11,8 @@ const RESET = `
   }
 `;
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+export async function POST(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("team");
   if (gate instanceof NextResponse) return gate;
   const userId = Number(params.id);

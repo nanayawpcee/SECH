@@ -4,7 +4,7 @@ import { WP_BASE_URL, getAdminToken } from "@/lib/wp-graphql";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 const ALLOWED = ["approved", "hold", "spam"] as const;
 type Status = (typeof ALLOWED)[number];
@@ -14,12 +14,13 @@ async function requireAdmin() {
   return token ?? null;
 }
 
-function commentId(params: Params["params"]): number | null {
+function commentId(params: Awaited<Params["params"]>): number | null {
   const id = Number(params.id);
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("comments");
   if (gate instanceof NextResponse) return gate;
   const adminToken = await requireAdmin();
@@ -67,7 +68,8 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("comments");
   if (gate instanceof NextResponse) return gate;
   const adminToken = await requireAdmin();

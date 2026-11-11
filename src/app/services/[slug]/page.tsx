@@ -30,7 +30,7 @@ function iconExists(src: string) {
 }
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export const revalidate = 300;
@@ -40,7 +40,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const svc = SERVICES.find((s) => s.slug === params.slug);
+  const { slug } = await params;
+  const svc = SERVICES.find((s) => s.slug === slug);
   if (!svc) return { title: "Service Not Found" };
   const url = `/services/${svc.slug}`;
   const photo = svc.image && (/^https?:\/\//.test(svc.image) || iconExists(svc.image)) ? svc.image : null;
@@ -61,7 +62,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ServiceDetailPage({ params }: Props) {
-  const svc = SERVICES.find((s) => s.slug === params.slug);
+  const { slug } = await params;
+  const svc = SERVICES.find((s) => s.slug === slug);
   if (!svc) notFound();
   const specialists = SHOW_DOCTORS_PUBLICLY ? await getDoctorsForService(svc.slug) : [];
   // lab page only: each feature links to its section card

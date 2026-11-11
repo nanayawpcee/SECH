@@ -5,7 +5,7 @@ import { USER_FIELDS, isAssignableRole, mapWpUser, type WpUserNode } from "@/lib
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 const UPDATE_USER = `
   mutation UpdateAdminUser($id: ID!, $roles: [String], $firstName: String, $lastName: String) {
@@ -15,7 +15,8 @@ const UPDATE_USER = `
   }
 `;
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("team");
   if (gate instanceof NextResponse) return gate;
   try {
@@ -60,7 +61,8 @@ const DELETE_USER = `
   }
 `;
 
-export async function DELETE(request: Request, { params }: Params) {
+export async function DELETE(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("team");
   if (gate instanceof NextResponse) return gate;
   try {

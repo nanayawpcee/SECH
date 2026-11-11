@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowLeft, Loader2, Printer } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader } from "@/components/admin/ui";
@@ -38,7 +38,9 @@ const PRINT_CSS = `
 }
 `;
 
-export default function ReceiptPage({ params }: { params: { id: string } }) {
+export default function ReceiptPage() {
+  // client page: Next 16 hands pages their params as a promise, the hook reads them directly
+  const params = { id: String(useParams()?.id ?? "") };
   const { logout } = useAuth();
   const search = useSearchParams();
   const [t, setT] = useState<AccTransaction | null>(null);

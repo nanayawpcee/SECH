@@ -5,7 +5,7 @@ import { requirePerm, type Viewer } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 const GET_POST = `
   query AdminPost($id: ID!) {
@@ -26,7 +26,8 @@ async function ownershipGate(viewer: Viewer, id: string): Promise<NextResponse |
   return null;
 }
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(_request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
   try {
@@ -74,7 +75,8 @@ function updatePostMutation(withCategory: boolean) {
 `;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
   try {
@@ -164,7 +166,8 @@ const DELETE_POST = `
   }
 `;
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, ctx: Params) {
+  const params = await ctx.params;
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
   try {

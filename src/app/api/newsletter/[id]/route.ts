@@ -5,7 +5,8 @@ import { DELETE_SUBSCRIBER } from "@/lib/wp-newsletter";
 
 export const dynamic = "force-dynamic";
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("newsletter");
   if (gate instanceof NextResponse) return gate;
   const id = Number(params.id);

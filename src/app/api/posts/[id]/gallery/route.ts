@@ -18,7 +18,8 @@ function missingPlugin(error: unknown) {
     && /Cannot query field|Unknown|not exist/i.test(error.message);
 }
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);
@@ -37,7 +38,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("posts.write");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);

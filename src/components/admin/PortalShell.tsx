@@ -44,7 +44,7 @@ import { NotificationBell } from "@/components/admin/NotificationBell";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { Avatar } from "@/components/admin/ui";
 import { adminFont } from "@/app/admin/fonts";
-import { can, type Perm } from "@/lib/permissions";
+import { can, inMenus, type Perm } from "@/lib/permissions";
 
 type BadgeKey = "drafts" | "pending" | "comments" | "review" | "notices" | "messages";
 
@@ -262,7 +262,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   };
 
   const nav = cfg.nav
-    .map((g) => ({ ...g, items: g.items.filter((i) => !i.perm || can(perms, i.perm)) }))
+    .map((g) => ({ ...g, items: g.items.filter((i) => !i.perm || inMenus(perms, i.perm)) }))
     .filter((g) => g.items.length > 0);
 
   const onNavClick = (href: string) => (e: React.MouseEvent) => {

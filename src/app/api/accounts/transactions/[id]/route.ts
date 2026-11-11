@@ -10,7 +10,8 @@ function idFrom(params: { id: string }) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("accounts");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);
@@ -26,7 +27,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // { action: "void", reason } or { action: "print" }
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const params = await ctx.params;
   const gate = await requirePerm("accounts");
   if (gate instanceof NextResponse) return gate;
   const id = idFrom(params);

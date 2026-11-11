@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
 import { useAuth } from "@/context/AuthContext";
-import { can, type Perm } from "@/lib/permissions";
+import { can, inMenus, type Perm } from "@/lib/permissions";
 
 interface Command {
   id: string;
@@ -133,7 +133,7 @@ export function CommandPalette({
       keywords: `${b.phone} ${b.email}`,
       run: go(`/admin/bookings?open=${encodeURIComponent(b.id)}`),
     }));
-    return [...pages, ...actions, ...postCmds, ...bookingCmds].filter((c) => !c.perm || can(perms, c.perm));
+    return [...pages, ...actions, ...postCmds, ...bookingCmds].filter((c) => !c.perm || inMenus(perms, c.perm));
   }, [posts, bookings, theme, toggleTheme, refreshPosts, refreshBookings, addToast, navigate, onClose, perms]);
 
   const results = useMemo(() => {
