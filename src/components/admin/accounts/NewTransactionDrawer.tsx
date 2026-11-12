@@ -29,7 +29,7 @@ export interface Preset {
 
 const EMPTY = {
   category: "", party: "", phone: "", amount: "", description: "",
-  advanceId: "", tenancyId: "", monthly: "", purpose: "", ghanaCard: "", department: "", months: "",
+  advanceId: "", tenancyId: "", monthly: "", purpose: "", ghanaCard: "", department: "", months: "", manualRef: "",
 };
 
 export function NewTransactionDrawer({
@@ -147,6 +147,7 @@ export function NewTransactionDrawer({
     if (!form.party.trim()) return setError(`Enter the ${(cat.partyLabel ?? (cat.direction === "in" ? "payer" : "person paid")).toLowerCase()}.`);
     for (const f of cat.fields) if (f.required && !details[f.key]?.trim()) return setError(`Fill in “${f.label}”.`);
     if ((cat.key === "other_in" || cat.key === "other_out") && !form.description.trim()) return setError("Describe what this is for.");
+    if (cat.direction === "out" && !form.manualRef.trim()) return setError("Enter the hospital’s payment voucher number.");
 
     setSaving(true);
     const r = await onRecord({
@@ -162,6 +163,7 @@ export function NewTransactionDrawer({
       purpose: form.purpose.trim() || null,
       ghanaCard: askIdentity ? cardNow : null,
       department: askIdentity ? form.department.trim() : null,
+      manualRef: cat.direction === "out" ? form.manualRef.trim() : null,
     });
     setSaving(false);
     if (!r.ok) setError(r.error);
@@ -219,6 +221,16 @@ export function NewTransactionDrawer({
                   {cat.direction === "in" ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                   <span>{cat.direction === "in" ? "Cash coming in. A receipt is issued." : "Cash going out. A payment voucher is issued."}</span>
                 </div>
+              )}
+
+              {cat?.direction === "out" && (
+                <label className="po-field" style={{ marginBottom: 12 }}>
+                  <span className="po-label">Hospital voucher number *</span>
+                  <input className="po-input" value={form.manualRef} onChange={(e) => set("manualRef", e.target.value)} maxLength={40}
+                    autoComplete="off" spellCheck={false} placeholder="As written on the hospital’s voucher"
+                    style={{ fontFamily: "ui-monospace, monospace", letterSpacing: ".02em" }} />
+                  <span className="po-hint">Printed on the voucher next to the portal’s own number, so the two records can be matched.</span>
+                </label>
               )}
 
               {cat?.key === "advance_repayment" && (

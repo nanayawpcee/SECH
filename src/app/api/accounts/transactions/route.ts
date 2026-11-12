@@ -35,6 +35,7 @@ export async function POST(request: Request) {
         // checked and tidied by the plugin
         ghanaCard: optText(body.ghanaCard, 40),
         department: optText(body.department, 120),
+        manualRef: optText(typeof body.manualRef === "string" ? body.manualRef.trim() : "", 40),
       },
       { authenticated: true },
     );

@@ -16,6 +16,8 @@ export interface AccTransaction {
   /** staff records only: "GHA-123456789-0" */
   ghanaCard: string | null;
   department: string | null;
+  /** payment vouchers: the number from the hospital's own voucher book */
+  manualRef: string | null;
   status: "valid" | "voided";
   voidReason: string | null;
   voidedBy: string | null;
@@ -321,7 +323,7 @@ export function periodLabel(fromYm: string, months: number) {
 }
 
 const TXN_FIELDS = `databaseId receiptNo direction category party phone amount method description details
-  advanceId tenancyId ghanaCard department status voidReason voidedBy voidedAt cashier printCount createdAt`;
+  advanceId tenancyId ghanaCard department manualRef status voidReason voidedBy voidedAt cashier printCount createdAt`;
 const ADV_FIELDS = "databaseId staffName employeeId ghanaCard department amount repaid outstanding monthlyDeduction purpose dateGiven status";
 const TEN_FIELDS = `databaseId tenantName employeeId ghanaCard department housingTypeId unit monthlyRate startMonth endMonth
   monthsDue totalDue paid balance status`;
@@ -338,10 +340,11 @@ export const ACC_TXN_QUERY = `query AccTxn($id: Int!) { accTransaction(id: $id) 
 
 export const ACC_RECORD = `mutation AccRecord($category: String!, $party: String!, $amount: Int!, $phone: String, $description: String,
   $details: String, $advanceId: Int, $tenancyId: Int, $employeeId: Int, $monthlyDeduction: Int, $purpose: String,
-  $ghanaCard: String, $department: String) {
+  $ghanaCard: String, $department: String, $manualRef: String) {
   accRecordTransaction(input: { category: $category, party: $party, amount: $amount, phone: $phone, description: $description,
     details: $details, advanceId: $advanceId, tenancyId: $tenancyId, employeeId: $employeeId,
-    monthlyDeduction: $monthlyDeduction, purpose: $purpose, ghanaCard: $ghanaCard, department: $department }) { transaction { ${TXN_FIELDS} } }
+    monthlyDeduction: $monthlyDeduction, purpose: $purpose, ghanaCard: $ghanaCard, department: $department,
+    manualRef: $manualRef }) { transaction { ${TXN_FIELDS} } }
 }`;
 
 export const ACC_VOID = `mutation AccVoid($id: Int!, $reason: String!) { accVoidTransaction(input: { id: $id, reason: $reason }) { transaction { ${TXN_FIELDS} } } }`;
@@ -371,7 +374,7 @@ export const ACC_AUDIT_ACTIONS: Record<string, string> = {
 };
 
 export function isMissingAccountsPlugin(message: string) {
-  // an older plugin also lacks the card and department fields added in 1.14.0
-  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accDepartments|accRecordTransaction|accTransaction|accAudit|ghanaCard/.test(message)
+  // an older plugin also lacks the card and department fields (1.14.0) or the hospital voucher number (1.19.0)
+  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accDepartments|accRecordTransaction|accTransaction|accAudit|ghanaCard|manualRef/.test(message)
     && /Cannot query field|Unknown|not exist|not defined/i.test(message);
 }

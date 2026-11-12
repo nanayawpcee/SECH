@@ -88,7 +88,7 @@ export default function AccountsPage() {
     return acc.transactions.filter((t) =>
       (showVoid || t.status === "valid") &&
       (category === "all" || t.category === category) &&
-      (!q || [t.receiptNo, t.party, t.phone ?? "", t.cashier, t.description ?? "", t.department ?? "", t.ghanaCard ?? "",
+      (!q || [t.receiptNo, t.manualRef ?? "", t.party, t.phone ?? "", t.cashier, t.description ?? "", t.department ?? "", t.ghanaCard ?? "",
         ...detailRows(t).map((r) => r[1])]
         .some((v) => v.toLowerCase().includes(q))),
     );
@@ -123,10 +123,10 @@ export default function AccountsPage() {
     const r = await acc.logExport(shown.length, label);
     if (!r.ok) return addToast(r.error, "danger");
     downloadCsv(`sech-accounts-${range.from}-to-${range.to}.csv`,
-      ["Receipt no", "Date", "In/Out", "Category", "Received from / paid to", "Department or unit", "Ghana Card (masked)", "Phone",
+      ["Receipt no", "Hospital voucher no", "Date", "In/Out", "Category", "Received from / paid to", "Department or unit", "Ghana Card (masked)", "Phone",
         "Amount (GHS)", "Details", "Note", "Cashier", "Status", "Void reason"],
       shown.map((t) => [
-        t.receiptNo, new Date(t.createdAt).toLocaleString("en-GB"), t.direction === "in" ? "In" : "Out", categoryLabel(t.category),
+        t.receiptNo, t.manualRef ?? "", new Date(t.createdAt).toLocaleString("en-GB"), t.direction === "in" ? "In" : "Out", categoryLabel(t.category),
         t.party, t.department ?? "", maskGhanaCard(t.ghanaCard), t.phone ?? "", (t.amount / 100).toFixed(2), detailRows(t).map(([k, v]) => `${k}: ${v}`).join("; "),
         t.description ?? "", t.cashier, t.status === "voided" ? "Void" : "Valid", t.voidReason ?? "",
       ]));
@@ -247,6 +247,7 @@ export default function AccountsPage() {
                   <tr key={t.databaseId} style={t.status === "voided" ? { opacity: 0.55 } : undefined}>
                     <td>
                       <div className="po-cell-main" style={{ fontFamily: "ui-monospace, monospace", fontSize: 13 }}>{t.receiptNo}</div>
+                      {t.manualRef && <div className="po-cell-sub" style={{ fontFamily: "ui-monospace, monospace" }}>Hospital PV {t.manualRef}</div>}
                       <div className="po-cell-sub">{when(t.createdAt)}</div>
                     </td>
                     <td>
