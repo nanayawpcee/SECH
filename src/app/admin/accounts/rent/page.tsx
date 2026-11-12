@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -185,9 +185,12 @@ function HousingTypes({ types, loaded, onSave }: {
   onSave: (t: AccHousingType[]) => Promise<{ ok: true; value: AccHousingType[] } | { ok: false; error: string }>;
 }) {
   const { addToast } = useAdminData();
-  const [rows, setRows] = useState<{ id: string; name: string; rate: string }[]>([]);
+  // key: stable per row on screen, so new rows added at the top keep their inputs
+  const [rows, setRows] = useState<{ key: string; id: string; name: string; rate: string }[]>([]);
   const [saving, setSaving] = useState(false);
-  useEffect(() => { setRows(types.map((t) => ({ id: t.id, name: t.name, rate: (t.monthlyRate / 100).toFixed(2) }))); }, [types]);
+  const nextKey = useRef(0);
+  useEffect(() => { setRows(types.map((t) => ({ key: t.id, id: t.id, name: t.name, rate: (t.monthlyRate / 100).toFixed(2) }))); }, [types]);
+  const addRow = () => setRows((rs) => [{ key: `new-${nextKey.current++}`, id: "", name: "", rate: "" }, ...rs]);
   const dirty = JSON.stringify(rows.map((r) => [r.id, r.name, r.rate])) !== JSON.stringify(types.map((t) => [t.id, t.name, (t.monthlyRate / 100).toFixed(2)]));
 
   const save = async () => {
@@ -213,9 +216,13 @@ function HousingTypes({ types, loaded, onSave }: {
     >
       {!loaded ? <SkeletonRows rows={2} cols={2} /> : (
         <div style={{ display: "grid", gap: 8 }}>
+          <button type="button" className="po-btn po-btn--sm" style={{ justifySelf: "start", marginBottom: 4 }} onClick={addRow}>
+            <Plus size={14} />Add housing type
+          </button>
           {rows.map((r, i) => (
-            <div key={r.id || `new-${i}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 150px auto", gap: 8 }}>
+            <div key={r.key} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 150px auto", gap: 8 }}>
               <input className="po-input" placeholder="e.g. Two-bedroom flat" value={r.name} aria-label="Housing type"
+                autoFocus={!r.id}
                 onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
               <input className="po-input" inputMode="decimal" placeholder="Monthly GHS" value={r.rate} aria-label="Monthly rate in cedis"
                 onChange={(e) => setRows((rs) => rs.map((x, j) => (j === i ? { ...x, rate: e.target.value } : x)))} />
@@ -223,8 +230,6 @@ function HousingTypes({ types, loaded, onSave }: {
                 onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}><Trash2 size={15} /></button>
             </div>
           ))}
-          <button type="button" className="po-btn po-btn--sm" style={{ justifySelf: "start" }}
-            onClick={() => setRows((rs) => [...rs, { id: "", name: "", rate: "" }])}><Plus size={14} />Add housing type</button>
         </div>
       )}
     </Card>

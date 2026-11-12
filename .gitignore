@@ -13,3 +13,6 @@ wordpress-plugin/
 # High-resolution image masters. Kept locally so images can be re-exported at
 # other sizes; the optimized derivatives in public/images are what ship.
 assets-original/
+
+# TypeScript build cache
+*.tsbuildinfo
