@@ -23,7 +23,8 @@ import { Card, Chip, ConfirmDialog, EmptyState, PageHeader, Segmented, SkeletonR
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
 import { dayKey, useAccounts } from "@/components/admin/accounts/useAccounts";
 import { downloadCsv } from "@/lib/csv";
-import { CATEGORIES, categoryLabel, detailRows, formatMoney, type AccTransaction } from "@/lib/accounts";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { CATEGORIES, categoryLabel, detailRows, formatMoney, maskGhanaCard, staffSubline, type AccTransaction } from "@/lib/accounts";
 
 type RangeKey = "today" | "week" | "month" | "custom";
 
@@ -87,7 +88,8 @@ export default function AccountsPage() {
     return acc.transactions.filter((t) =>
       (showVoid || t.status === "valid") &&
       (category === "all" || t.category === category) &&
-      (!q || [t.receiptNo, t.party, t.phone ?? "", t.cashier, t.description ?? "", ...detailRows(t).map((r) => r[1])]
+      (!q || [t.receiptNo, t.party, t.phone ?? "", t.cashier, t.description ?? "", t.department ?? "", t.ghanaCard ?? "",
+        ...detailRows(t).map((r) => r[1])]
         .some((v) => v.toLowerCase().includes(q))),
     );
   }, [acc.transactions, query, category, showVoid]);
@@ -121,10 +123,11 @@ export default function AccountsPage() {
     const r = await acc.logExport(shown.length, label);
     if (!r.ok) return addToast(r.error, "danger");
     downloadCsv(`sech-accounts-${range.from}-to-${range.to}.csv`,
-      ["Receipt no", "Date", "In/Out", "Category", "Received from / paid to", "Phone", "Amount (GHS)", "Details", "Note", "Cashier", "Status", "Void reason"],
+      ["Receipt no", "Date", "In/Out", "Category", "Received from / paid to", "Department or unit", "Ghana Card (masked)", "Phone",
+        "Amount (GHS)", "Details", "Note", "Cashier", "Status", "Void reason"],
       shown.map((t) => [
         t.receiptNo, new Date(t.createdAt).toLocaleString("en-GB"), t.direction === "in" ? "In" : "Out", categoryLabel(t.category),
-        t.party, t.phone ?? "", (t.amount / 100).toFixed(2), detailRows(t).map(([k, v]) => `${k}: ${v}`).join("; "),
+        t.party, t.department ?? "", maskGhanaCard(t.ghanaCard), t.phone ?? "", (t.amount / 100).toFixed(2), detailRows(t).map(([k, v]) => `${k}: ${v}`).join("; "),
         t.description ?? "", t.cashier, t.status === "voided" ? "Void" : "Valid", t.voidReason ?? "",
       ]));
     addToast(`Exported ${shown.length} record${shown.length === 1 ? "" : "s"}. Keep the file safe and delete it when done.`);
@@ -159,7 +162,7 @@ export default function AccountsPage() {
       {acc.needsPlugin && (
         <div className="po-alert po-tone-warn" role="note" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0 }} />
-          <span>Install SECH Portal plugin 1.11.0 on WordPress to turn on the accounts office.</span>
+          <span>Install SECH Portal plugin 1.14.0 on WordPress to turn on the accounts office (it adds Ghana Card numbers and departments for staff).</span>
         </div>
       )}
       {acc.error && (
@@ -183,11 +186,15 @@ export default function AccountsPage() {
         />
         {rangeKey === "custom" && (
           <>
-            <input className="po-input" type="date" value={custom.from} max={custom.to} aria-label="From"
-              onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} style={{ width: 160 }} />
+            <div style={{ width: 170 }}>
+              <DatePicker value={custom.from} max={custom.to} ariaLabel="From" clearable={false}
+                onChange={(v) => setCustom((c) => ({ ...c, from: v }))} />
+            </div>
             <span className="po-cell-sub">to</span>
-            <input className="po-input" type="date" value={custom.to} min={custom.from} aria-label="To"
-              onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} style={{ width: 160 }} />
+            <div style={{ width: 170 }}>
+              <DatePicker value={custom.to} min={custom.from} ariaLabel="To" clearable={false}
+                onChange={(v) => setCustom((c) => ({ ...c, to: v }))} />
+            </div>
           </>
         )}
       </div>
@@ -213,7 +220,7 @@ export default function AccountsPage() {
         <div className="po-toolbar">
           <div className="po-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="po-input" placeholder="Receipt no., name, phone" value={query}
+            <input className="po-input" placeholder="Receipt no., name, phone, card no." value={query}
               onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
           </div>
           <select className="po-select" style={{ width: 260 }} value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category">
@@ -248,7 +255,9 @@ export default function AccountsPage() {
                     </td>
                     <td>
                       <div className="po-cell-main">{t.party}</div>
-                      {detailRows(t)[0] && <div className="po-cell-sub">{detailRows(t)[0][1]}</div>}
+                      {staffSubline(t)
+                        ? <div className="po-cell-sub">{staffSubline(t)}</div>
+                        : detailRows(t)[0] && <div className="po-cell-sub">{detailRows(t)[0][1]}</div>}
                     </td>
                     <td style={{ textAlign: "right", fontWeight: 700, whiteSpace: "nowrap", color: t.direction === "in" ? "var(--po-success)" : "var(--po-warn)" }}>
                       {t.direction === "in" ? "+" : "−"} {formatMoney(t.amount)}
@@ -298,7 +307,8 @@ export default function AccountsPage() {
         preset={drawer}
         advances={acc.advances}
         tenancies={acc.tenancies}
-        staff={acc.staff}
+        transactions={acc.transactions}
+        departments={acc.departments}
         onClose={() => setDrawer(null)}
         onRecord={onRecord}
       />

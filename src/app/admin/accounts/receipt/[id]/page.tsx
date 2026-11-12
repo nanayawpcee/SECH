@@ -7,7 +7,7 @@ import { AlertTriangle, ArrowLeft, Loader2, Printer } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader } from "@/components/admin/ui";
 import { SITE } from "@/lib/data";
-import { amountInWords, categoryLabel, detailRows, formatMoney, type AccTransaction } from "@/lib/accounts";
+import { amountInWords, categoryLabel, detailRows, formatMoney, maskGhanaCard, type AccTransaction } from "@/lib/accounts";
 
 // 80mm thermal slip. only the slip prints, nothing else on the page
 const PRINT_CSS = `
@@ -125,6 +125,9 @@ export default function ReceiptPage() {
             <div className="rc-row"><span>No.</span><span>{t.receiptNo}</span></div>
             <div className="rc-row"><span>Date</span><span>{new Date(t.createdAt).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
             <div className="rc-row"><span>{out ? "Paid to" : "Received from"}</span><span>{t.party}</span></div>
+            {t.department && <div className="rc-row"><span>Dept/unit</span><span>{t.department}</span></div>}
+            {/* only part of the card number goes on paper */}
+            {t.ghanaCard && <div className="rc-row"><span>Ghana Card</span><span>{maskGhanaCard(t.ghanaCard)}</span></div>}
             {t.phone && <div className="rc-row"><span>Phone</span><span>{t.phone}</span></div>}
             <div className="rc-row"><span>{out ? "Being" : "For"}</span><span>{categoryLabel(t.category)}</span></div>
             {detailRows(t).map(([k, v]) => <div key={k} className="rc-row"><span>{k}</span><span>{v}</span></div>)}

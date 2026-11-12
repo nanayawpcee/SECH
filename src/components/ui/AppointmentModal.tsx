@@ -5,6 +5,7 @@ import { Check, Info, Microscope, RefreshCw, Stethoscope, UserRound } from "luci
 import { submitAppointment } from "@/lib/submit-booking";
 import { useState, useEffect, useRef } from "react";
 import { DEPARTMENTS } from "@/lib/data";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 interface Props {
   onClose: () => void;
@@ -76,7 +77,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
   const topRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    // a date picker open inside the form closes first
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && !e.defaultPrevented) onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
@@ -116,6 +118,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
+  // no birth dates in the future
+  const todayKey = new Date().toISOString().split("T")[0];
 
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -184,7 +188,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
               <div className="form-grid-2col">
   <div className="form-group">
     <label className="form-label">Date of Birth</label>
-                  <input className="form-input" type="date" value={data.dob} onChange={e => set("dob", e.target.value)} />
+                  <DatePicker inputClassName="form-input" value={data.dob} onChange={v => set("dob", v)} max={todayKey}
+                startWith="years" placeholder="Choose date of birth" ariaLabel="Date of birth" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Gender *</label>
@@ -275,7 +280,8 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
             <div className="form-grid-2col">
   <div className="form-group">
     <label className="form-label">Preferred Date *</label>
-                  <input className="form-input" type="date" min={minDate} value={data.preferredDate} onChange={e => set("preferredDate", e.target.value)} />
+                  <DatePicker inputClassName="form-input" value={data.preferredDate} onChange={v => set("preferredDate", v)} min={minDate}
+                placeholder="Choose a date" ariaLabel="Preferred date" invalid={!!errors.preferredDate} />
                   {errors.preferredDate && <p className="form-error">{errors.preferredDate}</p>}
                 </div>
                 <div className="form-group">

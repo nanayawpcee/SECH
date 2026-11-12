@@ -13,6 +13,9 @@ export interface AccTransaction {
   details: string;
   advanceId: number | null;
   tenancyId: number | null;
+  /** staff records only: "GHA-123456789-0" */
+  ghanaCard: string | null;
+  department: string | null;
   status: "valid" | "voided";
   voidReason: string | null;
   voidedBy: string | null;
@@ -26,6 +29,8 @@ export interface AccAdvance {
   databaseId: number;
   staffName: string;
   employeeId: number | null;
+  ghanaCard: string | null;
+  department: string | null;
   amount: number;
   repaid: number;
   outstanding: number;
@@ -39,6 +44,8 @@ export interface AccTenancy {
   databaseId: number;
   tenantName: string;
   employeeId: number | null;
+  ghanaCard: string | null;
+  department: string | null;
   housingTypeId: string;
   unit: string | null;
   monthlyRate: number;
@@ -57,10 +64,10 @@ export interface AccHousingType {
   monthlyRate: number;
 }
 
-export interface AccStaffOption {
-  id: number;
+/** a department from the staff records, with its units */
+export interface AccDepartment {
   name: string;
-  staffNumber: string | null;
+  units: string[];
 }
 
 export interface AccAuditEntry {
@@ -85,6 +92,8 @@ export interface Category {
   fields: DetailField[];
   /** label for the payer or payee box */
   partyLabel?: string;
+  /** a staff member: needs their Ghana Card number and department */
+  staff?: boolean;
 }
 
 // keep in step with sech_acc_categories() in the plugin
@@ -110,17 +119,17 @@ export const CATEGORIES: Category[] = [
     { key: "service", label: "Service above the package", kind: "text" },
   ] },
   { key: "cervical_screening", label: "Cervical cancer screening", direction: "in", partyLabel: "Client", fields: [] },
-  { key: "rent", label: "Staff rent", direction: "in", link: "tenancy", partyLabel: "Tenant", fields: [
+  { key: "rent", label: "Staff rent", direction: "in", link: "tenancy", partyLabel: "Tenant", staff: true, fields: [
     { key: "period", label: "Months paid for", kind: "text", placeholder: "e.g. November 2026" },
   ] },
   { key: "anaesthetic_assessment", label: "Anaesthetic assessment (theatre bulk)", direction: "in", partyLabel: "Paid in by", fields: [
     { key: "patients", label: "Number of patients", kind: "number" },
     { key: "period", label: "Period covered", kind: "text", placeholder: "e.g. 1 to 15 November" },
   ] },
-  { key: "imprest_refund", label: "Refund from staff imprest", direction: "in", partyLabel: "Staff member", fields: [
+  { key: "imprest_refund", label: "Refund from staff imprest", direction: "in", partyLabel: "Staff member", staff: true, fields: [
     { key: "errand", label: "Errand or imprest reference", kind: "text", required: true },
   ] },
-  { key: "advance_repayment", label: "Salary advance repayment", direction: "in", link: "advance", partyLabel: "Staff member", fields: [] },
+  { key: "advance_repayment", label: "Salary advance repayment", direction: "in", link: "advance", partyLabel: "Staff member", staff: true, fields: [] },
   { key: "mass_offering", label: "Mass offerings (OPD)", direction: "in", fields: [
     { key: "intention", label: "Mass intention", kind: "text" },
   ] },
@@ -144,12 +153,68 @@ export const CATEGORIES: Category[] = [
     { key: "folderNo", label: "Folder or admission number", kind: "text" },
     { key: "reason", label: "Reason for the refund", kind: "text", required: true },
   ] },
-  { key: "salary_advance", label: "Salary advance", direction: "out", link: "advance", partyLabel: "Staff member", fields: [] },
+  { key: "salary_advance", label: "Salary advance", direction: "out", link: "advance", partyLabel: "Staff member", staff: true, fields: [] },
   { key: "other_out", label: "Other payment", direction: "out", partyLabel: "Paid to", fields: [] },
 ];
 
 export const categoryOf = (key: string) => CATEGORIES.find((c) => c.key === key);
 export const categoryLabel = (key: string) => categoryOf(key)?.label ?? key;
+
+// Staff are typed in by hand until they are enrolled, and names repeat, so the
+// Ghana Card number is what tells two people apart. Keep in step with
+// sech_acc_ghana_card() in the plugin.
+
+/** "GHA-123456789-0" from what was typed (any case, spaces or dashes), or null */
+export function normalizeGhanaCard(input: string): string | null {
+  const m = input.toUpperCase().replace(/[\s\u2010-\u2015-]+/g, "").match(/^([A-Z]{3})(\d{9})(\d)$/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+/** "GHA-•••••6789-0": enough to tell people apart, for lists and anything printed */
+export function maskGhanaCard(card: string | null | undefined): string {
+  const m = (card ?? "").match(/^([A-Z]{3})-\d{5}(\d{4})-(\d)$/);
+  return m ? `${m[1]}-•••••${m[2]}-${m[3]}` : "";
+}
+
+/** "Maternity, card GHA-•••••6789-0" under a staff member's name */
+export function staffSubline(r: { department: string | null; ghanaCard: string | null }): string {
+  return [r.department, r.ghanaCard ? `card ${maskGhanaCard(r.ghanaCard)}` : ""].filter(Boolean).join(", ");
+}
+
+export interface StaffPerson {
+  name: string;
+  ghanaCard: string;
+  department: string;
+}
+
+/** everyone the accounts office has recorded with a card number, newest details first */
+export function knownStaff(
+  advances: AccAdvance[],
+  tenancies: AccTenancy[],
+  transactions: AccTransaction[] = [],
+): StaffPerson[] {
+  const byCard = new Map<string, StaffPerson>();
+  const add = (name: string, card: string | null, dept: string | null) => {
+    if (card && dept && name && !byCard.has(card)) byCard.set(card, { name, ghanaCard: card, department: dept });
+  };
+  for (const t of transactions) if (t.status === "valid") add(t.party, t.ghanaCard, t.department);
+  for (const a of advances) add(a.staffName, a.ghanaCard, a.department);
+  for (const t of tenancies) add(t.tenantName, t.ghanaCard, t.department);
+  return Array.from(byCard.values());
+}
+
+const sameName = (a: string, b: string) =>
+  a.trim().toLowerCase().replace(/\s+/g, " ") === b.trim().toLowerCase().replace(/\s+/g, " ");
+
+/** what the office already knows about the person being typed in */
+export function matchStaff(people: StaffPerson[], name: string, card: string | null) {
+  return {
+    /** the person already on record with this card */
+    byCard: card ? people.find((p) => p.ghanaCard === card) ?? null : null,
+    /** other people on record with the same name but a different card */
+    sameName: name.trim() ? people.filter((p) => sameName(p.name, name) && p.ghanaCard !== card) : [],
+  };
+}
 
 /** "1,250.00" from pesewas */
 export function formatMoney(pesewas: number, withCurrency = true) {
@@ -230,35 +295,62 @@ export function monthLabel(ym: string | null | undefined) {
   return new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 }
 
+/** "2026-11" moved on by n months */
+export function addMonths(ym: string, n: number): string {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** staff rent: the most one payment can cover, and the furthest ahead anyone can be paid. Keep in step with the plugin */
+export const RENT_MAX_MONTHS = 12;
+
+/** how much a tenant can pay now, and from which month the next payment counts */
+export function rentLimits(t: AccTenancy) {
+  const year = RENT_MAX_MONTHS * t.monthlyRate;
+  // a year in one go, and no further than a year ahead once arrears are cleared
+  const maxAmount = Math.max(0, Math.min(year, year + t.balance));
+  const maxMonths = t.monthlyRate > 0 ? Math.floor(maxAmount / t.monthlyRate) : 0;
+  const firstUnpaid = t.monthlyRate > 0 ? addMonths(t.startMonth, Math.floor(Math.max(0, t.paid) / t.monthlyRate)) : t.startMonth;
+  return { maxAmount, maxMonths, firstUnpaid };
+}
+
+/** "Dec 2026 to Feb 2027" */
+export function periodLabel(fromYm: string, months: number) {
+  return months <= 1 ? monthLabel(fromYm) : `${monthLabel(fromYm)} to ${monthLabel(addMonths(fromYm, months - 1))}`;
+}
+
 const TXN_FIELDS = `databaseId receiptNo direction category party phone amount method description details
-  advanceId tenancyId status voidReason voidedBy voidedAt cashier printCount createdAt`;
-const ADV_FIELDS = "databaseId staffName employeeId amount repaid outstanding monthlyDeduction purpose dateGiven status";
-const TEN_FIELDS = "databaseId tenantName employeeId housingTypeId unit monthlyRate startMonth endMonth monthsDue totalDue paid balance status";
+  advanceId tenancyId ghanaCard department status voidReason voidedBy voidedAt cashier printCount createdAt`;
+const ADV_FIELDS = "databaseId staffName employeeId ghanaCard department amount repaid outstanding monthlyDeduction purpose dateGiven status";
+const TEN_FIELDS = `databaseId tenantName employeeId ghanaCard department housingTypeId unit monthlyRate startMonth endMonth
+  monthsDue totalDue paid balance status`;
 
 export const ACC_OVERVIEW_QUERY = `query AccOverview($from: String, $to: String) {
   accTransactions(from: $from, to: $to) { ${TXN_FIELDS} }
   accAdvances { ${ADV_FIELDS} }
   accTenancies { ${TEN_FIELDS} }
   accHousingTypes { id name monthlyRate }
-  accStaffOptions { id name staffNumber }
+  accDepartments { name units }
 }`;
 
 export const ACC_TXN_QUERY = `query AccTxn($id: Int!) { accTransaction(id: $id) { ${TXN_FIELDS} } }`;
 
 export const ACC_RECORD = `mutation AccRecord($category: String!, $party: String!, $amount: Int!, $phone: String, $description: String,
-  $details: String, $advanceId: Int, $tenancyId: Int, $employeeId: Int, $monthlyDeduction: Int, $purpose: String) {
+  $details: String, $advanceId: Int, $tenancyId: Int, $employeeId: Int, $monthlyDeduction: Int, $purpose: String,
+  $ghanaCard: String, $department: String) {
   accRecordTransaction(input: { category: $category, party: $party, amount: $amount, phone: $phone, description: $description,
     details: $details, advanceId: $advanceId, tenancyId: $tenancyId, employeeId: $employeeId,
-    monthlyDeduction: $monthlyDeduction, purpose: $purpose }) { transaction { ${TXN_FIELDS} } }
+    monthlyDeduction: $monthlyDeduction, purpose: $purpose, ghanaCard: $ghanaCard, department: $department }) { transaction { ${TXN_FIELDS} } }
 }`;
 
 export const ACC_VOID = `mutation AccVoid($id: Int!, $reason: String!) { accVoidTransaction(input: { id: $id, reason: $reason }) { transaction { ${TXN_FIELDS} } } }`;
 export const ACC_LOG_PRINT = `mutation AccPrint($id: Int!) { accLogPrint(input: { id: $id }) { printCount } }`;
 
-export const ACC_SAVE_TENANCY = `mutation AccTenancy($id: Int, $tenantName: String!, $employeeId: Int, $housingTypeId: String!, $unit: String,
-  $monthlyRate: Int!, $startMonth: String!, $endMonth: String) {
-  accSaveTenancy(input: { id: $id, tenantName: $tenantName, employeeId: $employeeId, housingTypeId: $housingTypeId, unit: $unit,
-    monthlyRate: $monthlyRate, startMonth: $startMonth, endMonth: $endMonth }) { tenancy { ${TEN_FIELDS} } }
+export const ACC_SAVE_TENANCY = `mutation AccTenancy($id: Int, $tenantName: String!, $employeeId: Int, $ghanaCard: String, $department: String,
+  $housingTypeId: String!, $unit: String, $monthlyRate: Int!, $startMonth: String!, $endMonth: String) {
+  accSaveTenancy(input: { id: $id, tenantName: $tenantName, employeeId: $employeeId, ghanaCard: $ghanaCard, department: $department,
+    housingTypeId: $housingTypeId, unit: $unit, monthlyRate: $monthlyRate, startMonth: $startMonth, endMonth: $endMonth }) { tenancy { ${TEN_FIELDS} } }
 }`;
 
 export const ACC_SAVE_HOUSING = `mutation AccHousing($json: String!) { accSaveHousingTypes(input: { json: $json }) { types { id name monthlyRate } } }`;
@@ -275,9 +367,11 @@ export const ACC_AUDIT_ACTIONS: Record<string, string> = {
   tenancy_changed: "Changed tenancy",
   housing_types: "Changed housing types",
   exported: "Exported",
+  cleared: "Cleared all data",
 };
 
 export function isMissingAccountsPlugin(message: string) {
-  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accStaffOptions|accRecordTransaction|accTransaction|accAudit/.test(message)
+  // an older plugin also lacks the card and department fields added in 1.14.0
+  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accDepartments|accRecordTransaction|accTransaction|accAudit|ghanaCard/.test(message)
     && /Cannot query field|Unknown|not exist|not defined/i.test(message);
 }

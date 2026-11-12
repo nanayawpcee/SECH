@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Info, Loader2, Trash2, X } from "lucide-react";
 import { Avatar } from "@/components/admin/ui";
+import { DatePicker } from "@/components/ui/DatePicker";
 import {
   EMPLOYEE_INPUT_FIELDS,
   EMPLOYMENT_TYPES,
@@ -196,7 +197,7 @@ export function EmployeeEditor({
                 {form.status === "exited" && (
                   <label className="po-field">
                     <span className="po-label">Date left</span>
-                    <input className="po-input" type="date" value={form.dateExited} onChange={(e) => set("dateExited", e.target.value)} />
+                    <DatePicker value={form.dateExited} onChange={(v) => set("dateExited", v)} ariaLabel="Date left" />
                     <span className="po-hint">Starts the retention period. Left blank, it is set to the day you save.</span>
                   </label>
                 )}
@@ -250,12 +251,12 @@ export function EmployeeEditor({
                 </label>
                 <label className="po-field">
                   <span className="po-label">Date of first appointment</span>
-                  <input className="po-input" type="date" value={form.dateFirstAppointment} onChange={(e) => set("dateFirstAppointment", e.target.value)} />
+                  <DatePicker value={form.dateFirstAppointment} onChange={(v) => set("dateFirstAppointment", v)} ariaLabel="Date of first appointment" />
                   {inService !== null && <span className="po-hint">{inService} year{inService === 1 ? "" : "s"} in service</span>}
                 </label>
                 <label className="po-field">
                   <span className="po-label">Date of current rank</span>
-                  <input className="po-input" type="date" value={form.dateCurrentRank} onChange={(e) => set("dateCurrentRank", e.target.value)} />
+                  <DatePicker value={form.dateCurrentRank} onChange={(v) => set("dateCurrentRank", v)} ariaLabel="Date of current rank" />
                   {inRank !== null && <span className="po-hint">{inRank} year{inRank === 1 ? "" : "s"} on this rank</span>}
                 </label>
               </div>
@@ -287,7 +288,7 @@ export function EmployeeEditor({
                 </label>
                 <label className="po-field">
                   <span className="po-label">Expiry date</span>
-                  <input className="po-input" type="date" value={form.licenceExpiry} onChange={(e) => set("licenceExpiry", e.target.value)} />
+                  <DatePicker value={form.licenceExpiry} onChange={(v) => set("licenceExpiry", v)} ariaLabel="Licence expiry date" />
                   {licence === "expired" && <span className="st-warn">Expired</span>}
                   {licence === "soon" && <span className="st-warn">Expires within 60 days</span>}
                 </label>

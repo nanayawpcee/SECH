@@ -21,6 +21,7 @@ import {
   Copy,
   KeySquare,
   Mail,
+  MailCheck,
   Printer,
   Users,
   X,
@@ -75,7 +76,7 @@ export default function SettingsPage() {
   const [invite, setInvite] = useState({ name: "", email: "", role: "contributor", username: "" });
   const [inviteMode, setInviteMode] = useState<"email" | "temporary">("email");
   const [usernameTouched, setUsernameTouched] = useState(false);
-  const [credentials, setCredentials] = useState<{ name: string; username: string; password: string; reset: boolean } | null>(null);
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [toReset, setToReset] = useState<AdminUser | null>(null);
   const [resetting, setResetting] = useState(false);
 
@@ -117,7 +118,10 @@ export default function SettingsPage() {
       setInvite({ name: "", email: "", role: "contributor", username: "" });
       setUsernameTouched(false);
       if (inviteMode === "temporary") {
-        setCredentials({ name: data.account.name, username: data.account.username, password: data.temporaryPassword, reset: false });
+        setCredentials({
+          name: data.account.name, username: data.account.username, password: data.temporaryPassword, reset: false,
+          emailedTo: data.emailedTo ?? null, emailFailed: !!data.emailFailed,
+        });
         addToast(`Account created for ${data.account.name}`);
       } else {
         addToast(`Invitation sent to ${data.user.email}`);
@@ -156,7 +160,10 @@ export default function SettingsPage() {
       const res = await fetch(`/api/users/${toReset.id}/password`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not reset the password.");
-      setCredentials({ name: toReset.name, username: toReset.email || toReset.name, password: data.temporaryPassword, reset: true });
+      setCredentials({
+        name: toReset.name, username: toReset.email || toReset.name, password: data.temporaryPassword, reset: true,
+        emailedTo: data.emailedTo ?? null, emailFailed: data.hasEmail === true && !data.emailedTo,
+      });
       setUsers((prev) => prev.map((u) => (u.id === toReset.id ? { ...u, mustChangePassword: true } : u)));
       setToReset(null);
     } catch (err: any) {
@@ -400,8 +407,8 @@ export default function SettingsPage() {
                   <Card
                     title="Add a colleague"
                     subtitle={inviteMode === "email"
-                      ? "WordPress emails them a link to choose their own password. You never handle it."
-                      : "For staff without reliable email. You get a one-time password to hand over in person; they must replace it when they first sign in."}
+                      ? "They get an email with a link to choose their own password. You never handle it."
+                      : "You get a one-time password to hand over in person. If you add an email, they get it by email too, with a link to choose their own. Either way they must replace it when they first sign in."}
                     action={
                       <div className="po-seg" role="tablist" aria-label="How to give access">
                         {([["email", "Email invite", Mail], ["temporary", "Temporary password", KeySquare]] as const).map(([v, label, Icon]) => (
@@ -543,7 +550,7 @@ export default function SettingsPage() {
         icon={KeySquare}
         tone="primary"
         title={`Reset ${toReset?.name ?? ""}’s password?`}
-        text={<>They’ll be signed out everywhere and given a new temporary password, which you’ll see once. At their next sign-in they must choose their own.</>}
+        text={<>They’ll be signed out everywhere and given a new temporary password, which you’ll see once. {toReset?.email ? <>It is also emailed to {toReset.email} with a link to choose their own password. </> : null}At their next sign-in they must choose their own.</>}
         confirmLabel="Reset password"
         busy={resetting}
         onConfirm={resetPassword}
@@ -597,8 +604,19 @@ export default function SettingsPage() {
   );
 }
 
+interface Credentials {
+  name: string;
+  username: string;
+  password: string;
+  reset: boolean;
+  /** the password and a reset link were also emailed here */
+  emailedTo?: string | null;
+  /** the account has an email but sending failed */
+  emailFailed?: boolean;
+}
+
 function CredentialsDialog({ credentials, onDone, onCopied }: {
-  credentials: { name: string; username: string; password: string; reset: boolean } | null;
+  credentials: Credentials | null;
   onDone: () => void;
   onCopied: (what: string) => void;
 }) {
@@ -632,8 +650,22 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
             initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
             <div className="po-kpi-icon po-tone-success" style={{ marginBottom: 14 }}><KeySquare size={18} /></div>
             <h3 className="po-modal-title">{credentials.reset ? "New temporary password" : "Account created"}</h3>
+            {credentials.emailedTo ? (
+              <div className="po-alert po-tone-success" role="status" style={{ marginBottom: 14 }}>
+                <MailCheck size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span>
+                  Sent to <strong>{credentials.emailedTo}</strong> with a link to choose a new password. If {credentials.name} can’t get to that email, give them these details in person.
+                </span>
+              </div>
+            ) : credentials.emailFailed ? (
+              <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 14 }}>
+                <Mail size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span>The email to {credentials.name} could not be sent. Give them these details in person.</span>
+              </div>
+            ) : null}
             <p className="po-modal-text" style={{ marginBottom: 14 }}>
-              Give these to <strong>{credentials.name}</strong> in person. <strong>This is the only time the password is shown.</strong> The portal keeps no copy.
+              {credentials.emailedTo ? "" : <>Give these to <strong>{credentials.name}</strong> in person. </>}
+              <strong>This is the only time the password is shown here.</strong> The portal keeps no copy.
             </p>
 
             <div className="st-cred">

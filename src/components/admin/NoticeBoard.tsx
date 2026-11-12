@@ -44,6 +44,7 @@ import {
   useInitialParam,
 } from "@/components/admin/ui";
 import { formatDay, todayKey } from "@/lib/admin-dates";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type View = "all" | "unread" | "pinned";
 
@@ -460,7 +461,7 @@ function NoticeComposer({ notice, onClose }: { notice: StaffNotice | "new" | nul
               <div className="nb-grid2">
                 <label className="po-field">
                   <span className="po-label">Show until (optional)</span>
-                  <input className="po-input" type="date" value={form.expiresOn} min={todayKey()} onChange={(e) => set("expiresOn", e.target.value)} />
+                  <DatePicker value={form.expiresOn} min={todayKey()} onChange={(v) => set("expiresOn", v)} placeholder="No end date" ariaLabel="Show until" />
                   <span className="po-hint">Hidden from staff after this date</span>
                 </label>
                 <label className="po-field">

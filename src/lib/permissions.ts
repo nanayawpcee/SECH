@@ -51,7 +51,7 @@ export function can(perms: readonly Perm[] | undefined, perm: Perm): boolean {
 
 // Areas kept out of the sidebar and the command palette for now. The pages and
 // their API still work for anyone allowed, so emptying this list brings them back.
-const HIDDEN_FROM_MENUS: readonly Perm[] = ["accounts"];
+const HIDDEN_FROM_MENUS: readonly Perm[] = [];
 
 export function inMenus(perms: readonly Perm[] | undefined, perm: Perm): boolean {
   return can(perms, perm) && !HIDDEN_FROM_MENUS.includes(perm);

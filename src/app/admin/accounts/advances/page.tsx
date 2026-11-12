@@ -8,7 +8,7 @@ import { useAdminData } from "@/context/AdminDataContext";
 import { Chip, EmptyState, PageHeader, Segmented, SkeletonRows } from "@/components/admin/ui";
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
 import { dayKey, useAccounts } from "@/components/admin/accounts/useAccounts";
-import { formatMoney } from "@/lib/accounts";
+import { formatMoney, staffSubline } from "@/lib/accounts";
 
 type Show = "outstanding" | "cleared" | "all";
 
@@ -26,7 +26,8 @@ export default function AdvancesPage() {
     return acc.advances.filter((a) =>
       a.status !== "voided" &&
       (show === "all" || a.status === show) &&
-      (!q || a.staffName.toLowerCase().includes(q)));
+      (!q || [a.staffName, a.department ?? "", (a.ghanaCard ?? "").replace(/-/g, "")]
+        .some((v) => v.toLowerCase().includes(q.replace(/-/g, "")))));
   }, [acc.advances, show, query]);
 
   const owed = acc.advances.filter((a) => a.status === "outstanding");
@@ -78,7 +79,7 @@ export default function AdvancesPage() {
         <div className="po-toolbar">
           <div className="po-input-wrap" style={{ flex: "1 1 220px", maxWidth: 320 }}>
             <Search size={15} />
-            <input className="po-input" placeholder="Staff name" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
+            <input className="po-input" placeholder="Name, department or card no." value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
           </div>
           <Segmented<Show>
             id="adv-show"
@@ -106,6 +107,7 @@ export default function AdvancesPage() {
                   <tr key={a.databaseId}>
                     <td>
                       <div className="po-cell-main">{a.staffName}</div>
+                      {staffSubline(a) && <div className="po-cell-sub">{staffSubline(a)}</div>}
                       {a.purpose && <div className="po-cell-sub">{a.purpose}</div>}
                     </td>
                     <td>
@@ -137,7 +139,7 @@ export default function AdvancesPage() {
         preset={drawer}
         advances={acc.advances}
         tenancies={acc.tenancies}
-        staff={acc.staff}
+        departments={acc.departments}
         onClose={() => setDrawer(null)}
         onRecord={onRecord}
       />

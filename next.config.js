@@ -25,6 +25,11 @@ const nextConfig = {
   },
   allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', '192.168.2.82', '10.10.0.218'],
   images: {
+    // In development the browser loads images straight from WordPress. From some
+    // networks the WordPress host sends files at about 45 KB/s, so the local image
+    // optimiser gives up (504) before a large upload arrives. Production is
+    // unaffected: Vercel fetches from WordPress quickly and caches the result.
+    unoptimized: process.env.NODE_ENV === 'development',
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {

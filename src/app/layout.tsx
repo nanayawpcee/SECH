@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     images: [DEFAULT_SHARE_IMAGE],
   },
   twitter: { card: "summary_large_image", images: [DEFAULT_SHARE_IMAGE.url] },
+  // Google Search Console's "HTML tag" check. Set GOOGLE_SITE_VERIFICATION in
+  // Vercel to the content="..." value Google gives; nothing is added while unset.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION.replace(/^[\s\S]*content="([^"]+)"[\s\S]*$/, "$1").trim() } }
+    : {}),
 };
 
 async function getCurrentNewsletter() {

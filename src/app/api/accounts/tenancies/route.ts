@@ -18,6 +18,8 @@ export async function POST(request: Request) {
         id: Number(b.id) > 0 ? Number(b.id) : null,
         tenantName: String(b.tenantName ?? "").trim(),
         employeeId: Number(b.employeeId) > 0 ? Number(b.employeeId) : null,
+        ghanaCard: b.ghanaCard ? String(b.ghanaCard).slice(0, 40) : null,
+        department: b.department ? String(b.department).slice(0, 120) : null,
         housingTypeId: String(b.housingTypeId ?? ""),
         unit: b.unit ? String(b.unit) : null,
         monthlyRate: Math.max(0, Math.round(Number(b.monthlyRate) || 0)),

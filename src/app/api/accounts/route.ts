@@ -6,8 +6,8 @@ import {
   ACC_OVERVIEW_QUERY,
   isMissingAccountsPlugin,
   type AccAdvance,
+  type AccDepartment,
   type AccHousingType,
-  type AccStaffOption,
   type AccTenancy,
   type AccTransaction,
 } from "@/lib/accounts";
@@ -20,7 +20,7 @@ type Overview = {
   accAdvances: AccAdvance[] | null;
   accTenancies: AccTenancy[] | null;
   accHousingTypes: AccHousingType[] | null;
-  accStaffOptions: AccStaffOption[] | null;
+  accDepartments: AccDepartment[] | null;
 };
 
 const isDay = (v: string | null) => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -43,14 +43,14 @@ export async function GET(request: Request) {
         advances: data.accAdvances ?? [],
         tenancies: data.accTenancies ?? [],
         housingTypes: data.accHousingTypes ?? [],
-        staff: data.accStaffOptions ?? [],
+        departments: data.accDepartments ?? [],
         canAudit: can(gate.perms, "settings"),
       },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {
     if (error instanceof WpGraphQLError && isMissingAccountsPlugin(error.message)) {
-      return NextResponse.json({ needsPlugin: true, transactions: [], advances: [], tenancies: [], housingTypes: [], staff: [] });
+      return NextResponse.json({ needsPlugin: true, transactions: [], advances: [], tenancies: [], housingTypes: [], departments: [] });
     }
     const { body, status } = toErrorResponse(error);
     return NextResponse.json(body, { status });

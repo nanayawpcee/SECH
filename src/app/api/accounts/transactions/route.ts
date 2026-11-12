@@ -5,6 +5,7 @@ import { ACC_RECORD, categoryOf, type AccTransaction } from "@/lib/accounts";
 
 export const dynamic = "force-dynamic";
 
+const optText = (v: unknown, max: number) => (v ? String(v).slice(0, max) : null);
 const optInt = (v: unknown) => (Number.isInteger(Number(v)) && Number(v) > 0 ? Number(v) : null);
 
 export async function POST(request: Request) {
@@ -31,6 +32,9 @@ export async function POST(request: Request) {
         employeeId: optInt(body.employeeId),
         monthlyDeduction: Number.isInteger(Number(body.monthlyDeduction)) ? Number(body.monthlyDeduction) : 0,
         purpose: body.purpose ? String(body.purpose) : null,
+        // checked and tidied by the plugin
+        ghanaCard: optText(body.ghanaCard, 40),
+        department: optText(body.department, 120),
       },
       { authenticated: true },
     );

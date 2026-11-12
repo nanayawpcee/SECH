@@ -5,6 +5,7 @@ import { Check, Info, Microscope, RefreshCw, Stethoscope, UserRound } from "luci
 import { submitAppointment } from "@/lib/submit-booking";
 import { useState } from "react";
 import { DEPARTMENTS } from "@/lib/data";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type Step = "personal" | "appointment" | "review" | "success";
 
@@ -88,6 +89,8 @@ export function AppointmentPageForm() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
+  // no birth dates in the future
+  const todayKey = new Date().toISOString().split("T")[0];
 
   const stepIndex = STEPS.findIndex(s => s.key === step);
 
@@ -145,7 +148,8 @@ export function AppointmentPageForm() {
           <div className="contact-name-grid">
             <div className="form-group">
               <label className="form-label">Date of Birth</label>
-              <input className="form-input" type="date" value={data.dob} onChange={e => set("dob", e.target.value)} />
+              <DatePicker inputClassName="form-input" value={data.dob} onChange={v => set("dob", v)} max={todayKey}
+                startWith="years" placeholder="Choose date of birth" ariaLabel="Date of birth" />
             </div>
             <div className="form-group">
               <label className="form-label">Gender *</label>
@@ -222,7 +226,8 @@ export function AppointmentPageForm() {
           <div className="contact-name-grid">
             <div className="form-group">
               <label className="form-label">Preferred Date *</label>
-              <input className="form-input" type="date" min={minDate} value={data.preferredDate} onChange={e => set("preferredDate", e.target.value)} />
+              <DatePicker inputClassName="form-input" value={data.preferredDate} onChange={v => set("preferredDate", v)} min={minDate}
+                placeholder="Choose a date" ariaLabel="Preferred date" invalid={!!errors.preferredDate} />
               {errors.preferredDate && <p className="form-error">{errors.preferredDate}</p>}
             </div>
             <div className="form-group">

@@ -9,7 +9,12 @@ import { useAdminData } from "@/context/AdminDataContext";
 import { Card, Chip, EmptyState, PageHeader, SkeletonRows } from "@/components/admin/ui";
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
 import { dayKey, useAccounts } from "@/components/admin/accounts/useAccounts";
-import { formatMoney, monthLabel, parseMoney, type AccHousingType, type AccStaffOption, type AccTenancy } from "@/lib/accounts";
+import {
+  formatMoney, knownStaff, monthLabel, normalizeGhanaCard, parseMoney, staffSubline,
+  type AccDepartment, type AccHousingType, type AccTenancy, type StaffPerson,
+} from "@/lib/accounts";
+import { StaffIdentityFields, staffIdentityProblem } from "@/components/admin/accounts/StaffIdentityFields";
+import { MonthPicker } from "@/components/ui/DatePicker";
 
 const thisMonth = () => dayKey(new Date()).slice(0, 7);
 
@@ -28,7 +33,8 @@ export default function RentPage() {
     const q = query.trim().toLowerCase();
     return acc.tenancies.filter((t) =>
       (showEnded || t.status === "active") &&
-      (!q || [t.tenantName, t.unit ?? "", typeName.get(t.housingTypeId) ?? ""].some((v) => v.toLowerCase().includes(q))));
+      (!q || [t.tenantName, t.unit ?? "", typeName.get(t.housingTypeId) ?? "", t.department ?? "", t.ghanaCard ?? ""]
+        .some((v) => v.toLowerCase().includes(q))));
   }, [acc.tenancies, query, showEnded, typeName]);
 
   const arrears = acc.tenancies.filter((t) => t.balance > 0);
@@ -82,7 +88,7 @@ export default function RentPage() {
         <div className="po-toolbar">
           <div className="po-input-wrap" style={{ flex: "1 1 220px", maxWidth: 320 }}>
             <Search size={15} />
-            <input className="po-input" placeholder="Tenant, house or type" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
+            <input className="po-input" placeholder="Tenant, house, department or card no." value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
           </div>
           <label style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
             <input type="checkbox" checked={showEnded} onChange={(e) => setShowEnded(e.target.checked)} />Show ended tenancies
@@ -107,6 +113,7 @@ export default function RentPage() {
                   <tr key={t.databaseId}>
                     <td>
                       <div className="po-cell-main">{t.tenantName}</div>
+                      {staffSubline(t) && <div className="po-cell-sub">{staffSubline(t)}</div>}
                       <div className="po-cell-sub">Since {monthLabel(t.startMonth)}{t.endMonth ? `, until ${monthLabel(t.endMonth)}` : ""}</div>
                     </td>
                     <td>
@@ -146,7 +153,8 @@ export default function RentPage() {
       <TenancyDrawer
         tenancy={editing}
         types={acc.housingTypes}
-        staff={acc.staff}
+        departments={acc.departments}
+        people={knownStaff(acc.advances, acc.tenancies.filter((t) => editing === "new" || t.databaseId !== editing?.databaseId))}
         onClose={() => setEditing(null)}
         onSave={async (input) => {
           const r = await acc.saveTenancy(input);
@@ -163,7 +171,7 @@ export default function RentPage() {
         preset={drawer}
         advances={acc.advances}
         tenancies={acc.tenancies}
-        staff={acc.staff}
+        departments={acc.departments}
         onClose={() => setDrawer(null)}
         onRecord={onRecord}
       />
@@ -223,16 +231,19 @@ function HousingTypes({ types, loaded, onSave }: {
   );
 }
 
-function TenancyDrawer({ tenancy, types, staff, onClose, onSave }: {
+function TenancyDrawer({ tenancy, types, departments, people, onClose, onSave }: {
   tenancy: AccTenancy | "new" | null;
   types: AccHousingType[];
-  staff: AccStaffOption[];
+  departments: AccDepartment[];
+  /** staff on record, leaving out this tenancy */
+  people: StaffPerson[];
   onClose: () => void;
   onSave: (input: Record<string, unknown>) => Promise<string | null>;
 }) {
   const open = tenancy !== null;
   const existing = tenancy && tenancy !== "new" ? tenancy : null;
-  const [f, setF] = useState({ tenantName: "", employeeId: "", housingTypeId: "", unit: "", rate: "", startMonth: thisMonth(), endMonth: "" });
+  const blank = { tenantName: "", ghanaCard: "", department: "", housingTypeId: "", unit: "", rate: "", startMonth: thisMonth(), endMonth: "" };
+  const [f, setF] = useState(blank);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -240,9 +251,9 @@ function TenancyDrawer({ tenancy, types, staff, onClose, onSave }: {
     if (!open) return;
     setError("");
     setF(existing
-      ? { tenantName: existing.tenantName, employeeId: existing.employeeId ? String(existing.employeeId) : "", housingTypeId: existing.housingTypeId,
+      ? { tenantName: existing.tenantName, ghanaCard: existing.ghanaCard ?? "", department: existing.department ?? "", housingTypeId: existing.housingTypeId,
           unit: existing.unit ?? "", rate: (existing.monthlyRate / 100).toFixed(2), startMonth: existing.startMonth, endMonth: existing.endMonth ?? "" }
-      : { tenantName: "", employeeId: "", housingTypeId: "", unit: "", rate: "", startMonth: thisMonth(), endMonth: "" });
+      : blank);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tenancy]);
 
@@ -250,14 +261,16 @@ function TenancyDrawer({ tenancy, types, staff, onClose, onSave }: {
 
   const save = async () => {
     setError("");
-    if (!f.tenantName.trim()) return setError("Enter the tenant’s name.");
+    const who = staffIdentityProblem({ name: f.tenantName, ghanaCard: f.ghanaCard, department: f.department }, "tenant");
+    if (who) return setError(who);
     if (!f.housingTypeId) return setError("Choose the housing type.");
     const rate = f.rate.trim() === "0" ? 0 : parseMoney(f.rate);
     if (rate === null) return setError("Enter the monthly rent in cedis.");
     if (f.endMonth && f.endMonth < f.startMonth) return setError("The end month is before the start month.");
     setSaving(true);
     const problem = await onSave({
-      id: existing?.databaseId, tenantName: f.tenantName.trim(), employeeId: f.employeeId ? Number(f.employeeId) : null,
+      id: existing?.databaseId, tenantName: f.tenantName.trim(), employeeId: existing?.employeeId ?? null,
+      ghanaCard: normalizeGhanaCard(f.ghanaCard), department: f.department.trim(),
       housingTypeId: f.housingTypeId, unit: f.unit.trim(), monthlyRate: rate, startMonth: f.startMonth, endMonth: f.endMonth || null,
     });
     setSaving(false);
@@ -277,22 +290,21 @@ function TenancyDrawer({ tenancy, types, staff, onClose, onSave }: {
             </div>
             <form className="po-drawer-body st-form" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
               <h3 className="st-h">Tenant</h3>
-              {staff.length > 0 && (
-                <label className="po-field" style={{ marginBottom: 12 }}>
-                  <span className="po-label">Staff member</span>
-                  <select className="po-select" value={f.employeeId} onChange={(e) => {
-                    const s = staff.find((x) => String(x.id) === e.target.value);
-                    setF((x) => ({ ...x, employeeId: e.target.value, tenantName: s?.name ?? x.tenantName }));
-                  }}>
-                    <option value="">Choose, or type the name below</option>
-                    {staff.map((s) => <option key={s.id} value={s.id}>{s.name}{s.staffNumber ? ` (${s.staffNumber})` : ""}</option>)}
-                  </select>
-                </label>
+              <StaffIdentityFields
+                value={{ name: f.tenantName, ghanaCard: f.ghanaCard, department: f.department }}
+                onChange={(p) => setF((x) => ({
+                  ...x,
+                  ...(p.name !== undefined ? { tenantName: p.name } : {}),
+                  ...(p.ghanaCard !== undefined ? { ghanaCard: p.ghanaCard } : {}),
+                  ...(p.department !== undefined ? { department: p.department } : {}),
+                }))}
+                people={people}
+                departments={departments}
+                nameLabel="Tenant"
+              />
+              {existing && !existing.ghanaCard && (
+                <p className="po-hint" style={{ marginTop: 8 }}>Added before card numbers were kept. Fill them in and save.</p>
               )}
-              <label className="po-field" style={{ marginBottom: 12 }}>
-                <span className="po-label">Tenant name *</span>
-                <input className="po-input" value={f.tenantName} onChange={(e) => set("tenantName", e.target.value)} maxLength={120} />
-              </label>
 
               <h3 className="st-h">Housing</h3>
               <div className="st-grid">
@@ -319,11 +331,12 @@ function TenancyDrawer({ tenancy, types, staff, onClose, onSave }: {
                 <div />
                 <label className="po-field">
                   <span className="po-label">Rent starts *</span>
-                  <input className="po-input" type="month" value={f.startMonth} onChange={(e) => set("startMonth", e.target.value)} />
+                  <MonthPicker value={f.startMonth} onChange={(v) => set("startMonth", v)} clearable={false} ariaLabel="Rent starts" />
                 </label>
                 <label className="po-field">
                   <span className="po-label">Rent ends</span>
-                  <input className="po-input" type="month" value={f.endMonth} onChange={(e) => set("endMonth", e.target.value)} />
+                  <MonthPicker value={f.endMonth} onChange={(v) => set("endMonth", v)} min={f.startMonth || undefined}
+                    placeholder="Still living there" ariaLabel="Rent ends" />
                   <span className="po-hint">Set when they move out. Blank while they live there.</span>
                 </label>
               </div>

@@ -66,9 +66,19 @@ const CREATE_WITH_TEMP_PASSWORD = `
     createStaffAccount(input: {
       username: $username, password: $password, role: $role,
       email: $email, firstName: $firstName, lastName: $lastName
-    }) { account { databaseId username name email role } }
+    }) { account { databaseId username name email role } emailedTo }
   }
 `;
+
+// plugin 1.16.0 and earlier don't email new staff
+const CREATE_WITH_TEMP_PASSWORD_OLD = CREATE_WITH_TEMP_PASSWORD.replace(" emailedTo }", " }");
+
+type CreatedStaff = {
+  createStaffAccount: {
+    account: { databaseId: number; username: string; name: string; email: string; role: string };
+    emailedTo?: string | null;
+  };
+};
 
 async function createWithTempPassword(body: Record<string, unknown>) {
   const name = String(body.name ?? "").trim();
@@ -95,16 +105,25 @@ async function createWithTempPassword(body: Record<string, unknown>) {
 
   const password = generateTempPassword();
   const [firstName, ...rest] = name.split(/\s+/);
-  const data = await wpGraphQL<{
-    createStaffAccount: { account: { databaseId: number; username: string; name: string; email: string; role: string } };
-  }>(
-    CREATE_WITH_TEMP_PASSWORD,
-    { username, password, role, email: email || null, firstName, lastName: rest.join(" ") },
-    { authenticated: true },
-  );
+  const vars = { username, password, role, email: email || null, firstName, lastName: rest.join(" ") };
+  let data: CreatedStaff;
+  try {
+    data = await wpGraphQL<CreatedStaff>(CREATE_WITH_TEMP_PASSWORD, vars, { authenticated: true });
+  } catch (error) {
+    // only a schema mismatch retries; the account isn't created in that case
+    if (!/emailedTo/.test(String((error as Error)?.message ?? ""))) throw error;
+    data = await wpGraphQL<CreatedStaff>(CREATE_WITH_TEMP_PASSWORD_OLD, vars, { authenticated: true });
+  }
 
+  const emailedTo = data.createStaffAccount.emailedTo ?? null;
   return NextResponse.json(
-    { account: data.createStaffAccount.account, temporaryPassword: password },
+    {
+      account: data.createStaffAccount.account,
+      temporaryPassword: password,
+      emailedTo,
+      // an address was given but nothing went out (null from an older plugin counts as not sent)
+      emailFailed: !!email && !emailedTo && data.createStaffAccount.emailedTo !== undefined,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

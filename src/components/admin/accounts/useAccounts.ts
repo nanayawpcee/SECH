@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import type { AccAdvance, AccHousingType, AccStaffOption, AccTenancy, AccTransaction } from "@/lib/accounts";
+import type { AccAdvance, AccDepartment, AccHousingType, AccTenancy, AccTransaction } from "@/lib/accounts";
 
 type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -12,7 +12,7 @@ export function useAccounts(range: { from: string; to: string }) {
   const [advances, setAdvances] = useState<AccAdvance[]>([]);
   const [tenancies, setTenancies] = useState<AccTenancy[]>([]);
   const [housingTypes, setHousingTypes] = useState<AccHousingType[]>([]);
-  const [staff, setStaff] = useState<AccStaffOption[]>([]);
+  const [departments, setDepartments] = useState<AccDepartment[]>([]);
   const [canAudit, setCanAudit] = useState(false);
   const [needsPlugin, setNeedsPlugin] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -39,14 +39,14 @@ export function useAccounts(range: { from: string; to: string }) {
   const reload = useCallback(async () => {
     const r = await request<{
       transactions: AccTransaction[]; advances: AccAdvance[]; tenancies: AccTenancy[];
-      housingTypes: AccHousingType[]; staff: AccStaffOption[]; canAudit?: boolean; needsPlugin?: boolean;
+      housingTypes: AccHousingType[]; departments: AccDepartment[]; canAudit?: boolean; needsPlugin?: boolean;
     }>(`/api/accounts?from=${range.from}&to=${range.to}`);
     if (r.ok) {
       setTransactions(r.value.transactions);
       setAdvances(r.value.advances);
       setTenancies(r.value.tenancies);
       setHousingTypes(r.value.housingTypes);
-      setStaff(r.value.staff);
+      setDepartments(r.value.departments ?? []);
       setCanAudit(!!r.value.canAudit);
       setNeedsPlugin(!!r.value.needsPlugin);
       setError("");
@@ -93,7 +93,7 @@ export function useAccounts(range: { from: string; to: string }) {
   );
 
   return {
-    transactions, advances, tenancies, housingTypes, staff, canAudit, needsPlugin, loaded, error,
+    transactions, advances, tenancies, housingTypes, departments, canAudit, needsPlugin, loaded, error,
     reload, record, voidTxn, saveTenancy, saveHousingTypes, logExport,
   };
 }
