@@ -72,6 +72,11 @@
       "static/media/c3d9c74ef0d9c07b.p.23aeddxv5enbo.woff2",
       "static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2"
     ],
+    "[project]/src/app/admin/forgot-password/page": [
+      "static/media/f36d61f2f30b50ce.p.22x-ws2e_cdqh.woff2",
+      "static/media/c3d9c74ef0d9c07b.p.23aeddxv5enbo.woff2",
+      "static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2"
+    ],
     "[project]/src/app/admin/login/page": [
       "static/media/f36d61f2f30b50ce.p.22x-ws2e_cdqh.woff2",
       "static/media/c3d9c74ef0d9c07b.p.23aeddxv5enbo.woff2",
@@ -113,6 +118,11 @@
       "static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2"
     ],
     "[project]/src/app/admin/ranks/page": [
+      "static/media/f36d61f2f30b50ce.p.22x-ws2e_cdqh.woff2",
+      "static/media/c3d9c74ef0d9c07b.p.23aeddxv5enbo.woff2",
+      "static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2"
+    ],
+    "[project]/src/app/admin/reset-password/page": [
       "static/media/f36d61f2f30b50ce.p.22x-ws2e_cdqh.woff2",
       "static/media/c3d9c74ef0d9c07b.p.23aeddxv5enbo.woff2",
       "static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2"

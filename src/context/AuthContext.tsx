@@ -52,7 +52,7 @@ const INACTIVITY_LIMIT = 5 * 60 * 1000;
 export function safeNext(raw: string | null | undefined): string | null {
   if (!raw) return null;
   if (!/^\/(staff|admin)(\/|\?|$)/.test(raw)) return null;
-  if (/^\/\/|\\|^\/admin\/(login|set-password)/.test(raw)) return null;
+  if (/^\/\/|\\|^\/admin\/(login|set-password|forgot-password|reset-password)/.test(raw)) return null;
   return raw;
 }
 
@@ -121,7 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (loading) return;
     const isLoginPage = pathname === "/admin/login";
     const isSetPassword = pathname === SET_PASSWORD_PATH;
-    const inAdmin = pathname.startsWith("/admin") && !isLoginPage && !isSetPassword;
+    // open to anyone, signed in or not
+    const isResetPage = pathname === "/admin/forgot-password" || pathname === "/admin/reset-password";
+    const inAdmin = pathname.startsWith("/admin") && !isLoginPage && !isSetPassword && !isResetPage;
     const inStaff = pathname === "/staff" || pathname.startsWith("/staff/");
 
     if ((inAdmin || inStaff || isSetPassword) && !admin) {

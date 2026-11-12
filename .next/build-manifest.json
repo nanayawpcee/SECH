@@ -6,8 +6,8 @@
       "static/chunks/turbopack-2u1d16houkiyo.js"
     ],
     "/_app": [
-      "static/chunks/3t4q_w_-z_qg9.js",
-      "static/chunks/2sbg8h21hvq6_.js",
+      "static/chunks/11v1hcece-iwi.js",
+      "static/chunks/16btzes_kwcsw.js",
       "static/chunks/0kfqifiu20tix.js",
       "static/chunks/22l1mzyojuoz7.css",
       "static/chunks/turbopack-2u1d16houkiyo.js"
@@ -22,9 +22,9 @@
     "static/chunks/0cz1d0mv5g_q7.js"
   ],
   "lowPriorityFiles": [
-    "static/BB-87jOtzow-vGwPUjC8J/_buildManifest.js",
-    "static/BB-87jOtzow-vGwPUjC8J/_ssgManifest.js",
-    "static/BB-87jOtzow-vGwPUjC8J/_clientMiddlewareManifest.js"
+    "static/6go4FyAU-UOnCyQs0RpDj/_buildManifest.js",
+    "static/6go4FyAU-UOnCyQs0RpDj/_ssgManifest.js",
+    "static/6go4FyAU-UOnCyQs0RpDj/_clientMiddlewareManifest.js"
   ],
   "rootMainFiles": [
     "static/chunks/0xe_xnyt07trp.js",
@@ -232,6 +232,17 @@
         94553
       ]
     },
+    "/admin/forgot-password/page": {
+      "otherChunks": [
+        "static/chunks/0xe_xnyt07trp.js",
+        "static/chunks/1k2w3nq2-wg_-.js",
+        "static/chunks/0khaj2cr-xscs.js",
+        "static/chunks/2cpxu2a7p3jii.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
     "/admin/login/page": {
       "otherChunks": [
         "static/chunks/0xe_xnyt07trp.js",
@@ -310,6 +321,17 @@
       ]
     },
     "/admin/ranks/page": {
+      "otherChunks": [
+        "static/chunks/0xe_xnyt07trp.js",
+        "static/chunks/1k2w3nq2-wg_-.js",
+        "static/chunks/0khaj2cr-xscs.js",
+        "static/chunks/2cpxu2a7p3jii.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
+    "/admin/reset-password/page": {
       "otherChunks": [
         "static/chunks/0xe_xnyt07trp.js",
         "static/chunks/1k2w3nq2-wg_-.js",
@@ -553,8 +575,8 @@
     },
     "/_app": {
       "otherChunks": [
-        "static/chunks/3t4q_w_-z_qg9.js",
-        "static/chunks/2sbg8h21hvq6_.js",
+        "static/chunks/11v1hcece-iwi.js",
+        "static/chunks/16btzes_kwcsw.js",
         "static/chunks/0kfqifiu20tix.js",
         "static/chunks/22l1mzyojuoz7.css"
       ],

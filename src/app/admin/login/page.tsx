@@ -205,6 +205,8 @@ export default function AdminLoginPage() {
               )}
             </label>
 
+            <Link href="/admin/forgot-password" className="lg-forgot">Forgot your password?</Link>
+
             <button type="submit" className="po-btn po-btn--primary lg-submit" disabled={submitting}>
               {submitting ? <><Loader2 size={17} className="po-spin" />Signing in…</> : <>Sign in<ArrowRight size={17} /></>}
             </button>
@@ -245,6 +247,8 @@ export default function AdminLoginPage() {
         .lg-sub { margin: 6px 0 22px; color: var(--po-text-3); font-size: 14px; }
         .lg-input { height: 44px; font-size: 14.5px; }
         .lg-submit { height: 46px; font-size: 14.5px; margin-top: 4px; }
+        .lg-forgot { justify-self: end; margin-top: -6px; font-size: 13px; font-weight: 600; color: var(--po-brand-ink); text-decoration: none; }
+        .lg-forgot:hover { text-decoration: underline; }
         .lg-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--po-border); font-size: 12.5px; color: var(--po-text-3); line-height: 1.5; }
         .lg-foot { margin: 28px 0 0; font-size: 12px; color: var(--po-text-3); }
         @media (max-width: 900px) {

@@ -18,10 +18,14 @@ const nextConfig = {
   },
   // keep the portals and staff notices out of search engines
   async headers() {
-    return ['/admin', '/admin/:path*', '/staff', '/staff/:path*', '/notices', '/notices/:path*'].map((source) => ({
-      source,
-      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
-    }));
+    return [
+      ...['/admin', '/admin/:path*', '/staff', '/staff/:path*', '/notices', '/notices/:path*'].map((source) => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      })),
+      // the reset link carries a one-time key; don't pass the address on to anything the page loads
+      { source: '/admin/reset-password', headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }] },
+    ];
   },
   allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', '192.168.2.82', '10.10.0.218'],
   images: {

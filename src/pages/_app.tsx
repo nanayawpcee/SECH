@@ -13,14 +13,15 @@ const lora = Lora({
   fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
+// A plain style tag rather than styled-jsx: styled-jsx is only a dependency of
+// Next itself, and with pnpm's strict node_modules the build can't find it from
+// here. The font name is fixed at build time, so nothing outside goes in this tag.
+const fontVar = `:root{--font-lora:${lora.style.fontFamily};}`;
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
-      <style jsx global>{`
-        :root {
-          --font-lora: ${lora.style.fontFamily};
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: fontVar }} />
       <Component {...pageProps} />
     </>
   );
