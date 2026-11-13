@@ -2,7 +2,7 @@
 
 import "@/styles/admin.css";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -36,6 +36,9 @@ import {
   Stethoscope,
   UsersRound,
   XCircle,
+  FileBarChart,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminData, type ToastKind } from "@/context/AdminDataContext";
@@ -95,6 +98,7 @@ const ADMIN_NAV: Nav = [
       { href: "/admin/accounts", icon: Receipt, label: "Accounts office", perm: "accounts", exact: true },
       { href: "/admin/accounts/advances", icon: HandCoins, label: "Salary advances", perm: "accounts" },
       { href: "/admin/accounts/rent", icon: Home, label: "Staff rent", perm: "accounts" },
+      { href: "/admin/accounts/reports", icon: FileBarChart, label: "Reports", perm: "accounts.reports" },
     ],
   },
   { section: "Staff", items: [{ href: "/admin/notices", icon: Megaphone, label: "Notice board", badgeKey: "notices" }] },
@@ -133,6 +137,7 @@ const VARIANT = {
       employees: "Employees", departments: "Departments and units", ranks: "Ranks and positions",
       doctors: "Doctors", "data-protection": "Data protection",
       accounts: "Accounts office", advances: "Salary advances", rent: "Staff rent", receipt: "Receipt", activity: "Activity log",
+      reports: "Reports",
     } as Record<string, string>,
   },
   staff: {
@@ -185,6 +190,17 @@ function crumbsFor(pathname: string, labels: Record<string, string>) {
   return out;
 }
 
+// phones get a sidebar that slides in over the page instead of a fixed rail
+const PHONE_QUERY = "(max-width: 760px)";
+function subscribePhone(onChange: () => void) {
+  const mq = window.matchMedia(PHONE_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+function useIsPhone() {
+  return useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => false);
+}
+
 export function PortalShell({ variant, children }: { variant: "admin" | "staff"; children: React.ReactNode }) {
   const cfg = VARIANT[variant];
   // only null on the static 500 page (src/pages), which never renders this
@@ -201,6 +217,18 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   const isAdmin = variant === "admin";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const isPhone = useIsPhone();
+  const [menuOpen, setMenuOpen] = useState(false);
+  // on a phone the drawer always shows full labels; the desktop collapse setting doesn't apply
+  const collapsed = sidebarCollapsed && !isPhone;
+  const drawerOpen = isPhone && menuOpen;
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
@@ -280,35 +308,43 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
 
   return (
     <div className={`po-root ${adminFont.variable}`}>
-      <div className="po-shell" data-collapsed={sidebarCollapsed}
-        style={{ ["--po-side-w" as string]: sidebarCollapsed ? "76px" : "252px" }}>
-        <aside className="po-sidebar" aria-label={isAdmin ? "Admin navigation" : "Staff navigation"}>
+      <div className="po-shell" data-collapsed={collapsed} data-drawer={drawerOpen || undefined}
+        style={{ ["--po-side-w" as string]: collapsed ? "76px" : "252px" }}>
+        {drawerOpen && <div className="po-side-scrim" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
+        <aside id="po-sidebar" className="po-sidebar" aria-label={isAdmin ? "Admin navigation" : "Staff navigation"}
+          onClick={(e) => { if (isPhone && (e.target as HTMLElement).closest("a")) setMenuOpen(false); }}>
           <div className="po-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/logo.png" alt="St. Elizabeth Catholic Hospital" />
-            {!sidebarCollapsed && (
+            {!collapsed && (
               <div style={{ minWidth: 0 }}>
                 <div className="po-brand-name">{cfg.title}</div>
                 <div className="po-brand-sub">{cfg.subtitle}</div>
               </div>
             )}
-            <button type="button" className="po-collapse-btn" onClick={toggleSidebar}
-              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-              {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-            </button>
+            {isPhone ? (
+              <button type="button" className="po-collapse-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+                <X size={15} />
+              </button>
+            ) : (
+              <button type="button" className="po-collapse-btn" onClick={toggleSidebar}
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              </button>
+            )}
           </div>
 
           {isAdmin && (
-            <button type="button" className="po-side-search" onClick={() => setPaletteOpen(true)} data-tip="Search  ⌘K">
+            <button type="button" className="po-side-search" onClick={() => { setMenuOpen(false); setPaletteOpen(true); }} data-tip="Search  ⌘K">
               <Search size={15} />
-              {!sidebarCollapsed && (<>Quick search<span className="po-kbd">⌘K</span></>)}
+              {!collapsed && (<>Quick search<span className="po-kbd">⌘K</span></>)}
             </button>
           )}
 
           <nav className="po-nav">
             {nav.map((group) => (
               <div key={group.section}>
-                {!sidebarCollapsed ? <div className="po-nav-section">{group.section}</div> : <div style={{ height: 10 }} />}
+                {!collapsed ? <div className="po-nav-section">{group.section}</div> : <div style={{ height: 10 }} />}
                 {group.items.map((item) => {
                   const active = item.neverActive
                     ? false
@@ -320,15 +356,15 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
                   const Icon = item.icon;
                   return (
                     <Link key={item.href} href={item.href} onClick={onNavClick(item.href)} className="po-nav-item"
-                      data-active={active} data-tip={sidebarCollapsed ? item.label : undefined}
+                      data-active={active} data-tip={collapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}>
                       {active && (
                         <motion.span layoutId={`po-nav-pill-${variant}`} className="po-nav-pill"
                           transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 36 }} />
                       )}
                       <Icon size={18} strokeWidth={active ? 2.3 : 2} />
-                      {!sidebarCollapsed && <span className="po-nav-label">{item.label}</span>}
-                      {badge > 0 && (sidebarCollapsed
+                      {!collapsed && <span className="po-nav-label">{item.label}</span>}
+                      {badge > 0 && (collapsed
                         ? <span className="po-nav-badge po-nav-badge--dot" aria-label={`${badge} waiting`} />
                         : <span className="po-nav-badge">{badge > 99 ? "99+" : badge}</span>)}
                     </Link>
@@ -340,30 +376,30 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
 
           <div className="po-side-foot">
             {isAdmin ? (
-              <Link href="/staff" className="po-side-link" data-tip={sidebarCollapsed ? "Staff area" : undefined}>
-                <UsersRound size={15} />{!sidebarCollapsed && "Staff area"}
+              <Link href="/staff" className="po-side-link" data-tip={collapsed ? "Staff area" : undefined}>
+                <UsersRound size={15} />{!collapsed && "Staff area"}
               </Link>
             ) : can(perms, "portal.admin") ? (
-              <Link href="/admin" className="po-side-link" data-tip={sidebarCollapsed ? "Admin console" : undefined}>
-                <ShieldCheck size={15} />{!sidebarCollapsed && "Admin console"}
+              <Link href="/admin" className="po-side-link" data-tip={collapsed ? "Admin console" : undefined}>
+                <ShieldCheck size={15} />{!collapsed && "Admin console"}
               </Link>
             ) : null}
-            <Link href="/" className="po-side-link" data-tip={sidebarCollapsed ? "View website" : undefined} target="_blank">
-              <ExternalLink size={15} />{!sidebarCollapsed && "View website"}
+            <Link href="/" className="po-side-link" data-tip={collapsed ? "View website" : undefined} target="_blank">
+              <ExternalLink size={15} />{!collapsed && "View website"}
             </Link>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, marginTop: 8,
-              padding: sidebarCollapsed ? "8px 0" : "10px", borderRadius: 10, background: "rgba(255,255,255,0.05)",
-              justifyContent: sidebarCollapsed ? "center" : "flex-start", flexDirection: sidebarCollapsed ? "column" : "row",
+              padding: collapsed ? "8px 0" : "10px", borderRadius: 10, background: "rgba(255,255,255,0.05)",
+              justifyContent: collapsed ? "center" : "flex-start", flexDirection: collapsed ? "column" : "row",
             }}>
               <Avatar name={admin.name} size="sm" />
-              {!sidebarCollapsed && (
+              {!collapsed && (
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ color: "#fff", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{admin.name}</div>
                   <div style={{ color: "var(--po-side-text-dim)", fontSize: 11 }}>{admin.role}</div>
                 </div>
               )}
-              <button type="button" onClick={logout} aria-label="Sign out" data-tip={sidebarCollapsed ? "Sign out" : undefined} title="Sign out"
+              <button type="button" onClick={logout} aria-label="Sign out" data-tip={collapsed ? "Sign out" : undefined} title="Sign out"
                 style={{ width: 30, height: 30, borderRadius: 8, border: 0, background: "rgba(248,113,113,0.12)", color: "#FCA5A5", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}>
                 <LogOut size={15} />
               </button>
@@ -373,6 +409,10 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
 
         <div className="po-main">
           <header className="po-topbar">
+            <button type="button" className="po-menu-btn" onClick={() => setMenuOpen(true)}
+              aria-label="Open menu" aria-controls="po-sidebar" aria-expanded={drawerOpen}>
+              <Menu size={19} />
+            </button>
             <nav className="po-crumbs" aria-label="Breadcrumb">
               {crumbs.map((c, i) => i === crumbs.length - 1 ? (
                 <span key={c.href} aria-current="page">{c.label}</span>

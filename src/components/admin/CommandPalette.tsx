@@ -80,6 +80,7 @@ export function CommandPalette({
       { id: "p-accounts", group: "Pages", title: "Accounts office", perm: "accounts", icon: UserRound, keywords: "receipts payments cash collections vouchers", run: go("/admin/accounts") },
       { id: "p-advances", group: "Pages", title: "Salary advances", perm: "accounts", icon: UserRound, keywords: "advance loan repayment staff", run: go("/admin/accounts/advances") },
       { id: "p-rent", group: "Pages", title: "Staff rent", perm: "accounts", icon: UserRound, keywords: "rent housing accommodation tenancy arrears", run: go("/admin/accounts/rent") },
+      { id: "p-acc-reports", group: "Pages", title: "Accounts reports", perm: "accounts.reports", icon: UserRound, keywords: "report daily cash summary excel pdf print advances rent", run: go("/admin/accounts/reports") },
       { id: "p-data-protection", group: "Pages", title: "Data protection", perm: "settings", icon: UserRound, keywords: "privacy activity log audit retention encryption act 843", run: go("/admin/data-protection") },
       { id: "p-departments", group: "Pages", title: "Departments and units", perm: "staff.manage", icon: LayoutGrid, keywords: "wards units in-charge", run: go("/admin/departments") },
       { id: "p-ranks", group: "Pages", title: "Ranks and positions", perm: "staff.manage", icon: FileText, keywords: "grades cadres scheme of service", run: go("/admin/ranks") },

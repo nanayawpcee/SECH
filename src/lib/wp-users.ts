@@ -7,7 +7,29 @@ export interface AdminUser {
   initials: string;
   isSelf: boolean;
   mustChangePassword?: boolean;
+  /** accounts officers: which accounts permissions they hold; null when not readable */
+  accountsPermissions?: string[] | null;
+  /** everyday work they can do, and whether it comes from their role; null when not readable */
+  extraAccess?: ExtraAccess[] | null;
 }
+
+export interface ExtraAccess {
+  key: string;
+  granted: boolean;
+  fromRole: boolean;
+}
+
+/**
+ * Everyday portal work an administrator can give anyone on top of their role.
+ * Office-specific duties (HR, accounts) and administrator-only areas are left out.
+ * Keep in step with sech_portal_extra_access() in the plugin.
+ */
+export const EXTRA_ACCESS = [
+  { key: "write", short: "Writes posts", label: "Write posts", description: "Write news and blog posts and add pictures. An editor reviews them before they go live." },
+  { key: "publish", short: "Publishes", label: "Publish posts without review", description: "Their own posts go live straight away. Includes writing posts." },
+  { key: "comments", short: "Comments", label: "Moderate comments", description: "Approve, reply to or remove reader comments on the website." },
+  { key: "notices", short: "Notices", label: "Post staff notices", description: "Post, edit and remove announcements on the staff notice board." },
+] as const;
 
 export interface WpUserNode {
   databaseId: number;
@@ -15,6 +37,8 @@ export interface WpUserNode {
   email: string | null;
   roles?: { nodes?: Array<{ name?: string | null; displayName?: string | null }> } | null;
   mustChangePassword?: boolean | null;
+  accountsPermissions?: string[] | null;
+  extraAccess?: ExtraAccess[] | null;
 }
 
 export const USER_FIELDS = `
@@ -23,6 +47,8 @@ export const USER_FIELDS = `
   email
   roles { nodes { name displayName } }
   mustChangePassword
+  accountsPermissions
+  extraAccess { key granted fromRole }
 `;
 
 function initialsOf(name: string): string {
@@ -49,6 +75,8 @@ export function mapWpUser(node: WpUserNode, viewerId: number | null): AdminUser 
     initials: initialsOf(name),
     isSelf: viewerId !== null && node.databaseId === viewerId,
     mustChangePassword: node.mustChangePassword === true,
+    accountsPermissions: Array.isArray(node.accountsPermissions) ? node.accountsPermissions : null,
+    extraAccess: Array.isArray(node.extraAccess) ? node.extraAccess : null,
   };
 }
 

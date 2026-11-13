@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { can } from "@/lib/permissions";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ArrowDownLeft, ArrowUpRight, IdCard, Loader2, X } from "lucide-react";
 import {
@@ -52,6 +54,9 @@ export function NewTransactionDrawer({
   onClose: () => void;
   onRecord: (input: Record<string, unknown>) => Promise<{ ok: true; value: AccTransaction } | { ok: false; error: string }>;
 }) {
+  const { admin } = useAuth();
+  // payment vouchers need their own permission; receipts are open to every accounts officer
+  const mayPayOut = can(admin?.perms, "accounts.payout");
   const [form, setForm] = useState(EMPTY);
   const [details, setDetails] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -210,9 +215,11 @@ export function NewTransactionDrawer({
                   <optgroup label="Money in (receipt)">
                     {CATEGORIES.filter((c) => c.direction === "in").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                   </optgroup>
-                  <optgroup label="Money out (payment voucher)">
-                    {CATEGORIES.filter((c) => c.direction === "out").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
-                  </optgroup>
+                  {mayPayOut && (
+                    <optgroup label="Money out (payment voucher)">
+                      {CATEGORIES.filter((c) => c.direction === "out").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                    </optgroup>
+                  )}
                 </select>
               </label>
 

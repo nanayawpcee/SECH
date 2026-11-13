@@ -52,7 +52,7 @@ const PRINT_CSS = `
 .rc-a5 .rc-small { font-size: 12px; }
 .rc-a5 .rc-title { margin: 5mm 0 4mm; padding: 2mm 0; font-size: 16px; letter-spacing: .2em; }
 .rc-a5 .rc-row { justify-content: flex-start; gap: 4mm; margin: 0; padding: 1.6mm 0; border-bottom: 1px dotted #888; }
-.rc-a5 .rc-row span:first-child { width: 34mm; flex-shrink: 0; color: #333; }
+.rc-a5 .rc-row span:first-child { width: 38mm; flex-shrink: 0; color: #333; white-space: normal; }
 .rc-a5 .rc-row span:last-child { flex: 1; text-align: left; }
 .rc-a5 .rc-amount { margin: 5mm 0 2mm; padding: 3mm 4mm; border: 2px solid #000; font-size: 19px; }
 .rc-a5 .rc-words { font-size: 13px; margin-bottom: 4mm; }

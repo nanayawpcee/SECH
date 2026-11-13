@@ -1024,3 +1024,37 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .mr-row dd { margin: 0; color: var(--po-text); overflow-wrap: anywhere; }
 @media (max-width: 900px) { .mr-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .mr-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* ── Phones: the sidebar slides in over the page behind a menu button ── */
+.po-menu-btn { display: none; }
+.po-side-scrim { display: none; }
+@media (max-width: 760px) {
+  .po-shell { grid-template-columns: minmax(0, 1fr) !important; --po-side-w: 0px !important; }
+  .po-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 80;
+    width: min(280px, 86vw); height: 100%;
+    transform: translateX(-102%); visibility: hidden;
+    transition: transform 0.26s var(--po-ease), visibility 0s linear 0.26s;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  .po-shell[data-drawer] .po-sidebar {
+    transform: translateX(0); visibility: visible;
+    transition: transform 0.26s var(--po-ease), visibility 0s;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.28);
+  }
+  .po-side-scrim {
+    display: block; position: fixed; inset: 0; z-index: 79;
+    background: rgba(4, 20, 15, 0.45); animation: po-scrim-in 0.2s ease;
+  }
+  .po-menu-btn {
+    display: grid; place-items: center; flex-shrink: 0;
+    width: 38px; height: 38px; margin-left: -4px; border-radius: 10px;
+    border: 1px solid var(--po-border); background: var(--po-surface); color: var(--po-text); cursor: pointer;
+  }
+  .po-menu-btn:focus-visible { outline: 2px solid var(--po-brand-ink); outline-offset: 2px; }
+}
+@keyframes po-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .po-sidebar, .po-shell[data-drawer] .po-sidebar { transition: none; }
+  .po-side-scrim { animation: none; }
+}

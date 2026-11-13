@@ -27,9 +27,16 @@ import {
   X,
 } from "lucide-react";
 import { useAdminData, type NotifSettings } from "@/context/AdminDataContext";
-import { ASSIGNABLE_ROLES, TEMP_PASSWORD_ROLES, type AdminUser } from "@/lib/wp-users";
+import {
+  ASSIGNABLE_ROLES,
+  EXTRA_ACCESS,
+  TEMP_PASSWORD_ROLES,
+  type AdminUser,
+  type ExtraAccess,
+} from "@/lib/wp-users";
 import { HOSPITAL_FIELDS } from "@/lib/wp-settings";
 import { ROLE_LABELS } from "@/lib/permissions";
+import { ACCOUNTS_PERMISSIONS } from "@/lib/accounts";
 import { passwordStrength as strength } from "@/lib/password-strength";
 import {
   Avatar,
@@ -44,27 +51,87 @@ import {
 
 type Tab = "hospital" | "booking" | "notifications" | "admins" | "security";
 
-const TABS: { key: Tab; label: string; hint: string; icon: typeof Building2 }[] = [
-  { key: "hospital", label: "Hospital profile", hint: "Name, contact and address", icon: Building2 },
-  { key: "booking", label: "Bookings", hint: "Hours, slots and departments", icon: CalendarCog },
-  { key: "notifications", label: "Notifications", hint: "Alerts and summaries", icon: BellRing },
-  { key: "admins", label: "Team access", hint: "Who can use the portal", icon: Users },
-  { key: "security", label: "Security", hint: "Your password", icon: ShieldCheck },
+const TABS: {
+  key: Tab;
+  label: string;
+  hint: string;
+  icon: typeof Building2;
+}[] = [
+  {
+    key: "hospital",
+    label: "Hospital profile",
+    hint: "Name, contact and address",
+    icon: Building2,
+  },
+  {
+    key: "booking",
+    label: "Bookings",
+    hint: "Hours, slots and departments",
+    icon: CalendarCog,
+  },
+  {
+    key: "notifications",
+    label: "Notifications",
+    hint: "Alerts and summaries",
+    icon: BellRing,
+  },
+  {
+    key: "admins",
+    label: "Team access",
+    hint: "Who can use the portal",
+    icon: Users,
+  },
+  {
+    key: "security",
+    label: "Security",
+    hint: "Your password",
+    icon: ShieldCheck,
+  },
 ];
 
-const NOTIF_DEFS: { key: keyof NotifSettings; label: string; desc: string }[] = [
-  { key: "email", label: "Email notifications", desc: "Receive booking updates by email" },
-  { key: "sms", label: "SMS notifications", desc: "Receive alerts by SMS (requires an SMS provider)" },
-  { key: "newBooking", label: "New booking alert", desc: "When a patient submits a booking" },
-  { key: "cancellation", label: "Cancellation alert", desc: "When a booking is cancelled" },
-  { key: "daily", label: "Daily summary", desc: "A morning email with the day’s appointments" },
-];
+const NOTIF_DEFS: { key: keyof NotifSettings; label: string; desc: string }[] =
+  [
+    {
+      key: "email",
+      label: "Email notifications",
+      desc: "Receive booking updates by email",
+    },
+    {
+      key: "sms",
+      label: "SMS notifications",
+      desc: "Receive alerts by SMS (requires an SMS provider)",
+    },
+    {
+      key: "newBooking",
+      label: "New booking alert",
+      desc: "When a patient submits a booking",
+    },
+    {
+      key: "cancellation",
+      label: "Cancellation alert",
+      desc: "When a booking is cancelled",
+    },
+    {
+      key: "daily",
+      label: "Daily summary",
+      desc: "A morning email with the day’s appointments",
+    },
+  ];
 
 export default function SettingsPage() {
   const {
-    settings, settingsLoading, settingsError, settingsDirty,
-    patchSettings, saveSettings, savingSettings, refreshSettings,
-    addDept, removeDept, toggleNotif, addToast,
+    settings,
+    settingsLoading,
+    settingsError,
+    settingsDirty,
+    patchSettings,
+    saveSettings,
+    savingSettings,
+    refreshSettings,
+    addDept,
+    removeDept,
+    toggleNotif,
+    addToast,
   } = useAdminData();
   const [tab, setTab] = useState<Tab>("hospital");
   const [newDept, setNewDept] = useState("");
@@ -73,16 +140,28 @@ export default function SettingsPage() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
-  const [invite, setInvite] = useState({ name: "", email: "", role: "contributor", username: "" });
+  const [invite, setInvite] = useState({
+    name: "",
+    email: "",
+    role: "contributor",
+    username: "",
+  });
   const [inviteMode, setInviteMode] = useState<"email" | "temporary">("email");
   const [usernameTouched, setUsernameTouched] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [toReset, setToReset] = useState<AdminUser | null>(null);
+  const [toPermit, setToPermit] = useState<AdminUser | null>(null);
   const [resetting, setResetting] = useState(false);
 
   const suggestUsername = (name: string) =>
-    name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "").slice(0, 40);
+    name
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, ".")
+      .replace(/^\.+|\.+$/g, "")
+      .slice(0, 40);
   const [toRemove, setToRemove] = useState<AdminUser | null>(null);
   const [removing, setRemoving] = useState(false);
 
@@ -91,7 +170,8 @@ export default function SettingsPage() {
     try {
       const res = await fetch("/api/users");
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not load team accounts.");
+      if (!res.ok)
+        throw new Error(data.error || "Could not load team accounts.");
       setUsers(data.users as AdminUser[]);
       setUsersError(null);
     } catch (err: any) {
@@ -111,16 +191,25 @@ export default function SettingsPage() {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inviteMode === "temporary" ? { ...invite, mode: "temporary" } : invite),
+        body: JSON.stringify(
+          inviteMode === "temporary"
+            ? { ...invite, mode: "temporary" }
+            : invite,
+        ),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not create the account.");
+      if (!res.ok)
+        throw new Error(data.error || "Could not create the account.");
       setInvite({ name: "", email: "", role: "contributor", username: "" });
       setUsernameTouched(false);
       if (inviteMode === "temporary") {
         setCredentials({
-          name: data.account.name, username: data.account.username, password: data.temporaryPassword, reset: false,
-          emailedTo: data.emailedTo ?? null, emailFailed: !!data.emailFailed,
+          name: data.account.name,
+          username: data.account.username,
+          password: data.temporaryPassword,
+          reset: false,
+          emailedTo: data.emailedTo ?? null,
+          emailFailed: !!data.emailFailed,
         });
         addToast(`Account created for ${data.account.name}`);
       } else {
@@ -136,7 +225,9 @@ export default function SettingsPage() {
 
   const changeRole = async (id: number, role: string) => {
     const previous = users;
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, roleSlug: role } : u)));
+    setUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, roleSlug: role } : u)),
+    );
     try {
       const res = await fetch(`/api/users/${id}`, {
         method: "PATCH",
@@ -145,7 +236,9 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not change the role.");
-      setUsers((prev) => prev.map((u) => (u.id === id ? { ...data.user, isSelf: u.isSelf } : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...data.user, isSelf: u.isSelf } : u)),
+      );
       addToast("Role updated");
     } catch (err: any) {
       setUsers(previous);
@@ -157,14 +250,25 @@ export default function SettingsPage() {
     if (!toReset) return;
     setResetting(true);
     try {
-      const res = await fetch(`/api/users/${toReset.id}/password`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not reset the password.");
-      setCredentials({
-        name: toReset.name, username: toReset.email || toReset.name, password: data.temporaryPassword, reset: true,
-        emailedTo: data.emailedTo ?? null, emailFailed: data.hasEmail === true && !data.emailedTo,
+      const res = await fetch(`/api/users/${toReset.id}/password`, {
+        method: "POST",
       });
-      setUsers((prev) => prev.map((u) => (u.id === toReset.id ? { ...u, mustChangePassword: true } : u)));
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "Could not reset the password.");
+      setCredentials({
+        name: toReset.name,
+        username: toReset.email || toReset.name,
+        password: data.temporaryPassword,
+        reset: true,
+        emailedTo: data.emailedTo ?? null,
+        emailFailed: data.hasEmail === true && !data.emailedTo,
+      });
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === toReset.id ? { ...u, mustChangePassword: true } : u,
+        ),
+      );
       setToReset(null);
     } catch (err: any) {
       addToast(err?.message ?? "Could not reset the password.", "danger");
@@ -177,11 +281,17 @@ export default function SettingsPage() {
     if (!toRemove) return;
     setRemoving(true);
     try {
-      const res = await fetch(`/api/users/${toRemove.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/users/${toRemove.id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not remove the account.");
+      if (!res.ok)
+        throw new Error(data.error || "Could not remove the account.");
       setUsers((prev) => prev.filter((u) => u.id !== toRemove.id));
-      addToast(`${toRemove.name} removed; their posts were reassigned to you`, "danger");
+      addToast(
+        `${toRemove.name} removed; their posts were reassigned to you`,
+        "danger",
+      );
       setToRemove(null);
     } catch (err: any) {
       addToast(err?.message ?? "Could not remove the account.", "danger");
@@ -202,10 +312,15 @@ export default function SettingsPage() {
       const res = await fetch("/api/account/password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword: pw.current, newPassword: pw.next, confirmPassword: pw.confirm }),
+        body: JSON.stringify({
+          currentPassword: pw.current,
+          newPassword: pw.next,
+          confirmPassword: pw.confirm,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not update the password.");
+      if (!res.ok)
+        throw new Error(data.error || "Could not update the password.");
       setPw({ current: "", next: "", confirm: "" });
       addToast("Password updated");
     } catch (err: any) {
@@ -221,11 +336,15 @@ export default function SettingsPage() {
     setNewDept("");
   };
 
-  const savesToWordPress = tab === "hospital" || tab === "booking" || tab === "notifications";
+  const savesToWordPress =
+    tab === "hospital" || tab === "booking" || tab === "notifications";
 
   return (
     <>
-      <PageHeader title="Settings" subtitle="Hospital details, booking rules and who can use the portal" />
+      <PageHeader
+        title="Settings"
+        subtitle="Hospital details, booking rules and who can use the portal"
+      />
 
       <div className="st-layout">
         <nav className="po-card st-nav" aria-label="Settings sections">
@@ -233,9 +352,24 @@ export default function SettingsPage() {
             const Icon = t.icon;
             const active = tab === t.key;
             return (
-              <button key={t.key} type="button" className="st-nav-item" data-active={active} onClick={() => setTab(t.key)} aria-current={active ? "page" : undefined}>
-                {active && <motion.span layoutId="st-nav-pill" className="st-nav-pill" transition={{ type: "spring", stiffness: 480, damping: 38 }} />}
-                <span className="st-nav-icon"><Icon size={17} /></span>
+              <button
+                key={t.key}
+                type="button"
+                className="st-nav-item"
+                data-active={active}
+                onClick={() => setTab(t.key)}
+                aria-current={active ? "page" : undefined}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="st-nav-pill"
+                    className="st-nav-pill"
+                    transition={{ type: "spring", stiffness: 480, damping: 38 }}
+                  />
+                )}
+                <span className="st-nav-icon">
+                  <Icon size={17} />
+                </span>
                 <span style={{ minWidth: 0 }}>
                   <span className="st-nav-label">{t.label}</span>
                   <span className="st-nav-hint">{t.hint}</span>
@@ -247,30 +381,60 @@ export default function SettingsPage() {
 
         <div style={{ minWidth: 0 }}>
           {settingsError && savesToWordPress && (
-            <div className="po-alert po-tone-danger" style={{ marginBottom: 16 }}>
-              <AlertTriangle size={17} />{settingsError}
+            <div
+              className="po-alert po-tone-danger"
+              style={{ marginBottom: 16 }}
+            >
+              <AlertTriangle size={17} />
+              {settingsError}
             </div>
           )}
 
           <AnimatePresence mode="wait">
-            <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }}>
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
+            >
               {tab === "hospital" && (
-                <Card title="Hospital profile" subtitle="Shown on the website’s contact details and footer">
+                <Card
+                  title="Hospital profile"
+                  subtitle="Shown on the website’s contact details and footer"
+                >
                   {settingsLoading ? (
-                    <div className="st-grid">{HOSPITAL_FIELDS.map((f) => <Skeleton key={f.key} h={60} r={10} />)}</div>
+                    <div className="st-grid">
+                      {HOSPITAL_FIELDS.map((f) => (
+                        <Skeleton key={f.key} h={60} r={10} />
+                      ))}
+                    </div>
                   ) : (
                     <>
                       <div className="st-grid">
                         {HOSPITAL_FIELDS.map((f) => (
                           <label key={f.key} className="po-field">
                             <span className="po-label">{f.label}</span>
-                            <input className="po-input" value={(settings[f.key] as string) ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} />
+                            <input
+                              className="po-input"
+                              value={(settings[f.key] as string) ?? ""}
+                              onChange={(e) =>
+                                patchSettings({ [f.key]: e.target.value })
+                              }
+                            />
                           </label>
                         ))}
                       </div>
                       <label className="po-field" style={{ marginTop: 16 }}>
                         <span className="po-label">About the hospital</span>
-                        <textarea className="po-textarea" rows={4} value={settings.about ?? ""} onChange={(e) => patchSettings({ about: e.target.value })} />
+                        <textarea
+                          className="po-textarea"
+                          rows={4}
+                          value={settings.about ?? ""}
+                          onChange={(e) =>
+                            patchSettings({ about: e.target.value })
+                          }
+                        />
                       </label>
                     </>
                   )}
@@ -279,53 +443,136 @@ export default function SettingsPage() {
 
               {tab === "booking" && (
                 <div style={{ display: "grid", gap: 16 }}>
-                  <Card title="Outpatient hours" subtitle="Used to offer appointment times on the booking form">
+                  <Card
+                    title="Outpatient hours"
+                    subtitle="Used to offer appointment times on the booking form"
+                  >
                     <div className="st-grid st-grid--3">
-                      {([
-                        { label: "Opens", key: "opdOpen" as const, placeholder: "08:00" },
-                        { label: "Closes", key: "opdClose" as const, placeholder: "16:00" },
-                        { label: "Slot length (minutes)", key: "slotLength" as const, placeholder: "30" },
-                      ]).map((f) => (
+                      {[
+                        {
+                          label: "Opens",
+                          key: "opdOpen" as const,
+                          placeholder: "08:00",
+                        },
+                        {
+                          label: "Closes",
+                          key: "opdClose" as const,
+                          placeholder: "16:00",
+                        },
+                        {
+                          label: "Slot length (minutes)",
+                          key: "slotLength" as const,
+                          placeholder: "30",
+                        },
+                      ].map((f) => (
                         <label key={f.key} className="po-field">
                           <span className="po-label">{f.label}</span>
-                          <input className="po-input" placeholder={f.placeholder} value={settings[f.key] ?? ""} onChange={(e) => patchSettings({ [f.key]: e.target.value })} disabled={settingsLoading} />
+                          <input
+                            className="po-input"
+                            placeholder={f.placeholder}
+                            value={settings[f.key] ?? ""}
+                            onChange={(e) =>
+                              patchSettings({ [f.key]: e.target.value })
+                            }
+                            disabled={settingsLoading}
+                          />
                         </label>
                       ))}
                     </div>
                   </Card>
 
-                  <Card title="Departments" subtitle={`${settings.departments.length} department${settings.departments.length === 1 ? "" : "s"} patients can book into`}>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+                  <Card
+                    title="Departments"
+                    subtitle={`${settings.departments.length} department${settings.departments.length === 1 ? "" : "s"} patients can book into`}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        marginBottom: 14,
+                      }}
+                    >
                       <AnimatePresence initial={false}>
                         {settings.departments.map((d) => (
-                          <motion.span key={d} layout className="st-dept" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                          <motion.span
+                            key={d}
+                            layout
+                            className="st-dept"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                          >
                             {d}
-                            <button type="button" onClick={() => removeDept(d)} aria-label={`Remove ${d}`}><X size={13} /></button>
+                            <button
+                              type="button"
+                              onClick={() => removeDept(d)}
+                              aria-label={`Remove ${d}`}
+                            >
+                              <X size={13} />
+                            </button>
                           </motion.span>
                         ))}
                       </AnimatePresence>
-                      {settings.departments.length === 0 && !settingsLoading && (
-                        <span className="po-hint">No departments yet. Add the first below.</span>
-                      )}
+                      {settings.departments.length === 0 &&
+                        !settingsLoading && (
+                          <span className="po-hint">
+                            No departments yet. Add the first below.
+                          </span>
+                        )}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <input className="po-input" value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="Add a department, e.g. Physiotherapy"
-                        onKeyDown={(e) => { if (e.key === "Enter") submitNewDept(); }} />
-                      <button type="button" className="po-btn" onClick={submitNewDept} disabled={!newDept.trim()}><Plus size={15} />Add</button>
+                      <input
+                        className="po-input"
+                        value={newDept}
+                        onChange={(e) => setNewDept(e.target.value)}
+                        placeholder="Add a department, e.g. Physiotherapy"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") submitNewDept();
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="po-btn"
+                        onClick={submitNewDept}
+                        disabled={!newDept.trim()}
+                      >
+                        <Plus size={15} />
+                        Add
+                      </button>
                     </div>
                   </Card>
                 </div>
               )}
 
               {tab === "notifications" && (
-                <Card title="Notifications" subtitle="How the team hears about new activity" bodyClassName="">
+                <Card
+                  title="Notifications"
+                  subtitle="How the team hears about new activity"
+                  bodyClassName=""
+                >
                   {NOTIF_DEFS.map((item, i) => (
-                    <div key={item.key} className="st-row" style={{ borderTop: i === 0 ? "1px solid var(--po-border)" : undefined }}>
+                    <div
+                      key={item.key}
+                      className="st-row"
+                      style={{
+                        borderTop:
+                          i === 0 ? "1px solid var(--po-border)" : undefined,
+                      }}
+                    >
                       <div>
-                        <div style={{ fontWeight: 600, color: "var(--po-text)" }}>{item.label}</div>
+                        <div
+                          style={{ fontWeight: 600, color: "var(--po-text)" }}
+                        >
+                          {item.label}
+                        </div>
                         <div className="po-hint">{item.desc}</div>
                       </div>
-                      <Switch checked={!!settings.notifications[item.key]} onChange={() => toggleNotif(item.key)} label={item.label} />
+                      <Switch
+                        checked={!!settings.notifications[item.key]}
+                        onChange={() => toggleNotif(item.key)}
+                        label={item.label}
+                      />
                     </div>
                   ))}
                 </Card>
@@ -337,58 +584,161 @@ export default function SettingsPage() {
                     title="Team access"
                     subtitle="WordPress accounts that can sign in to this portal"
                     bodyClassName=""
-                    action={<button type="button" className="po-btn po-btn--sm" onClick={loadUsers} disabled={usersLoading}><RefreshCw size={14} className={usersLoading ? "po-spin" : ""} />Refresh</button>}
+                    action={
+                      <button
+                        type="button"
+                        className="po-btn po-btn--sm"
+                        onClick={loadUsers}
+                        disabled={usersLoading}
+                      >
+                        <RefreshCw
+                          size={14}
+                          className={usersLoading ? "po-spin" : ""}
+                        />
+                        Refresh
+                      </button>
+                    }
                   >
                     {usersLoading && users.length === 0 ? (
-                      <div style={{ padding: "0 18px 18px", display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={44} r={10} />)}</div>
-                    ) : usersError ? (
-                      <EmptyState icon={AlertTriangle} title="Couldn’t load the team" text={usersError}
-                        action={<button type="button" className="po-btn" onClick={loadUsers}><RefreshCw size={15} />Try again</button>} />
-                    ) : (
-                      <div className="po-table-wrap">
-                        <table className="po-table">
-                          <thead><tr><th>Person</th><th>Role</th><th style={{ textAlign: "right" }}>Access</th></tr></thead>
-                          <tbody>
-                            {users.map((u) => (
-                              <tr key={u.id}>
-                                <td>
-                                  <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
-                                    <Avatar name={u.name} />
-                                    <div style={{ minWidth: 0 }}>
-                                      <div className="po-cell-main">
-                                        {u.name} {u.isSelf && <Chip tone="brand">You</Chip>}
-                                        {u.mustChangePassword && <span className="po-badge po-tone-warn" style={{ textTransform: "none", marginLeft: 6 }}>Temporary password</span>}
-                                      </div>
-                                      <div className="po-cell-sub">{u.email}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td style={{ width: 200 }}>
-                                  <select className="po-select" style={{ height: 34 }} value={u.roleSlug} onChange={(e) => changeRole(u.id, e.target.value)} disabled={u.isSelf}
-                                    title={u.isSelf ? "You cannot change your own role" : undefined} aria-label={`Role for ${u.name}`}>
-                                    {ASSIGNABLE_ROLES.map((r) => <option key={r.slug} value={r.slug}>{r.label}</option>)}
-                                    {!ASSIGNABLE_ROLES.some((r) => r.slug === u.roleSlug) && <option value={u.roleSlug}>{u.role}</option>}
-                                  </select>
-                                </td>
-                                <td>
-                                  <div className="po-row-actions">
-                                    {!u.isSelf && u.roleSlug !== "administrator" && (
-                                      <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToReset(u)}
-                                        title="Give them a new temporary password">
-                                        <KeySquare size={14} />Reset password
-                                      </button>
-                                    )}
-                                    <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToRemove(u)} disabled={u.isSelf}
-                                      title={u.isSelf ? "You cannot remove your own account" : "Remove access"} style={{ color: "var(--po-danger)" }}>
-                                      <UserMinus size={14} />Remove
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div
+                        style={{
+                          padding: "0 18px 18px",
+                          display: "grid",
+                          gap: 12,
+                        }}
+                      >
+                        {[0, 1, 2].map((i) => (
+                          <Skeleton key={i} h={44} r={10} />
+                        ))}
                       </div>
+                    ) : usersError ? (
+                      <EmptyState
+                        icon={AlertTriangle}
+                        title="Couldn’t load the team"
+                        text={usersError}
+                        action={
+                          <button
+                            type="button"
+                            className="po-btn"
+                            onClick={loadUsers}
+                          >
+                            <RefreshCw size={15} />
+                            Try again
+                          </button>
+                        }
+                      />
+                    ) : (
+                      <>
+                        <style>{TEAM_CSS}</style>
+                        <ul className="tm-list">
+                          {users.map((u) => (
+                            <li key={u.id} className="tm-row">
+                              <div className="tm-person">
+                                <Avatar name={u.name} />
+                                <div style={{ minWidth: 0 }}>
+                                  <div className="tm-name">
+                                    <span>{u.name}</span>
+                                    {u.isSelf && <Chip tone="brand">You</Chip>}
+                                    {u.mustChangePassword && (
+                                      <span
+                                        className="po-badge po-tone-warn"
+                                        style={{ textTransform: "none" }}
+                                      >
+                                        Temporary password
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="tm-email" title={u.email}>
+                                    {u.email}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <select
+                                className="po-select tm-role"
+                                value={u.roleSlug}
+                                onChange={(e) =>
+                                  changeRole(u.id, e.target.value)
+                                }
+                                disabled={u.isSelf}
+                                title={
+                                  u.isSelf
+                                    ? "You cannot change your own role"
+                                    : undefined
+                                }
+                                aria-label={`Role for ${u.name}`}
+                              >
+                                {ASSIGNABLE_ROLES.map((r) => (
+                                  <option key={r.slug} value={r.slug}>
+                                    {r.label}
+                                  </option>
+                                ))}
+                                {!ASSIGNABLE_ROLES.some(
+                                  (r) => r.slug === u.roleSlug,
+                                ) && (
+                                  <option value={u.roleSlug}>{u.role}</option>
+                                )}
+                              </select>
+
+                              <div className="tm-actions">
+                                {!u.isSelf &&
+                                  u.roleSlug !== "administrator" && (
+                                    <button
+                                      type="button"
+                                      className="po-btn po-btn--sm po-btn--ghost"
+                                      onClick={() => setToReset(u)}
+                                      title="Give them a new temporary password"
+                                    >
+                                      <KeySquare size={14} />
+                                      Reset password
+                                    </button>
+                                  )}
+                                <button
+                                  type="button"
+                                  className="po-btn po-btn--sm po-btn--ghost"
+                                  onClick={() => setToRemove(u)}
+                                  disabled={u.isSelf}
+                                  title={
+                                    u.isSelf
+                                      ? "You cannot remove your own account"
+                                      : "Remove access"
+                                  }
+                                  style={{ color: "var(--po-danger)" }}
+                                >
+                                  <UserMinus size={14} />
+                                  Remove
+                                </button>
+                              </div>
+
+                              {u.roleSlug !== "administrator" && (
+                                <div className="tm-access">
+                                  <ShieldCheck
+                                    size={15}
+                                    style={{
+                                      flexShrink: 0,
+                                      color: "var(--po-brand-ink)",
+                                    }}
+                                  />
+                                  <span className="tm-access-label">
+                                    Can also
+                                  </span>
+                                  <span className="tm-access-chips">
+                                    {accessChips(u)}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="po-btn po-btn--sm tm-access-btn"
+                                    onClick={() => setToPermit(u)}
+                                    disabled={!u.extraAccess}
+                                  >
+                                    Change
+                                  </button>
+                                </div>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
                     )}
                   </Card>
 
@@ -398,7 +748,14 @@ export default function SettingsPage() {
                         <div key={r.slug} className="st-role">
                           <strong>{r.label}</strong>
                           <span>{ROLE_LABELS[r.slug]?.description}</span>
-                          <em>{r.slug === "administrator" || r.slug === "editor" || r.slug === "sech_hr" || r.slug === "sech_accounts" ? "Admin console" : "Staff area"}</em>
+                          <em>
+                            {r.slug === "administrator" ||
+                            r.slug === "editor" ||
+                            r.slug === "sech_hr" ||
+                            r.slug === "sech_accounts"
+                              ? "Admin console"
+                              : "Staff area"}
+                          </em>
                         </div>
                       ))}
                     </div>
@@ -406,52 +763,155 @@ export default function SettingsPage() {
 
                   <Card
                     title="Add a colleague"
-                    subtitle={inviteMode === "email"
-                      ? "They get an email with a link to choose their own password. You never handle it."
-                      : "You get a one-time password to hand over in person. If you add an email, they get it by email too, with a link to choose their own. Either way they must replace it when they first sign in."}
+                    subtitle={
+                      inviteMode === "email"
+                        ? "They get an email with a link to choose their own password. You never handle it."
+                        : "You get a one-time password to hand over in person. If you add an email, they get it by email too, with a link to choose their own. Either way they must replace it when they first sign in."
+                    }
                     action={
-                      <div className="po-seg" role="tablist" aria-label="How to give access">
-                        {([["email", "Email invite", Mail], ["temporary", "Temporary password", KeySquare]] as const).map(([v, label, Icon]) => (
-                          <button key={v} type="button" role="tab" className="po-seg-btn" aria-selected={inviteMode === v}
+                      <div
+                        className="po-seg st-invite-seg"
+                        role="tablist"
+                        aria-label="How to give access"
+                      >
+                        {(
+                          [
+                            ["email", "Email invite", Mail],
+                            ["temporary", "Temporary password", KeySquare],
+                          ] as const
+                        ).map(([v, label, Icon]) => (
+                          <button
+                            key={v}
+                            type="button"
+                            role="tab"
+                            className="po-seg-btn"
+                            aria-selected={inviteMode === v}
                             onClick={() => {
                               setInviteMode(v);
-                              if (v === "temporary" && !TEMP_PASSWORD_ROLES.includes(invite.role)) setInvite((p) => ({ ...p, role: "contributor" }));
-                            }}>
-                            {inviteMode === v && <motion.span layoutId="st-invite-mode" className="po-seg-pill" />}
-                            <Icon size={14} />{label}
+                              if (
+                                v === "temporary" &&
+                                !TEMP_PASSWORD_ROLES.includes(invite.role)
+                              )
+                                setInvite((p) => ({
+                                  ...p,
+                                  role: "contributor",
+                                }));
+                            }}
+                          >
+                            {inviteMode === v && (
+                              <motion.span
+                                layoutId="st-invite-mode"
+                                className="po-seg-pill"
+                              />
+                            )}
+                            <Icon size={14} />
+                            {label}
                           </button>
                         ))}
                       </div>
                     }
                   >
                     <div className="st-invite" data-mode={inviteMode}>
-                      <input className="po-input" value={invite.name} aria-label="Full name" placeholder="Full name"
+                      <input
+                        className="po-input"
+                        value={invite.name}
+                        aria-label="Full name"
+                        placeholder="Full name"
                         onChange={(e) => {
                           const name = e.target.value;
-                          setInvite((p) => ({ ...p, name, username: usernameTouched ? p.username : suggestUsername(name) }));
-                        }} />
+                          setInvite((p) => ({
+                            ...p,
+                            name,
+                            username: usernameTouched
+                              ? p.username
+                              : suggestUsername(name),
+                          }));
+                        }}
+                      />
                       {inviteMode === "temporary" && (
-                        <input className="po-input" value={invite.username} aria-label="Username" placeholder="Username, e.g. ama.mensah"
-                          autoCapitalize="none" spellCheck={false}
-                          onChange={(e) => { setUsernameTouched(true); setInvite((p) => ({ ...p, username: e.target.value.toLowerCase() })); }} />
+                        <input
+                          className="po-input"
+                          value={invite.username}
+                          aria-label="Username"
+                          placeholder="Username, e.g. ama.mensah"
+                          autoCapitalize="none"
+                          spellCheck={false}
+                          onChange={(e) => {
+                            setUsernameTouched(true);
+                            setInvite((p) => ({
+                              ...p,
+                              username: e.target.value.toLowerCase(),
+                            }));
+                          }}
+                        />
                       )}
-                      <input className="po-input" type="email" value={invite.email} aria-label="Email address"
-                        placeholder={inviteMode === "email" ? "Email address" : "Email (optional)"}
-                        onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))} />
-                      <select className="po-select" value={invite.role} onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value }))} aria-label="Role">
-                        {ASSIGNABLE_ROLES.filter((r) => inviteMode === "email" || TEMP_PASSWORD_ROLES.includes(r.slug))
-                          .map((r) => <option key={r.slug} value={r.slug}>{r.label}</option>)}
+                      <input
+                        className="po-input"
+                        type="email"
+                        value={invite.email}
+                        aria-label="Email address"
+                        placeholder={
+                          inviteMode === "email"
+                            ? "Email address"
+                            : "Email (optional)"
+                        }
+                        onChange={(e) =>
+                          setInvite((p) => ({ ...p, email: e.target.value }))
+                        }
+                      />
+                      <select
+                        className="po-select"
+                        value={invite.role}
+                        onChange={(e) =>
+                          setInvite((p) => ({ ...p, role: e.target.value }))
+                        }
+                        aria-label="Role"
+                      >
+                        {ASSIGNABLE_ROLES.filter(
+                          (r) =>
+                            inviteMode === "email" ||
+                            TEMP_PASSWORD_ROLES.includes(r.slug),
+                        ).map((r) => (
+                          <option key={r.slug} value={r.slug}>
+                            {r.label}
+                          </option>
+                        ))}
                       </select>
-                      <button type="button" className="po-btn po-btn--primary" onClick={sendInvite}
-                        disabled={inviting || !invite.name.trim() || (inviteMode === "email" ? !invite.email.trim() : !/^[a-z0-9._-]{3,40}$/.test(invite.username))}>
-                        {inviteMode === "email" ? <Send size={15} /> : <KeySquare size={15} />}
-                        {inviting ? "Working…" : inviteMode === "email" ? "Send invite" : "Create account"}
+                      <button
+                        type="button"
+                        className="po-btn po-btn--primary"
+                        onClick={sendInvite}
+                        disabled={
+                          inviting ||
+                          !invite.name.trim() ||
+                          (inviteMode === "email"
+                            ? !invite.email.trim()
+                            : !/^[a-z0-9._-]{3,40}$/.test(invite.username))
+                        }
+                      >
+                        {inviteMode === "email" ? (
+                          <Send size={15} />
+                        ) : (
+                          <KeySquare size={15} />
+                        )}
+                        {inviting
+                          ? "Working…"
+                          : inviteMode === "email"
+                            ? "Send invite"
+                            : "Create account"}
                       </button>
                     </div>
                     <p className="po-hint" style={{ margin: "10px 0 0" }}>
-                      <strong style={{ color: "var(--po-text-2)" }}>{ASSIGNABLE_ROLES.find((r) => r.slug === invite.role)?.label}:</strong>{" "}
+                      <strong style={{ color: "var(--po-text-2)" }}>
+                        {
+                          ASSIGNABLE_ROLES.find((r) => r.slug === invite.role)
+                            ?.label
+                        }
+                        :
+                      </strong>{" "}
                       {ROLE_LABELS[invite.role]?.description}
-                      {inviteMode === "temporary" && " · Administrators can only be added by email invite."}
+                      {inviteMode === "temporary" &&
+                        " · Administrators can only be added by email invite."}
                     </p>
                   </Card>
                 </div>
@@ -459,57 +919,174 @@ export default function SettingsPage() {
 
               {tab === "security" && (
                 <div style={{ display: "grid", gap: 16 }}>
-                  <Card title="Change your password" icon={KeyRound} subtitle="Your current password is checked before anything changes">
+                  <Card
+                    title="Change your password"
+                    icon={KeyRound}
+                    subtitle="Your current password is checked before anything changes"
+                  >
                     <form
                       style={{ maxWidth: 460, display: "grid", gap: 14 }}
-                      onSubmit={(e) => { e.preventDefault(); if (!mismatch && pw.current && pw.next && pw.confirm) changePassword(); }}
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!mismatch && pw.current && pw.next && pw.confirm)
+                          changePassword();
+                      }}
                     >
-                      <input type="text" name="username" autoComplete="username" hidden readOnly value="" />
-                      {([
-                        { label: "Current password", key: "current" as const, auto: "current-password" },
-                        { label: "New password", key: "next" as const, auto: "new-password" },
-                        { label: "Confirm new password", key: "confirm" as const, auto: "new-password" },
-                      ]).map((f) => (
+                      <input
+                        type="text"
+                        name="username"
+                        autoComplete="username"
+                        hidden
+                        readOnly
+                        value=""
+                      />
+                      {[
+                        {
+                          label: "Current password",
+                          key: "current" as const,
+                          auto: "current-password",
+                        },
+                        {
+                          label: "New password",
+                          key: "next" as const,
+                          auto: "new-password",
+                        },
+                        {
+                          label: "Confirm new password",
+                          key: "confirm" as const,
+                          auto: "new-password",
+                        },
+                      ].map((f) => (
                         <label key={f.key} className="po-field">
                           <span className="po-label">{f.label}</span>
                           <div className="po-input-wrap">
-                            <input className="po-input" style={{ paddingLeft: 12, paddingRight: 40 }} type={showPw ? "text" : "password"} value={pw[f.key]}
-                              autoComplete={f.auto} onChange={(e) => setPw((p) => ({ ...p, [f.key]: e.target.value }))} />
+                            <input
+                              className="po-input"
+                              style={{ paddingLeft: 12, paddingRight: 40 }}
+                              type={showPw ? "text" : "password"}
+                              value={pw[f.key]}
+                              autoComplete={f.auto}
+                              onChange={(e) =>
+                                setPw((p) => ({
+                                  ...p,
+                                  [f.key]: e.target.value,
+                                }))
+                              }
+                            />
                             {f.key === "current" && (
-                              <button type="button" className="po-btn po-btn--ghost po-btn--icon po-btn--sm" style={{ position: "absolute", right: 4 }}
-                                onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Hide passwords" : "Show passwords"}>
-                                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                              <button
+                                type="button"
+                                className="po-btn po-btn--ghost po-btn--icon po-btn--sm"
+                                style={{ position: "absolute", right: 4 }}
+                                onClick={() => setShowPw((v) => !v)}
+                                aria-label={
+                                  showPw ? "Hide passwords" : "Show passwords"
+                                }
+                              >
+                                {showPw ? (
+                                  <EyeOff size={15} />
+                                ) : (
+                                  <Eye size={15} />
+                                )}
                               </button>
                             )}
                           </div>
                           {f.key === "next" && pw.next && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-                              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                marginTop: 4,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  flex: 1,
+                                  display: "grid",
+                                  gridTemplateColumns: "repeat(5, 1fr)",
+                                  gap: 4,
+                                }}
+                              >
                                 {[1, 2, 3, 4, 5].map((n) => (
-                                  <span key={n} className={`po-tone-${pwStrength.tone}`} style={{ height: 4, borderRadius: 2, background: n <= pwStrength.score ? "var(--tone)" : "var(--po-surface-3)", transition: "background .2s" }} />
+                                  <span
+                                    key={n}
+                                    className={`po-tone-${pwStrength.tone}`}
+                                    style={{
+                                      height: 4,
+                                      borderRadius: 2,
+                                      background:
+                                        n <= pwStrength.score
+                                          ? "var(--tone)"
+                                          : "var(--po-surface-3)",
+                                      transition: "background .2s",
+                                    }}
+                                  />
                                 ))}
                               </div>
-                              <span className={`po-tone-${pwStrength.tone}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--tone)", minWidth: 76, textAlign: "right" }}>{pwStrength.label}</span>
+                              <span
+                                className={`po-tone-${pwStrength.tone}`}
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: "var(--tone)",
+                                  minWidth: 76,
+                                  textAlign: "right",
+                                }}
+                              >
+                                {pwStrength.label}
+                              </span>
                             </div>
                           )}
-                          {f.key === "confirm" && mismatch && <span style={{ fontSize: 12, color: "var(--po-danger)" }}>Doesn’t match the new password</span>}
+                          {f.key === "confirm" && mismatch && (
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: "var(--po-danger)",
+                              }}
+                            >
+                              Doesn’t match the new password
+                            </span>
+                          )}
                         </label>
                       ))}
-                      <p className="po-hint" style={{ margin: 0 }}>Use at least 12 characters. A short phrase of unrelated words is easy to remember and hard to guess.</p>
+                      <p className="po-hint" style={{ margin: 0 }}>
+                        Use at least 12 characters. A short phrase of unrelated
+                        words is easy to remember and hard to guess.
+                      </p>
                       <div>
-                        <button type="submit" className="po-btn po-btn--primary" disabled={changingPw || !pw.current || !pw.next || !pw.confirm || mismatch}>
-                          <KeyRound size={15} />{changingPw ? "Updating…" : "Update password"}
+                        <button
+                          type="submit"
+                          className="po-btn po-btn--primary"
+                          disabled={
+                            changingPw ||
+                            !pw.current ||
+                            !pw.next ||
+                            !pw.confirm ||
+                            mismatch
+                          }
+                        >
+                          <KeyRound size={15} />
+                          {changingPw ? "Updating…" : "Update password"}
                         </button>
                       </div>
                     </form>
                   </Card>
 
                   <Card title="Two-step sign-in" icon={ShieldCheck}>
-                    <div className="po-alert po-tone-info" style={{ alignItems: "flex-start" }}>
-                      <ShieldCheck size={17} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div
+                      className="po-alert po-tone-info"
+                      style={{ alignItems: "flex-start" }}
+                    >
+                      <ShieldCheck
+                        size={17}
+                        style={{ flexShrink: 0, marginTop: 1 }}
+                      />
                       <span>
-                        Not set up yet. Two-step sign-in is handled by WordPress, so it needs a 2FA plugin installed there
-                        (for example “Two Factor”). Once WordPress requires a second step, this portal’s sign-in follows it.
+                        ToDo: Not set up yet. Two-step sign-in is handled by
+                        WordPress, so it needs a 2FA plugin installed there (for
+                        example “Two Factor”). Once WordPress requires a second
+                        step, this portal’s sign-in follows it.
                       </span>
                     </div>
                   </Card>
@@ -530,16 +1107,37 @@ export default function SettingsPage() {
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
             role="status"
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--po-gold)" }} />
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "var(--po-gold)",
+                }}
+              />
               Unsaved changes
             </span>
             <span className="po-bulkbar-sep" />
-            <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => refreshSettings()} disabled={savingSettings}>
-              <RotateCcw size={14} />Discard
+            <button
+              type="button"
+              className="po-btn po-btn--sm po-btn--ghost"
+              onClick={() => refreshSettings()}
+              disabled={savingSettings}
+            >
+              <RotateCcw size={14} />
+              Discard
             </button>
-            <button type="button" className="po-btn po-btn--sm po-btn--gold" onClick={saveSettings} disabled={savingSettings}>
-              <Save size={14} />{savingSettings ? "Saving…" : "Save changes"}
+            <button
+              type="button"
+              className="po-btn po-btn--sm po-btn--gold"
+              onClick={saveSettings}
+              disabled={savingSettings}
+            >
+              <Save size={14} />
+              {savingSettings ? "Saving…" : "Save changes"}
             </button>
           </motion.div>
         )}
@@ -550,20 +1148,55 @@ export default function SettingsPage() {
         icon={KeySquare}
         tone="primary"
         title={`Reset ${toReset?.name ?? ""}’s password?`}
-        text={<>They’ll be signed out everywhere and given a new temporary password, which you’ll see once. {toReset?.email ? <>It is also emailed to {toReset.email} with a link to choose their own password. </> : null}At their next sign-in they must choose their own.</>}
+        text={
+          <>
+            They’ll be signed out everywhere and given a new temporary password,
+            which you’ll see once.{" "}
+            {toReset?.email ? (
+              <>
+                It is also emailed to {toReset.email} with a link to choose
+                their own password.{" "}
+              </>
+            ) : null}
+            At their next sign-in they must choose their own.
+          </>
+        }
         confirmLabel="Reset password"
         busy={resetting}
         onConfirm={resetPassword}
         onCancel={() => setToReset(null)}
       />
 
-      <CredentialsDialog credentials={credentials} onDone={() => setCredentials(null)} onCopied={(what) => addToast(`${what} copied`)} />
+      <CredentialsDialog
+        credentials={credentials}
+        onDone={() => setCredentials(null)}
+        onCopied={(what) => addToast(`${what} copied`)}
+      />
+
+      <AccessDialog
+        user={toPermit}
+        onClose={() => setToPermit(null)}
+        onSaved={(id, saved) => {
+          setUsers((prev) =>
+            prev.map((x) => (x.id === id ? { ...x, ...saved } : x)),
+          );
+          setToPermit(null);
+          addToast("Access saved");
+        }}
+        onError={(m) => addToast(m, "danger")}
+      />
 
       <ConfirmDialog
         open={!!toRemove}
         icon={Trash2}
         title={`Remove ${toRemove?.name ?? ""}?`}
-        text={<>Their WordPress account will be deleted and they will no longer be able to sign in. Any posts they wrote will be reassigned to you, not deleted.</>}
+        text={
+          <>
+            Their WordPress account will be deleted and they will no longer be
+            able to sign in. Any posts they wrote will be reassigned to you, not
+            deleted.
+          </>
+        }
         confirmLabel="Remove access"
         busy={removing}
         onConfirm={removeUser}
@@ -572,7 +1205,20 @@ export default function SettingsPage() {
 
       <style>{`
         .st-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
-        @media (max-width: 900px) { .st-layout { grid-template-columns: minmax(0, 1fr); } .st-nav { display: flex !important; overflow-x: auto; } .st-nav-hint { display: none !important; } }
+        /* narrow screens: the sections wrap into a grid of buttons instead of a strip that runs off the side */
+        @media (max-width: 900px) {
+          .st-layout { grid-template-columns: minmax(0, 1fr); }
+          .st-nav { position: static !important; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px !important; }
+          .st-nav-hint { display: none !important; }
+          .st-nav-item { padding: 8px 10px; gap: 9px; white-space: normal; }
+          .st-nav-icon { width: 28px; height: 28px; }
+        }
+        @media (max-width: 640px) {
+          .st-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .po-card-head:has(.st-invite-seg) { flex-wrap: wrap; }
+          .st-invite-seg { width: 100%; }
+          .st-invite-seg .po-seg-btn { flex: 1 1 0; justify-content: center; min-width: 0; }
+        }
         .st-nav { padding: 6px; display: grid; gap: 2px; position: sticky; top: 0; }
         .st-nav-item { position: relative; isolation: isolate; display: flex; gap: 12px; align-items: center; text-align: left; padding: 10px 12px; border: 0; background: none; border-radius: 10px; cursor: pointer; font: inherit; color: var(--po-text-2); white-space: nowrap; }
         .st-nav-item:hover { background: var(--po-surface-2); }
@@ -615,21 +1261,35 @@ interface Credentials {
   emailFailed?: boolean;
 }
 
-function CredentialsDialog({ credentials, onDone, onCopied }: {
+function CredentialsDialog({
+  credentials,
+  onDone,
+  onCopied,
+}: {
   credentials: Credentials | null;
   onDone: () => void;
   onCopied: (what: string) => void;
 }) {
   const copy = (text: string, what: string) => {
-    navigator.clipboard?.writeText(text).then(() => onCopied(what), () => {});
+    navigator.clipboard?.writeText(text).then(
+      () => onCopied(what),
+      () => {},
+    );
   };
-  const loginUrl = typeof window !== "undefined" ? `${window.location.origin}/admin/login` : "/admin/login";
+  const loginUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/admin/login`
+      : "/admin/login";
 
   const printSlip = () => {
     if (!credentials) return;
     const w = window.open("", "_blank", "width=480,height=600");
     if (!w) return;
-    const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+    const esc = (t: string) =>
+      t.replace(
+        /[&<>"]/g,
+        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+      );
     w.document.write(`<!doctype html><title>Sign-in details</title>
       <body style="font:15px/1.6 system-ui,sans-serif;padding:32px;color:#111">
       <h2 style="margin:0 0 4px">St. Elizabeth Catholic Hospital</h2>
@@ -645,27 +1305,68 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
   return (
     <AnimatePresence>
       {credentials && (
-        <motion.div className="po-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: "none" }}>
-          <motion.div className="po-modal" style={{ maxWidth: 480 }} role="dialog" aria-modal="true" aria-label="Temporary sign-in details"
-            initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
-            <div className="po-kpi-icon po-tone-success" style={{ marginBottom: 14 }}><KeySquare size={18} /></div>
-            <h3 className="po-modal-title">{credentials.reset ? "New temporary password" : "Account created"}</h3>
+        <motion.div
+          className="po-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, pointerEvents: "none" }}
+        >
+          <motion.div
+            className="po-modal"
+            style={{ maxWidth: 480 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Temporary sign-in details"
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+          >
+            <div
+              className="po-kpi-icon po-tone-success"
+              style={{ marginBottom: 14 }}
+            >
+              <KeySquare size={18} />
+            </div>
+            <h3 className="po-modal-title">
+              {credentials.reset ? "New temporary password" : "Account created"}
+            </h3>
             {credentials.emailedTo ? (
-              <div className="po-alert po-tone-success" role="status" style={{ marginBottom: 14 }}>
+              <div
+                className="po-alert po-tone-success"
+                role="status"
+                style={{ marginBottom: 14 }}
+              >
                 <MailCheck size={16} style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>
-                  Sent to <strong>{credentials.emailedTo}</strong> with a link to choose a new password. If {credentials.name} can’t get to that email, give them these details in person.
+                  Sent to <strong>{credentials.emailedTo}</strong> with a link
+                  to choose a new password. If {credentials.name} can’t get to
+                  that email, give them these details in person.
                 </span>
               </div>
             ) : credentials.emailFailed ? (
-              <div className="po-alert po-tone-warn" role="status" style={{ marginBottom: 14 }}>
+              <div
+                className="po-alert po-tone-warn"
+                role="status"
+                style={{ marginBottom: 14 }}
+              >
                 <Mail size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                <span>The email to {credentials.name} could not be sent. Give them these details in person.</span>
+                <span>
+                  The email to {credentials.name} could not be sent. Give them
+                  these details in person.
+                </span>
               </div>
             ) : null}
             <p className="po-modal-text" style={{ marginBottom: 14 }}>
-              {credentials.emailedTo ? "" : <>Give these to <strong>{credentials.name}</strong> in person. </>}
-              <strong>This is the only time the password is shown here.</strong> The portal keeps no copy.
+              {credentials.emailedTo ? (
+                ""
+              ) : (
+                <>
+                  Give these to <strong>{credentials.name}</strong> in
+                  person.{" "}
+                </>
+              )}
+              <strong>This is the only time the password is shown here.</strong>{" "}
+              The portal keeps no copy.
             </p>
 
             <div className="st-cred">
@@ -674,21 +1375,47 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
               <span className="st-cred-label">Username</span>
               <div className="st-cred-row">
                 <code>{credentials.username}</code>
-                <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => copy(credentials.username, "Username")} aria-label="Copy username"><Copy size={14} /></button>
+                <button
+                  type="button"
+                  className="po-btn po-btn--sm po-btn--ghost po-btn--icon"
+                  onClick={() => copy(credentials.username, "Username")}
+                  aria-label="Copy username"
+                >
+                  <Copy size={14} />
+                </button>
               </div>
               <span className="st-cred-label">Temporary password</span>
               <div className="st-cred-row">
                 <code className="st-cred-pw">{credentials.password}</code>
-                <button type="button" className="po-btn po-btn--sm po-btn--ghost po-btn--icon" onClick={() => copy(credentials.password, "Password")} aria-label="Copy password"><Copy size={14} /></button>
+                <button
+                  type="button"
+                  className="po-btn po-btn--sm po-btn--ghost po-btn--icon"
+                  onClick={() => copy(credentials.password, "Password")}
+                  aria-label="Copy password"
+                >
+                  <Copy size={14} />
+                </button>
               </div>
             </div>
 
             <p className="po-hint" style={{ margin: "12px 0 18px" }}>
-              Avoid sending it by WhatsApp or SMS where it stays in chat history. They must choose their own password the first time they sign in.
+              Avoid sending it by WhatsApp or SMS where it stays in chat
+              history. They must choose their own password the first time they
+              sign in.
             </p>
             <div className="po-modal-actions">
-              <button type="button" className="po-btn" onClick={printSlip}><Printer size={15} />Print slip</button>
-              <button type="button" className="po-btn po-btn--primary" onClick={onDone} autoFocus>I’ve noted it, done</button>
+              <button type="button" className="po-btn" onClick={printSlip}>
+                <Printer size={15} />
+                Print slip
+              </button>
+              <button
+                type="button"
+                className="po-btn po-btn--primary"
+                onClick={onDone}
+                autoFocus
+              >
+                I’ve noted it, done
+              </button>
             </div>
           </motion.div>
         </motion.div>
@@ -702,5 +1429,270 @@ function CredentialsDialog({ credentials, onDone, onCopied }: {
         .st-cred-pw { font-size: 19px !important; letter-spacing: .04em; color: var(--po-brand-ink) !important; }
       `}</style>
     </AnimatePresence>
+  );
+}
+
+// the team list: one row per person that wraps on narrow screens
+const TEAM_CSS = `
+.tm-list { list-style: none; margin: 0; padding: 0; container-type: inline-size; }
+.tm-row { display: grid; grid-template-columns: minmax(0, 1fr) 190px auto; gap: 10px 16px; align-items: center;
+  padding: 14px 18px; border-top: 1px solid var(--po-border); }
+.tm-person { display: flex; gap: 11px; align-items: center; min-width: 0; }
+.tm-name { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-weight: 650; font-size: 14px; color: var(--po-text); }
+.tm-email { font-size: 12.5px; color: var(--po-text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-role { height: 36px; width: 100%; }
+.tm-actions { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
+.tm-access { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap;
+  padding: 8px 10px 8px 12px; border-radius: 10px; background: var(--po-surface-2); border: 1px solid var(--po-border); }
+.tm-access-label { font-size: 12.5px; font-weight: 650; color: var(--po-text-2); }
+.tm-access-chips { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.tm-access-btn { margin-left: auto; }
+@container (max-width: 620px) {
+  .tm-row { grid-template-columns: minmax(0, 210px) minmax(0, 1fr); gap: 10px 12px; padding: 14px; }
+  .tm-person { grid-column: 1 / -1; }
+}
+@container (max-width: 400px) {
+  .tm-row { grid-template-columns: minmax(0, 1fr); }
+  .tm-actions { justify-content: flex-start; }
+}
+`;
+
+const AA_CSS = `
+        .aa-opt { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; border-radius: 12px; border: 1px solid var(--po-border); cursor: pointer; background: var(--po-surface); }
+        .aa-opt[data-on] { border-color: var(--po-brand-ink); background: var(--po-brand-soft); }
+        .aa-opt input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--po-brand-ink); flex-shrink: 0; }
+        .aa-opt strong { display: block; font-size: 14px; color: var(--po-text); }
+        .aa-opt small { display: block; font-size: 12.5px; line-height: 1.45; color: var(--po-text-3); margin-top: 2px; }
+        .aa-opt[data-locked] { cursor: default; opacity: .75; }
+        .aa-modal { max-width: 520px !important; max-height: calc(100dvh - 32px); overflow-y: auto; }
+        .aa-section { font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); margin: 4px 0 8px; }
+        .aa-list { display: grid; gap: 8px; margin-bottom: 16px; }
+      `;
+
+/** the chips in a person's "Can also" strip */
+function accessChips(u: AdminUser) {
+  if (!u.extraAccess)
+    return <span className="po-cell-sub">Needs plugin 1.21.0</span>;
+  const general = EXTRA_ACCESS.filter((a) =>
+    u.extraAccess!.some((x) => x.key === a.key && x.granted),
+  );
+  const accounts =
+    u.roleSlug === "sech_accounts" && u.accountsPermissions
+      ? ACCOUNTS_PERMISSIONS.filter((p) =>
+          u.accountsPermissions!.includes(p.key),
+        )
+      : [];
+  if (!general.length && !accounts.length)
+    return <span className="po-cell-sub">Nothing beyond their role</span>;
+  return (
+    <>
+      {general.map((a) => {
+        const fromRole = u.extraAccess!.find((x) => x.key === a.key)?.fromRole;
+        return (
+          <Chip key={a.key} tone={fromRole ? "muted" : "brand"}>
+            {a.short}
+          </Chip>
+        );
+      })}
+      {accounts.map((p) => (
+        <Chip key={`acc-${p.key}`} tone="gold">
+          {p.short}
+        </Chip>
+      ))}
+    </>
+  );
+}
+
+function AccessDialog({
+  user,
+  onClose,
+  onSaved,
+  onError,
+}: {
+  user: AdminUser | null;
+  onClose: () => void;
+  onSaved: (
+    id: number,
+    saved: { extraAccess?: ExtraAccess[]; accountsPermissions?: string[] },
+  ) => void;
+  onError: (message: string) => void;
+}) {
+  const [general, setGeneral] = useState<string[]>([]);
+  const [accounts, setAccounts] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [openFor, setOpenFor] = useState<number | null>(null);
+  // start from what they hold each time the dialog opens for someone
+  if (user && openFor !== user.id) {
+    setOpenFor(user.id);
+    setGeneral(
+      (user.extraAccess ?? [])
+        .filter((x) => x.granted && !x.fromRole)
+        .map((x) => x.key),
+    );
+    setAccounts(user.accountsPermissions ?? []);
+  }
+  if (!user && openFor !== null) setOpenFor(null);
+
+  const isAccounts = user?.roleSlug === "sech_accounts";
+  const fromRole = (key: string) =>
+    !!user?.extraAccess?.find((x) => x.key === key)?.fromRole;
+  const toggle = (list: string[], key: string, on: boolean) =>
+    on ? [...list, key] : list.filter((k) => k !== key);
+
+  const save = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/users/${user.id}/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access: general,
+          ...(isAccounts ? { accounts } : {}),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not save access.");
+      onSaved(user.id, data);
+    } catch (err) {
+      onError(err instanceof Error ? err.message : "Could not save access.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <style>{AA_CSS}</style>
+      <AnimatePresence>
+        {user && (
+          <motion.div
+            key="access"
+            className="po-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, pointerEvents: "none" }}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget && !saving) onClose();
+            }}
+          >
+            <motion.div
+              className="po-modal aa-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Access for ${user.name}`}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+            >
+              <div
+                className="po-kpi-icon po-tone-brand"
+                style={{ marginBottom: 14 }}
+              >
+                <ShieldCheck size={18} />
+              </div>
+              <h3 className="po-modal-title">What {user.name} can do</h3>
+              <p className="po-modal-text" style={{ marginBottom: 14 }}>
+                On top of their role ({user.role}). HR records and administrator
+                areas such as bookings and settings come only with those roles.
+              </p>
+
+              <div className="aa-section">Everyday work</div>
+              <div className="aa-list">
+                {EXTRA_ACCESS.map((a) => {
+                  const locked = fromRole(a.key);
+                  // publishing includes writing
+                  const implied =
+                    a.key === "write" && general.includes("publish");
+                  const on = locked || implied || general.includes(a.key);
+                  return (
+                    <label
+                      key={a.key}
+                      className="aa-opt"
+                      data-on={on || undefined}
+                      data-locked={locked || implied || undefined}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        disabled={locked || implied}
+                        onChange={(e) =>
+                          setGeneral((x) => toggle(x, a.key, e.target.checked))
+                        }
+                      />
+                      <span>
+                        <strong>{a.label}</strong>
+                        <small>
+                          {locked
+                            ? "Comes with their role."
+                            : implied
+                              ? "Included with publishing."
+                              : a.description}
+                        </small>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {isAccounts && (
+                <>
+                  <div className="aa-section">Accounts office</div>
+                  <p className="po-hint" style={{ margin: "-2px 0 8px" }}>
+                    Every accounts officer can take money and issue receipts.
+                    The activity log stays with administrators.
+                  </p>
+                  <div className="aa-list">
+                    {ACCOUNTS_PERMISSIONS.map((p) => {
+                      const on = accounts.includes(p.key);
+                      return (
+                        <label
+                          key={p.key}
+                          className="aa-opt"
+                          data-on={on || undefined}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={(e) =>
+                              setAccounts((x) =>
+                                toggle(x, p.key, e.target.checked),
+                              )
+                            }
+                          />
+                          <span>
+                            <strong>{p.label}</strong>
+                            <small>{p.description}</small>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              <div className="po-modal-actions" style={{ marginTop: 18 }}>
+                <button
+                  type="button"
+                  className="po-btn"
+                  onClick={onClose}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="po-btn po-btn--primary"
+                  onClick={save}
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : "Save access"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

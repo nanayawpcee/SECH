@@ -15,7 +15,12 @@ export type Perm =
   | "staff.manage"
   | "doctors.manage"
   // accounts office collections, payments and receipts
-  | "accounts";
+  | "accounts"
+  // given per accounts officer by an administrator (plugin 1.20.0); administrators have them all
+  | "accounts.void"
+  | "accounts.payout"
+  | "accounts.reports"
+  | "accounts.rent";
 
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
   bookings: (c) => c.has("manage_options"),
@@ -27,12 +32,16 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   "posts.editOthers": (c) => c.has("edit_others_posts"),
   "media.upload": (c) => c.has("upload_files"),
   // same check as the plugin
-  "notices.manage": (c) => c.has("edit_others_posts"),
+  "notices.manage": (c) => c.has("sech_manage_notices") || c.has("edit_others_posts"),
   newsletter: (c) => c.has("manage_options"),
   messages: (c) => c.has("manage_options"),
   "staff.manage": (c) => c.has("sech_manage_staff"),
   "doctors.manage": (c) => c.has("edit_others_posts"),
   accounts: (c) => c.has("sech_accounts"),
+  "accounts.void": (c) => c.has("sech_accounts") && c.has("sech_acc_void"),
+  "accounts.payout": (c) => c.has("sech_accounts") && c.has("sech_acc_payout"),
+  "accounts.reports": (c) => c.has("sech_accounts") && c.has("sech_acc_reports"),
+  "accounts.rent": (c) => c.has("sech_accounts") && c.has("sech_acc_rent"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {

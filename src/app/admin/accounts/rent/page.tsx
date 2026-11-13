@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ArrowLeft, Building2, Home, Loader2, Pencil, Plus, Search, Trash2, Wallet, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { can } from "@/lib/permissions";
 import { useAdminData } from "@/context/AdminDataContext";
 import { Card, Chip, EmptyState, PageHeader, SkeletonRows } from "@/components/admin/ui";
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
@@ -27,6 +29,9 @@ export default function RentPage() {
   const [showEnded, setShowEnded] = useState(false);
   const [drawer, setDrawer] = useState<Preset | null>(null);
   const [editing, setEditing] = useState<AccTenancy | "new" | null>(null);
+  const { admin } = useAuth();
+  // adding or changing tenancies and housing types; collecting rent is open to every accounts officer
+  const maySetUp = can(admin?.perms, "accounts.rent");
 
   const typeName = useMemo(() => new Map(acc.housingTypes.map((t) => [t.id, t.name])), [acc.housingTypes]);
   const list = useMemo(() => {
@@ -58,9 +63,11 @@ export default function RentPage() {
         actions={
           <>
             <Link href="/admin/accounts" className="po-btn"><ArrowLeft size={15} />Accounts</Link>
-            <button type="button" className="po-btn po-btn--primary" onClick={() => setEditing("new")} disabled={acc.needsPlugin || !acc.housingTypes.length}>
-              <Plus size={15} />Add tenancy
-            </button>
+            {maySetUp && (
+              <button type="button" className="po-btn po-btn--primary" onClick={() => setEditing("new")} disabled={acc.needsPlugin || !acc.housingTypes.length}>
+                <Plus size={15} />Add tenancy
+              </button>
+            )}
           </>
         }
       />
@@ -82,7 +89,7 @@ export default function RentPage() {
         </div>
       </div>
 
-      <HousingTypes types={acc.housingTypes} loaded={acc.loaded} onSave={acc.saveHousingTypes} />
+      <HousingTypes types={acc.housingTypes} loaded={acc.loaded} onSave={acc.saveHousingTypes} canEdit={maySetUp} />
 
       <section className="po-card" style={{ marginTop: 16 }}>
         <div className="po-toolbar">
@@ -137,9 +144,9 @@ export default function RentPage() {
                         <button type="button" className="po-btn po-btn--sm" onClick={() => setDrawer({ category: "rent", tenancyId: t.databaseId })}>
                           Collect rent
                         </button>
-                        <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setEditing(t)} aria-label={`Edit ${t.tenantName}`}>
+                        {maySetUp && <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setEditing(t)} aria-label={`Edit ${t.tenantName}`}>
                           <Pencil size={14} />
-                        </button>
+                        </button>}
                       </div>
                     </td>
                   </tr>
@@ -179,9 +186,10 @@ export default function RentPage() {
   );
 }
 
-function HousingTypes({ types, loaded, onSave }: {
+function HousingTypes({ types, loaded, onSave, canEdit }: {
   types: AccHousingType[];
   loaded: boolean;
+  canEdit: boolean;
   onSave: (t: AccHousingType[]) => Promise<{ ok: true; value: AccHousingType[] } | { ok: false; error: string }>;
 }) {
   const { addToast } = useAdminData();
@@ -212,9 +220,17 @@ function HousingTypes({ types, loaded, onSave }: {
       title="Housing types and rates"
       icon={Building2}
       subtitle="Rent depends on the kind of housing. Changing a rate here doesn't change existing tenancies."
-      action={<button type="button" className="po-btn po-btn--primary po-btn--sm" onClick={save} disabled={!dirty || saving}>{saving ? "Saving…" : "Save"}</button>}
+      action={canEdit ? <button type="button" className="po-btn po-btn--primary po-btn--sm" onClick={save} disabled={!dirty || saving}>{saving ? "Saving…" : "Save"}</button> : undefined}
     >
-      {!loaded ? <SkeletonRows rows={2} cols={2} /> : (
+      {!loaded ? <SkeletonRows rows={2} cols={2} /> : !canEdit ? (
+        <div style={{ display: "grid", gap: 6 }}>
+          {types.length ? types.map((t) => (
+            <div key={t.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "8px 2px", borderBottom: "1px solid var(--po-border)" }}>
+              <span>{t.name}</span><strong>{formatMoney(t.monthlyRate)} a month</strong>
+            </div>
+          )) : <span className="po-hint">No housing types yet. An administrator or someone with rent setup access adds them.</span>}
+        </div>
+      ) : (
         <div style={{ display: "grid", gap: 8 }}>
           <button type="button" className="po-btn po-btn--sm" style={{ justifySelf: "start", marginBottom: 4 }} onClick={addRow}>
             <Plus size={14} />Add housing type

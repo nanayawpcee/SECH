@@ -17,8 +17,11 @@ import {
   RefreshCw,
   Search,
   Wallet,
+  FileBarChart,
 } from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
+import { useAuth } from "@/context/AuthContext";
+import { can } from "@/lib/permissions";
 import { Card, Chip, ConfirmDialog, EmptyState, PageHeader, Segmented, SkeletonRows } from "@/components/admin/ui";
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
 import { dayKey, useAccounts } from "@/components/admin/accounts/useAccounts";
@@ -49,6 +52,9 @@ function when(iso: string) {
 export default function AccountsPage() {
   const router = useRouter();
   const { addToast } = useAdminData();
+  const { admin } = useAuth();
+  const mayVoid = can(admin?.perms, "accounts.void");
+  const mayReport = can(admin?.perms, "accounts.reports");
   const [rangeKey, setRangeKey] = useState<RangeKey>("today");
   const [custom, setCustom] = useState(() => {
     const t = dayKey(new Date());
@@ -145,7 +151,7 @@ export default function AccountsPage() {
             <button type="button" className="po-btn" onClick={refresh} disabled={refreshing}>
               <RefreshCw size={15} className={refreshing ? "po-spin" : ""} />Refresh
             </button>
-            <button type="button" className="po-btn" onClick={exportCsv} disabled={!shown.length}><Download size={15} />Export</button>
+            {mayReport && <button type="button" className="po-btn" onClick={exportCsv} disabled={!shown.length}><Download size={15} />Export</button>}
             <button type="button" className="po-btn po-btn--primary" onClick={() => setDrawer({})} disabled={acc.needsPlugin}>
               <Receipt size={15} />New receipt
             </button>
@@ -156,6 +162,7 @@ export default function AccountsPage() {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
         <Link href="/admin/accounts/advances" className="po-btn po-btn--sm"><HandCoins size={14} />Salary advances</Link>
         <Link href="/admin/accounts/rent" className="po-btn po-btn--sm"><Home size={14} />Staff rent</Link>
+        {mayReport && <Link href="/admin/accounts/reports" className="po-btn po-btn--sm"><FileBarChart size={14} />Reports</Link>}
         {acc.canAudit && <Link href="/admin/accounts/activity" className="po-btn po-btn--sm"><ClipboardList size={14} />Activity log</Link>}
       </div>
 
@@ -269,7 +276,7 @@ export default function AccountsPage() {
                         <Link href={`/admin/accounts/receipt/${t.databaseId}`} className="po-btn po-btn--sm po-btn--ghost" aria-label={`Print ${t.receiptNo}`}>
                           <Printer size={14} />
                         </Link>
-                        {t.status === "valid" && (
+                        {t.status === "valid" && mayVoid && (
                           <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToVoid(t)} aria-label={`Void ${t.receiptNo}`}>
                             <Ban size={14} />
                           </button>

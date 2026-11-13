@@ -4,6 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, HandCoins, Plus, Search, Wallet } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { can } from "@/lib/permissions";
 import { useAdminData } from "@/context/AdminDataContext";
 import { Chip, EmptyState, PageHeader, Segmented, SkeletonRows } from "@/components/admin/ui";
 import { NewTransactionDrawer, type Preset } from "@/components/admin/accounts/NewTransactionDrawer";
@@ -20,6 +22,8 @@ export default function AdvancesPage() {
   const [show, setShow] = useState<Show>("outstanding");
   const [query, setQuery] = useState("");
   const [drawer, setDrawer] = useState<Preset | null>(null);
+  const { admin } = useAuth();
+  const mayPayOut = can(admin?.perms, "accounts.payout");
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -51,9 +55,11 @@ export default function AdvancesPage() {
         actions={
           <>
             <Link href="/admin/accounts" className="po-btn"><ArrowLeft size={15} />Accounts</Link>
-            <button type="button" className="po-btn po-btn--primary" onClick={() => setDrawer({ category: "salary_advance" })} disabled={acc.needsPlugin}>
-              <Plus size={15} />New advance
-            </button>
+            {mayPayOut && (
+              <button type="button" className="po-btn po-btn--primary" onClick={() => setDrawer({ category: "salary_advance" })} disabled={acc.needsPlugin}>
+                <Plus size={15} />New advance
+              </button>
+            )}
           </>
         }
       />

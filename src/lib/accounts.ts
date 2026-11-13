@@ -1,5 +1,14 @@
 export type Direction = "in" | "out";
 
+/** Accounts permissions an administrator gives each accounts officer. Keep in step with sech_acc_permissions() in the plugin. */
+export const ACCOUNTS_PERMISSIONS = [
+  { key: "void", perm: "accounts.void", short: "Void", label: "Void receipts and vouchers", description: "Cancel a saved receipt or payment voucher, with a reason." },
+  { key: "payout", perm: "accounts.payout", short: "Pay out", label: "Pay out money", description: "Issue payment vouchers: salary advances, client refunds and other payments." },
+  { key: "reports", perm: "accounts.reports", short: "Reports", label: "Reports and exports", description: "The Reports page, Excel downloads and the CSV export." },
+  { key: "rent", perm: "accounts.rent", short: "Rent setup", label: "Rent and housing setup", description: "Add or change tenancies, and housing types and their rates." },
+] as const;
+export type AccountsPermissionKey = (typeof ACCOUNTS_PERMISSIONS)[number]["key"];
+
 export interface AccTransaction {
   databaseId: number;
   receiptNo: string;
@@ -364,6 +373,7 @@ export const ACC_AUDIT_ACTIONS: Record<string, string> = {
   viewed: "Opened transactions",
   recorded: "Recorded",
   voided: "Voided",
+  permissions: "Changed accounts access",
   printed: "Printed receipt",
   reprinted: "Reprinted receipt",
   tenancy_added: "Added tenancy",
