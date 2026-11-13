@@ -121,7 +121,10 @@ function voidedTable(voided: AccTransaction[]): Section {
 
 /* ── Daily cash report ─────────────────────────────────────── */
 
-export function dailyReport(all: AccTransaction[], date: string): Report {
+/** "sech-daily-cash-2026-11-12-ama-owusu" */
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+export function dailyReport(all: AccTransaction[], date: string, cashier?: string): Report {
   const txns = all.filter((t) => day(t.createdAt) === date).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const valid = txns.filter((t) => t.status !== "voided");
   const voided = txns.filter((t) => t.status === "voided");
@@ -131,10 +134,10 @@ export function dailyReport(all: AccTransaction[], date: string): Report {
 
   return {
     kind: "daily",
-    title: "Daily cash report",
+    title: cashier ? `Daily cash report: ${cashier}` : "Daily cash report",
     period: longDate(date),
     count: txns.length,
-    fileName: `sech-daily-cash-${date}`,
+    fileName: `sech-daily-cash-${date}${cashier ? `-${slug(cashier)}` : ""}`,
     signOff: ["Cashier", "Accountant", "Date received"],
     sections: [
       stats.section,
@@ -162,7 +165,7 @@ export function dailyReport(all: AccTransaction[], date: string): Report {
 
 /* ── Period summary ────────────────────────────────────────── */
 
-export function periodReport(all: AccTransaction[], from: string, to: string): Report {
+export function periodReport(all: AccTransaction[], from: string, to: string, cashier?: string): Report {
   const txns = all.filter((t) => day(t.createdAt) >= from && day(t.createdAt) <= to);
   const valid = txns.filter((t) => t.status !== "voided");
   const voided = txns.filter((t) => t.status === "voided");
@@ -181,10 +184,10 @@ export function periodReport(all: AccTransaction[], from: string, to: string): R
 
   return {
     kind: "period",
-    title: "Period summary",
+    title: cashier ? `Period summary: ${cashier}` : "Period summary",
     period: from === to ? longDate(from) : `${shortDate(from)} to ${shortDate(to)}`,
     count: txns.length,
-    fileName: `sech-accounts-summary-${from}-to-${to}`,
+    fileName: `sech-accounts-summary-${from}-to-${to}${cashier ? `-${slug(cashier)}` : ""}`,
     signOff: ["Prepared by", "Checked by"],
     sections: [
       stats.section,

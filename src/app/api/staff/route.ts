@@ -11,6 +11,7 @@ import {
   type Employee,
   type PortalUserOption,
 } from "@/lib/staff";
+import { cleanPhone, phoneProblem } from "@/lib/phone";
 
 // staff personal data, never cache
 export const dynamic = "force-dynamic";
@@ -50,6 +51,11 @@ export async function POST(request: Request) {
   if (gate instanceof NextResponse) return gate;
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") return NextResponse.json({ error: "Nothing to save." }, { status: 400 });
+  if (typeof body.phone === "string") {
+    body.phone = cleanPhone(body.phone);
+    const phoneError = phoneProblem(body.phone);
+    if (phoneError) return NextResponse.json({ error: `Phone: ${phoneError}` }, { status: 400 });
+  }
   if (!String(body.firstName ?? "").trim() || !String(body.lastName ?? "").trim()) {
     return NextResponse.json({ error: "First name and surname are required." }, { status: 400 });
   }

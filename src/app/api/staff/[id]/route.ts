@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse, WpGraphQLError } from "@/lib/wp-graphql";
 import { DELETE_EMPLOYEE, employeeVariables, isOutdatedStaffPlugin, saveEmployeeCompat, type Employee } from "@/lib/staff";
+import { cleanPhone, phoneProblem } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,11 @@ export async function PUT(request: Request, ctx: { params: Promise<{ id: string 
   const id = idFrom(params);
   const body = await request.json().catch(() => null);
   if (!id || !body || typeof body !== "object") return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  if (typeof body.phone === "string") {
+    body.phone = cleanPhone(body.phone);
+    const phoneError = phoneProblem(body.phone);
+    if (phoneError) return NextResponse.json({ error: `Phone: ${phoneError}` }, { status: 400 });
+  }
   try {
     const data = await saveEmployeeCompat(
       (query, vars) => wpGraphQL<{ saveEmployee: { employee: Employee } }>(query, vars, { authenticated: true }),

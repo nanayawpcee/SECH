@@ -34,6 +34,9 @@ export default function AccountsReportsPage() {
   const [to, setTo] = useState(today);
   const [owingOnly, setOwingOnly] = useState(true);
   const [withEnded, setWithEnded] = useState(false);
+  // "" is every cashier; otherwise a cashier's user id
+  const [cashierId, setCashierId] = useState("");
+  const seesAll = can(admin?.perms, "accounts.all");
 
   const range = useMemo(
     () => (kind === "daily" ? { from: date, to: date } : kind === "period" ? { from, to } : { from: today, to: today }),
@@ -41,13 +44,25 @@ export default function AccountsReportsPage() {
   );
   const acc = useAccounts(range);
 
+  // the cashiers who issued anything in the dates shown
+  const cashiers = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of acc.transactions) if (t.cashierId) m.set(String(t.cashierId), t.cashier);
+    return Array.from(m.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [acc.transactions]);
+
   const report: Report | null = useMemo(() => {
     if (!acc.loaded) return null;
-    if (kind === "daily") return dailyReport(acc.transactions, date);
-    if (kind === "period") return periodReport(acc.transactions, from, to);
+    // someone who sees only their own gets a report on themselves
+    const own = !seesAll;
+    const picked = own ? "" : cashierId;
+    const txns = picked ? acc.transactions.filter((t) => String(t.cashierId) === picked) : acc.transactions;
+    const who = own ? admin?.name : picked ? cashiers.find(([id]) => id === picked)?.[1] ?? "" : undefined;
+    if (kind === "daily") return dailyReport(txns, date, who);
+    if (kind === "period") return periodReport(txns, from, to, who);
     if (kind === "advances") return advancesReport(acc.advances, owingOnly, today);
     return rentReport(acc.tenancies, acc.housingTypes, !withEnded, today);
-  }, [acc.loaded, acc.transactions, acc.advances, acc.tenancies, acc.housingTypes, kind, date, from, to, owingOnly, withEnded, today]);
+  }, [acc.loaded, acc.transactions, acc.advances, acc.tenancies, acc.housingTypes, kind, date, from, to, owingOnly, withEnded, today, seesAll, cashierId, cashiers, admin?.name]);
 
   const generatedAt = new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   const generatedBy = admin?.name ?? "";
@@ -119,6 +134,20 @@ export default function AccountsReportsPage() {
                 <DatePicker value={to} min={from} max={today} ariaLabel="To" clearable={false} onChange={setTo} />
               </label>
             </>
+          )}
+          {(kind === "daily" || kind === "period") && (
+            seesAll ? (
+              <label className="po-field" style={{ width: 220 }}>
+                <span className="po-label">Cashier</span>
+                <select className="po-select" value={cashierId} onChange={(e) => setCashierId(e.target.value)} aria-label="Cashier">
+                  <option value="">All cashiers</option>
+                  {cashiers.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                  {cashierId && !cashiers.some(([id]) => id === cashierId) && <option value={cashierId}>No receipts in these dates</option>}
+                </select>
+              </label>
+            ) : (
+              <span className="po-hint" style={{ alignSelf: "center" }}>Your own collections only</span>
+            )
           )}
           {kind === "advances" && (
             <label className="rp-check"><input type="checkbox" checked={owingOnly} onChange={(e) => setOwingOnly(e.target.checked)} />Only advances still owed</label>

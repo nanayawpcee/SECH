@@ -18,6 +18,7 @@ import {
   Search,
   Wallet,
   FileBarChart,
+  UserRound,
 } from "lucide-react";
 import { useAdminData } from "@/context/AdminDataContext";
 import { useAuth } from "@/context/AuthContext";
@@ -55,6 +56,7 @@ export default function AccountsPage() {
   const { admin } = useAuth();
   const mayVoid = can(admin?.perms, "accounts.void");
   const mayReport = can(admin?.perms, "accounts.reports");
+  const seesAll = can(admin?.perms, "accounts.all");
   const [rangeKey, setRangeKey] = useState<RangeKey>("today");
   const [custom, setCustom] = useState(() => {
     const t = dayKey(new Date());
@@ -166,10 +168,16 @@ export default function AccountsPage() {
         {acc.canAudit && <Link href="/admin/accounts/activity" className="po-btn po-btn--sm"><ClipboardList size={14} />Activity log</Link>}
       </div>
 
+      {!seesAll && admin && (
+        <div className="po-alert po-tone-info" role="note" style={{ marginBottom: 16, alignItems: "center" }}>
+          <UserRound size={16} style={{ flexShrink: 0 }} />
+          <span>You’re seeing only the receipts and vouchers you issued. The totals below are your own collections.</span>
+        </div>
+      )}
       {acc.needsPlugin && (
         <div className="po-alert po-tone-warn" role="note" style={{ marginBottom: 16 }}>
           <AlertTriangle size={17} style={{ flexShrink: 0 }} />
-          <span>Install SECH Portal plugin 1.14.0 on WordPress to turn on the accounts office (it adds Ghana Card numbers and departments for staff).</span>
+          <span>Install the latest SECH Portal plugin (1.22.0) on WordPress to use the accounts office.</span>
         </div>
       )}
       {acc.error && (

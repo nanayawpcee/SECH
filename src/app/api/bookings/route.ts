@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 import { BOOKING_FIELDS, mapWpBooking, type WpBookingNode } from "@/lib/wp-bookings";
+import { cleanPhone, phoneProblem } from "@/lib/phone";
 
 // patient data, never cache
 export const dynamic = "force-dynamic";
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const patientName = String(body.patientName ?? "").trim();
-    const phone = String(body.phone ?? "").trim();
+    const phone = cleanPhone(String(body.phone ?? ""));
     const department = String(body.department ?? "").trim();
 
     if (!patientName || !phone || !department) {
@@ -92,6 +93,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+    const phoneError = phoneProblem(phone, true);
+    if (phoneError) return NextResponse.json({ error: phoneError }, { status: 400 });
 
     const data = await wpGraphQL<{
       submitBooking: { reference: string; databaseId: number };

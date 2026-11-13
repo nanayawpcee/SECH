@@ -12,6 +12,7 @@ import {
   isMissingMessagesPlugin,
   type ContactMessage,
 } from "@/lib/wp-messages";
+import { cleanPhone, phoneProblem } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
 
   const name = String(body.name ?? "").trim().slice(0, 80);
   const email = String(body.email ?? "").trim().toLowerCase();
-  const phone = String(body.phone ?? "").trim().slice(0, 30);
+  const phone = cleanPhone(String(body.phone ?? ""));
   const message = String(body.message ?? "").trim();
   const topic = MESSAGE_TOPICS.some((t) => t.value === body.topic) ? String(body.topic) : "general";
 
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
   if (!email && !phone) {
     return NextResponse.json({ error: "Please give an email address or phone number so we can reply." }, { status: 400 });
   }
+  if (phoneProblem(phone)) return NextResponse.json({ error: phoneProblem(phone) }, { status: 400 });
   if (message.length < 5) return NextResponse.json({ error: "Please write your message." }, { status: 400 });
   if (message.length > MESSAGE_MAX) {
     return NextResponse.json(

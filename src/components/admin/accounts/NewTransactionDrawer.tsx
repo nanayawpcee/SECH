@@ -22,6 +22,8 @@ import {
 } from "@/lib/accounts";
 import { StaffIdentityFields, staffIdentityProblem } from "./StaffIdentityFields";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { phoneProblem } from "@/lib/phone";
 
 export interface Preset {
   category?: string;
@@ -149,6 +151,7 @@ export function NewTransactionDrawer({
       const problem = staffIdentityProblem({ name: form.party, ghanaCard: form.ghanaCard, department: form.department }, cat.partyLabel);
       if (problem) return setError(problem);
     }
+    { const p = phoneProblem(form.phone); if (p) return setError(`Phone: ${p}`); }
     if (!form.party.trim()) return setError(`Enter the ${(cat.partyLabel ?? (cat.direction === "in" ? "payer" : "person paid")).toLowerCase()}.`);
     for (const f of cat.fields) if (f.required && !details[f.key]?.trim()) return setError(`Fill in “${f.label}”.`);
     if ((cat.key === "other_in" || cat.key === "other_out") && !form.description.trim()) return setError("Describe what this is for.");
@@ -312,7 +315,7 @@ export function NewTransactionDrawer({
                       <div className="st-grid" style={{ marginTop: 12 }}>
                         <label className="po-field">
                           <span className="po-label">Phone</span>
-                          <input className="po-input" inputMode="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} maxLength={30} />
+                          <PhoneInput className="po-input" value={form.phone} onChange={(v) => set("phone", v)} forceShowError={!!error && !!phoneProblem(form.phone)} />
                         </label>
                       </div>
                     </>
@@ -325,7 +328,7 @@ export function NewTransactionDrawer({
                       </label>
                       <label className="po-field">
                         <span className="po-label">Phone</span>
-                        <input className="po-input" inputMode="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} maxLength={30} />
+                        <PhoneInput className="po-input" value={form.phone} onChange={(v) => set("phone", v)} forceShowError={!!error && !!phoneProblem(form.phone)} />
                       </label>
                     </div>
                   )}

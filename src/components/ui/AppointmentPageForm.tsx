@@ -6,6 +6,8 @@ import { submitAppointment } from "@/lib/submit-booking";
 import { useState } from "react";
 import { DEPARTMENTS } from "@/lib/data";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { phoneProblem } from "@/lib/phone";
 
 type Step = "personal" | "appointment" | "review" | "success";
 
@@ -38,7 +40,7 @@ function validate(step: Step, data: FormData) {
   if (step === "personal") {
     if (!data.firstName.trim()) errors.firstName = "Required";
     if (!data.lastName.trim())  errors.lastName  = "Required";
-    if (!data.phone.trim())     errors.phone     = "Required";
+    if (phoneProblem(data.phone, true)) errors.phone = phoneProblem(data.phone, true)!;
     if (!data.gender)           errors.gender    = "Required";
   }
   if (step === "appointment") {
@@ -165,8 +167,7 @@ export function AppointmentPageForm() {
 
           <div className="form-group">
             <label className="form-label">Phone Number *</label>
-            <input className="form-input" placeholder="+233 XX XXX XXXX" value={data.phone} onChange={e => set("phone", e.target.value)} />
-            {errors.phone && <p className="form-error">{errors.phone}</p>}
+            <PhoneInput className="form-input" required value={data.phone} onChange={v => set("phone", v)} forceShowError={!!errors.phone} />
           </div>
           <div className="form-group">
             <label className="form-label">Email (optional)</label>

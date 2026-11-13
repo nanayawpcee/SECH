@@ -5,6 +5,8 @@ import { useId, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Send, ShieldCheck } from "lucide-react";
 import { SITE, telHref } from "@/lib/data";
 import { MESSAGE_MAX, MESSAGE_TOPICS, type MessageTopic } from "@/lib/wp-messages";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { phoneProblem } from "@/lib/phone";
 
 const EMPTY = { name: "", phone: "", email: "", topic: "general" as MessageTopic, message: "" };
 const MAX = MESSAGE_MAX;
@@ -16,6 +18,7 @@ function validate(f: typeof EMPTY): Errors {
   if (!f.name.trim()) e.name = "Please tell us your name.";
   if (f.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = "Please check your email address.";
   if (!f.email.trim() && !f.phone.trim()) e.contact = "Give an email address or phone number so we can reply.";
+  else if (phoneProblem(f.phone)) e.phone = phoneProblem(f.phone)!;
   if (f.message.trim().length < 5) e.message = "Please write your message.";
   return e;
 }
@@ -106,8 +109,8 @@ export function ContactForm({ theme = "light", compact = false }: { theme?: "lig
         </div>
         <div className="ct-field">
           <label htmlFor={`${id}-phone`}>Phone <span className="ct-opt">(optional)</span></label>
-          <input {...field("phone")} className="ct-input" type="tel" inputMode="tel" autoComplete="tel" value={form.phone}
-            maxLength={30} onChange={(e) => set("phone", e.target.value)} aria-invalid={errors.contact ? true : undefined} />
+          <PhoneInput id={`${id}-phone`} name="phone" className="ct-input" value={form.phone}
+            onChange={(v) => set("phone", v)} forceShowError={!!errors.phone} />
         </div>
         <div className="ct-field">
           <label htmlFor={`${id}-email`}>Email <span className="ct-opt">(optional)</span></label>

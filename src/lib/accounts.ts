@@ -6,6 +6,7 @@ export const ACCOUNTS_PERMISSIONS = [
   { key: "payout", perm: "accounts.payout", short: "Pay out", label: "Pay out money", description: "Issue payment vouchers: salary advances, client refunds and other payments." },
   { key: "reports", perm: "accounts.reports", short: "Reports", label: "Reports and exports", description: "The Reports page, Excel downloads and the CSV export." },
   { key: "rent", perm: "accounts.rent", short: "Rent setup", label: "Rent and housing setup", description: "Add or change tenancies, and housing types and their rates." },
+  { key: "all", perm: "accounts.all", short: "All cashiers", label: "See everyone’s collections", description: "See, reprint and void every cashier’s receipts and vouchers, and report on any cashier. Without it they see only what they issued." },
 ] as const;
 export type AccountsPermissionKey = (typeof ACCOUNTS_PERMISSIONS)[number]["key"];
 
@@ -32,6 +33,8 @@ export interface AccTransaction {
   voidedBy: string | null;
   voidedAt: string | null;
   cashier: string;
+  /** who issued it; each cashier sees only their own unless allowed to see everyone's */
+  cashierId: number | null;
   printCount: number;
   createdAt: string;
 }
@@ -332,7 +335,7 @@ export function periodLabel(fromYm: string, months: number) {
 }
 
 const TXN_FIELDS = `databaseId receiptNo direction category party phone amount method description details
-  advanceId tenancyId ghanaCard department manualRef status voidReason voidedBy voidedAt cashier printCount createdAt`;
+  advanceId tenancyId ghanaCard department manualRef status voidReason voidedBy voidedAt cashier cashierId printCount createdAt`;
 const ADV_FIELDS = "databaseId staffName employeeId ghanaCard department amount repaid outstanding monthlyDeduction purpose dateGiven status";
 const TEN_FIELDS = `databaseId tenantName employeeId ghanaCard department housingTypeId unit monthlyRate startMonth endMonth
   monthsDue totalDue paid balance status`;
@@ -385,6 +388,6 @@ export const ACC_AUDIT_ACTIONS: Record<string, string> = {
 
 export function isMissingAccountsPlugin(message: string) {
   // an older plugin also lacks the card and department fields (1.14.0) or the hospital voucher number (1.19.0)
-  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accDepartments|accRecordTransaction|accTransaction|accAudit|ghanaCard|manualRef/.test(message)
+  return /accTransactions|accAdvances|accTenancies|accHousingTypes|accDepartments|accRecordTransaction|accTransaction|accAudit|ghanaCard|manualRef|cashierId/.test(message)
     && /Cannot query field|Unknown|not exist|not defined/i.test(message);
 }

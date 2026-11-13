@@ -20,6 +20,8 @@ import {
   type PortalUserOption,
   type StaffSetup,
 } from "@/lib/staff";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { phoneProblem } from "@/lib/phone";
 
 type Form = Record<(typeof EMPLOYEE_INPUT_FIELDS)[number], string> & { userId: string };
 
@@ -92,6 +94,7 @@ export function EmployeeEditor({
   );
 
   const save = async () => {
+    { const p = phoneProblem(form.phone); if (p) { setError(`Phone: ${p}`); return; } }
     if (!form.firstName.trim() || !form.lastName.trim()) {
       setError("First name and surname are required.");
       return;
@@ -265,7 +268,7 @@ export function EmployeeEditor({
               <div className="st-grid">
                 <label className="po-field">
                   <span className="po-label">Phone</span>
-                  <input className="po-input" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                  <PhoneInput className="po-input" value={form.phone} onChange={(v) => set("phone", v)} forceShowError={!!error && !!phoneProblem(form.phone)} />
                 </label>
                 <label className="po-field">
                   <span className="po-label">Email</span>

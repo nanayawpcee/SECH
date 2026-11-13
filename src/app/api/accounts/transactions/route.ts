@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requirePerm } from "@/lib/access";
 import { wpGraphQL, toErrorResponse } from "@/lib/wp-graphql";
 import { ACC_RECORD, categoryOf, type AccTransaction } from "@/lib/accounts";
+import { cleanPhone, phoneProblem } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
   if (!categoryOf(category)) return NextResponse.json({ error: "Choose a category." }, { status: 400 });
   const amount = Number(body.amount);
   if (!Number.isInteger(amount) || amount <= 0) return NextResponse.json({ error: "Enter the amount." }, { status: 400 });
+  const phoneError = phoneProblem(body.phone ? String(body.phone) : "");
+  if (phoneError) return NextResponse.json({ error: `Phone: ${phoneError}` }, { status: 400 });
   try {
     const data = await wpGraphQL<{ accRecordTransaction: { transaction: AccTransaction } }>(
       ACC_RECORD,
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
         category,
         party: String(body.party ?? "").trim(),
         amount,
-        phone: body.phone ? String(body.phone) : null,
+        phone: body.phone ? cleanPhone(String(body.phone)) : null,
         description: body.description ? String(body.description) : null,
         details: JSON.stringify(body.details && typeof body.details === "object" ? body.details : {}),
         advanceId: optInt(body.advanceId),

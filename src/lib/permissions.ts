@@ -20,7 +20,8 @@ export type Perm =
   | "accounts.void"
   | "accounts.payout"
   | "accounts.reports"
-  | "accounts.rent";
+  | "accounts.rent"
+  | "accounts.all";
 
 const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => boolean> = {
   bookings: (c) => c.has("manage_options"),
@@ -42,6 +43,7 @@ const CAP_MAP: Record<Exclude<Perm, "portal.admin">, (caps: Set<string>) => bool
   "accounts.payout": (c) => c.has("sech_accounts") && c.has("sech_acc_payout"),
   "accounts.reports": (c) => c.has("sech_accounts") && c.has("sech_acc_reports"),
   "accounts.rent": (c) => c.has("sech_accounts") && c.has("sech_acc_rent"),
+  "accounts.all": (c) => c.has("sech_accounts") && c.has("sech_acc_all"),
 };
 
 export function permsFromCapabilities(capabilities: string[]): Perm[] {

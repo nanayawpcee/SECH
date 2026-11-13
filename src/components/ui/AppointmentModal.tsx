@@ -6,6 +6,8 @@ import { submitAppointment } from "@/lib/submit-booking";
 import { useState, useEffect, useRef } from "react";
 import { DEPARTMENTS } from "@/lib/data";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { phoneProblem } from "@/lib/phone";
 
 interface Props {
   onClose: () => void;
@@ -56,7 +58,7 @@ function validate(step: Step, data: FormData): Record<string, string> {
   if (step === "personal") {
     if (!data.firstName.trim()) errors.firstName = "First name is required";
     if (!data.lastName.trim())  errors.lastName  = "Last name is required";
-    if (!data.phone.trim())     errors.phone     = "Phone number is required";
+    if (phoneProblem(data.phone, true)) errors.phone = phoneProblem(data.phone, true)!;
     if (!data.gender)           errors.gender    = "Please select a gender";
   }
   if (step === "appointment") {
@@ -204,8 +206,7 @@ export function AppointmentModal({ onClose, prefillDept }: Props) {
               </div>
               <div className="form-group">
                 <label className="form-label">Phone Number *</label>
-                <input className="form-input" placeholder="+233 XX XXX XXXX" value={data.phone} onChange={e => set("phone", e.target.value)} />
-                {errors.phone && <p className="form-error">{errors.phone}</p>}
+                <PhoneInput className="form-input" required value={data.phone} onChange={v => set("phone", v)} forceShowError={!!errors.phone} />
               </div>
               <div className="form-group">
                 <label className="form-label">Email Address (optional)</label>

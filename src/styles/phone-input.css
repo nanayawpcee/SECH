@@ -1,0 +1,15 @@
+/* The phone field's feedback line. Uses the portal's colours where present,
+   with plain fallbacks for the public site. */
+.phin { display: grid; gap: 5px; min-width: 0; }
+.phin-hint { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.4;
+  color: var(--po-text-3, #6b7280); }
+.phin-hint[data-state="typing"] { color: var(--po-text-2, #4b5563); }
+.phin-hint[data-state="ok"] { color: var(--po-success, #15803d); font-weight: 600; }
+.phin-hint[data-state="error"] { color: var(--po-danger, #b42318); font-weight: 600; }
+.phin-bar { display: inline-block; width: 64px; height: 4px; border-radius: 2px; overflow: hidden;
+  background: var(--po-surface-3, #e5e7eb); }
+.phin-bar span { display: block; height: 100%; border-radius: 2px; background: var(--po-brand-ink, #0A4F3C); transition: width .15s ease; }
+.phin input[aria-invalid="true"] { border-color: var(--po-danger, #b42318) !important; }
+.phin-hint svg { flex-shrink: 0; margin-top: 2px; }
+.phin-msg { min-width: 0; }
+.phin-bar { flex-shrink: 0; margin-top: 5px; }
