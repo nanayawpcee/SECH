@@ -127,7 +127,7 @@ export default function DepartmentsPage() {
       {!staff.loaded ? (
         <section className="po-card"><SkeletonRows rows={6} cols={3} /></section>
       ) : !draft ? (
-        <section className="po-card"><EmptyState icon={Building2} title="Nothing to show yet" /></section>
+        <section className="po-card"><EmptyState art="team" icon={Building2} title="Nothing to show yet" /></section>
       ) : (
         <div className="st-stack">
           {draft.departments.map((d) => {

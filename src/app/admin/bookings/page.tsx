@@ -258,10 +258,10 @@ export default function BookingsPage() {
         {bookingsLoading && bookings.length === 0 ? (
           <SkeletonRows rows={6} cols={6} />
         ) : bookingsError ? (
-          <EmptyState icon={AlertTriangle} title="Couldn’t load bookings" text={bookingsError}
+          <EmptyState art="offline" icon={AlertTriangle} title="Couldn’t load bookings" text={bookingsError}
             action={<button type="button" className="po-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>} />
         ) : filtered.length === 0 ? (
-          <EmptyState
+          <EmptyState art="calendar"
             icon={ClipboardList}
             title={bookings.length ? "No bookings match" : "No bookings yet"}
             text={bookings.length ? "Try widening the filters." : "Requests made through the website’s booking form appear here."}

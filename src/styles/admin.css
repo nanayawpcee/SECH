@@ -8,7 +8,7 @@
 
   --po-text: #0E1D18;
   --po-text-2: #45594F;
-  --po-text-3: #82938B;
+  --po-text-3: #66786F; /* darker than before (#82938B) so small hints read at 4.5:1 on white */
 
   --po-brand: #0A4F3C;
   --po-brand-hover: #0D6149;
@@ -451,10 +451,25 @@
 .po-kpi-value { font-size: 30px; font-weight: 750; letter-spacing: -0.03em; line-height: 1; color: var(--po-text); font-variant-numeric: tabular-nums; }
 .po-kpi-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 26px; }
 .po-kpi-note { font-size: 12px; color: var(--po-text-3); }
+/* modern summary card: no stripe on top; a solid colour tile for the icon and a
+   soft glow of the same colour in the corner behind it */
 .po-kpi::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: var(--tone, var(--po-brand-ink)); opacity: 0.85;
+  content: ""; position: absolute; z-index: 0; pointer-events: none;
+  width: 170px; height: 170px; right: -64px; top: -78px; border-radius: 50%;
+  background: radial-gradient(circle, var(--tone-soft, var(--po-brand-soft)) 0%, transparent 68%);
+  opacity: 0.95;
 }
+.po-kpi > * { position: relative; z-index: 1; }
+.po-kpi .po-kpi-icon {
+  width: 40px; height: 40px; border-radius: 13px;
+  background: linear-gradient(140deg, var(--tone, var(--po-brand-ink)), color-mix(in srgb, var(--tone, var(--po-brand-ink)) 72%, #ffffff));
+  color: #fff;
+  box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--tone, var(--po-brand-ink)) 70%, transparent);
+}
+/* dark mode colours are light, so the icon on the tile goes dark to stay readable */
+[data-admin-theme="dark"] .po-kpi .po-kpi-icon { color: #0A120F; box-shadow: none; }
+.po-kpi .po-kpi-label { font-size: 12px; font-weight: 650; letter-spacing: 0.02em; color: var(--po-text-3); }
+.po-kpi .po-kpi-value { letter-spacing: -0.035em; }
 
 .po-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; }
 .po-trend--up { color: var(--po-success); }
@@ -1058,3 +1073,98 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
   .po-sidebar, .po-shell[data-drawer] .po-sidebar { transition: none; }
   .po-side-scrim { animation: none; }
 }
+
+/* ── Spot illustrations (components/admin/illustrations.tsx) ── */
+.po-illo {
+  --il-bg: var(--po-surface-2);
+  --il-paper: var(--po-surface);
+  --il-mute: var(--po-surface-3);
+  --il-line: var(--po-border-strong);
+  --il-detail: var(--po-text-3);
+  --il-brand: var(--po-brand-ink);
+  --il-brand-soft: var(--po-brand-soft);
+  --il-gold: var(--po-gold);
+  --il-gold-ink: var(--po-gold-ink);
+  --il-gold-soft: var(--po-gold-soft);
+  display: block;
+  flex-shrink: 0;
+}
+.po-empty-art { margin-bottom: 4px; }
+
+/* ── Modern look: floating cards that drop into view ─────────────
+   Cards sit a little above a softly lit background with a deeper shadow,
+   and drift down into place one after another when a page opens (the order is
+   set by PortalShell). Nothing moves for people who prefer less motion. */
+.po-root {
+  --po-radius: 18px;
+  --po-float: 0 1px 2px rgba(14, 29, 24, 0.04), 0 14px 34px -18px rgba(14, 29, 24, 0.24);
+  --po-float-hover: 0 2px 4px rgba(14, 29, 24, 0.05), 0 24px 48px -20px rgba(14, 29, 24, 0.32);
+}
+[data-admin-theme="dark"] .po-root {
+  --po-float: 0 1px 2px rgba(0, 0, 0, 0.35), 0 16px 38px -18px rgba(0, 0, 0, 0.8);
+  --po-float-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 26px 52px -20px rgba(0, 0, 0, 0.9);
+}
+
+/* the console background: quiet paper-cut waves along the bottom (made with
+   Higgsfield), a light and a dark version, with a soft gold wash up top. It stays
+   put while the page scrolls, so the cards float over it. */
+.po-main {
+  background:
+    radial-gradient(900px 480px at 105% -8%, color-mix(in srgb, var(--po-gold) 14%, transparent), transparent 62%),
+    url("/images/portal-bg-light.jpg") center bottom / cover no-repeat,
+    var(--po-bg);
+}
+[data-admin-theme="dark"] .po-main {
+  background:
+    radial-gradient(900px 480px at 105% -8%, color-mix(in srgb, var(--po-gold) 8%, transparent), transparent 62%),
+    url("/images/portal-bg-dark.jpg") center bottom / cover no-repeat,
+    var(--po-bg);
+}
+
+.po-card {
+  border-color: color-mix(in srgb, var(--po-border) 55%, transparent);
+  box-shadow: var(--po-float);
+  transition: box-shadow 0.3s var(--po-ease), border-color 0.3s var(--po-ease);
+}
+.po-card:hover { box-shadow: var(--po-float-hover); }
+
+/* the drop: a slow, smooth fall from just above into place. No bounce or tilt. */
+@keyframes po-drop {
+  from { opacity: 0; transform: translateY(-22px); }
+  to { opacity: 1; transform: none; }
+}
+.po-page .po-card {
+  animation: po-drop 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--drop-i, 0) * 90ms);
+}
+.po-page .po-page-head { animation: po-drop 0.95s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .po-page .po-card, .po-page .po-page-head { animation: none; }
+}
+
+/* ── See-through cards and the section illustration ────────────
+   Cards let the background show through a little. Each part of the console
+   has a large illustration in the bottom-right corner, behind the content. */
+.po-root { --po-card-glass: color-mix(in srgb, var(--po-surface) 92%, transparent); }
+[data-admin-theme="dark"] .po-root { --po-card-glass: color-mix(in srgb, var(--po-surface) 90%, transparent); }
+.po-page .po-card { background: var(--po-card-glass); }
+
+.po-main { position: relative; isolation: isolate; }
+.po-main > .po-topbar { position: relative; z-index: 2; }
+.po-main > .po-scroll { position: relative; z-index: 1; }
+.po-section-art {
+  position: absolute; right: 0; bottom: 0; z-index: 0;
+  width: min(500px, 38vw); pointer-events: none; opacity: 0.55;
+  animation: po-art-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.po-section-art img { display: block; width: 100%; height: auto;
+  /* fade the top and left edges so the picture melts into the background */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 22%), linear-gradient(to bottom, transparent 0%, #000 18%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0%, #000 22%), linear-gradient(to bottom, transparent 0%, #000 18%);
+  mask-composite: intersect; }
+[data-admin-theme="dark"] .po-section-art { opacity: 0.38; }
+@keyframes po-art-in { from { opacity: 0; transform: translateY(16px); } }
+@media (max-width: 760px) { .po-section-art { width: 70vw; opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .po-section-art { animation: none; } }

@@ -80,7 +80,7 @@ export default function AccountsReportsPage() {
     return (
       <>
         <PageHeader title="Reports" subtitle="Accounts office reports" actions={<Link href="/admin/accounts" className="po-btn"><ArrowLeft size={15} />Accounts</Link>} />
-        <EmptyState icon={ShieldAlert} title="No access to reports" text="Ask an administrator to give you reports and exports access in Settings, Team." />
+        <EmptyState art="locked" icon={ShieldAlert} title="No access to reports" text="Ask an administrator to give you reports and exports access in Settings, Team." />
       </>
     );
   }

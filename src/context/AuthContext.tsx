@@ -46,6 +46,8 @@ export function useAuth() {
 }
 
 const SESSION_KEY = "sech_admin_session";
+/** set when the portal signs someone out for being away; the sign-in page shows the idle screen */
+export const IDLE_SIGNOUT_KEY = "sech_idle_signout";
 const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
 // only allow ?next= paths inside the portal, never another site
@@ -149,18 +151,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [admin, loading, pathname, router]);
 
-  const logout = useCallback(() => {
+  // ends the session; "idle" lands on the idle screen that peels away to the sign-in form
+  const endSession = useCallback((idle: boolean) => {
+    // the sign-in guard below also redirects as soon as the session is gone, without the
+    // ?idle flag, so leave a note the sign-in page can read whichever redirect wins
+    try {
+      if (idle) sessionStorage.setItem(IDLE_SIGNOUT_KEY, "1");
+      else sessionStorage.removeItem(IDLE_SIGNOUT_KEY);
+    } catch {}
     setAdmin(null);
     sessionStorage.removeItem(SESSION_KEY);
-    
+
     fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    
+
     if (activityTimeoutRef.current) {
       clearTimeout(activityTimeoutRef.current);
     }
-    
-    router.push("/admin/login");
+
+    router.push(idle ? "/admin/login?idle=1" : "/admin/login");
   }, [router]);
+
+  const logout = useCallback(() => endSession(false), [endSession]);
 
   useEffect(() => {
     if (!admin) {
@@ -173,10 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(activityTimeoutRef.current);
       }
       
-      activityTimeoutRef.current = setTimeout(() => {
-        console.warn("Session expired: 1 minute of system inactivity reached.");
-        logout();
-      }, INACTIVITY_LIMIT);
+      activityTimeoutRef.current = setTimeout(() => endSession(true), INACTIVITY_LIMIT);
     };
 
     const activityEvents = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
@@ -195,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(activityTimeoutRef.current);
       }
     };
-  }, [admin, logout]);
+  }, [admin, endSession]);
 
   const login = useCallback(async (identifier: string, password: string): Promise<string | null> => {
     try {

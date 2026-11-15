@@ -27,7 +27,7 @@ export function EditPostRoute({ base }: { base: "/admin/posts" | "/staff/posts" 
   if (!post) {
     return (
       <section className="po-card">
-        <EmptyState
+        <EmptyState art="documents"
           icon={FileQuestion}
           title="Post not found"
           text="It may have been deleted, or the link is out of date."

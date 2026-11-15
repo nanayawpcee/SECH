@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -12,17 +12,20 @@ import {
   EyeOff,
   Loader2,
   Lock,
-  MessageSquareText,
+  Wallet,
+  IdCard,
   Newspaper,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import { homeAfterLogin, useAuth } from "@/context/AuthContext";
+import { homeAfterLogin, IDLE_SIGNOUT_KEY, useAuth } from "@/context/AuthContext";
+import { IdleScreen } from "@/components/admin/IdleScreen";
 
 const FEATURES = [
-  { icon: CalendarCheck2, title: "Appointments", text: "Confirm bookings and see the week ahead at a glance." },
-  { icon: Newspaper, title: "News & updates", text: "Publish hospital news, events and health education." },
-  { icon: MessageSquareText, title: "Community", text: "Moderate reader comments before they go live." },
+  { icon: CalendarCheck2, title: "Appointments", text: "Confirm bookings and plan the week ahead." },
+  { icon: Wallet, title: "Accounts office", text: "Receipts, vouchers, advances and staff rent." },
+  { icon: Newspaper, title: "News and notices", text: "Hospital news, staff notices and comments." },
+  { icon: IdCard, title: "HR and staff records", text: "Employee records, departments and ranks." },
 ];
 
 export default function AdminLoginPage() {
@@ -36,6 +39,20 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
+  // signed out for being away: show the idle screen first, which peels off to this form
+  const [idle, setIdle] = useState(() => {
+    if (typeof window === "undefined") return false;
+    let flagged = false;
+    try { flagged = sessionStorage.getItem(IDLE_SIGNOUT_KEY) === "1"; } catch {}
+    return flagged || new URLSearchParams(window.location.search).get("idle") === "1";
+  });
+  const leaveIdle = useCallback(() => {
+    setIdle(false);
+    try { sessionStorage.removeItem(IDLE_SIGNOUT_KEY); } catch {}
+    const url = new URL(window.location.href);
+    url.searchParams.delete("idle");
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
 
   const fail = (message: string) => {
     setError(message);
@@ -72,20 +89,12 @@ export default function AdminLoginPage() {
 
   return (
     <div className="po-root lg-root">
+      {idle && <IdleScreen onDone={leaveIdle} />}
       <aside className="lg-brand">
-        <svg className="lg-pattern" aria-hidden="true" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <pattern id="lg-cross" width="44" height="44" patternUnits="userSpaceOnUse">
-              <path d="M19 14h6v5h5v6h-5v5h-6v-5h-5v-6h5z" fill="currentColor" />
-            </pattern>
-            <radialGradient id="lg-glow" cx="80%" cy="10%" r="70%">
-              <stop offset="0%" stopColor="#E8B84B" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#E8B84B" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <rect width="400" height="400" fill="url(#lg-cross)" opacity="0.05" />
-          <rect width="400" height="400" fill="url(#lg-glow)" />
-        </svg>
+        {/* the hospital, the same artwork as the idle screen */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="lg-art" src="/images/portal-idle.jpg" alt="" />
+        <div className="lg-art-shade" aria-hidden="true" />
 
         <div className="lg-brand-inner">
           <Link href="/" className="lg-home">
@@ -222,42 +231,62 @@ export default function AdminLoginPage() {
       </main>
 
       <style>{`
-        .lg-root { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--po-bg); }
-        .lg-brand { position: relative; overflow: hidden; background: linear-gradient(155deg, #0A4F3C 0%, #073A2D 45%, #041A14 100%); color: #fff; }
-        .lg-pattern { position: absolute; inset: 0; width: 100%; height: 100%; color: #fff; }
-        .lg-brand-inner { position: relative; height: 100%; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; padding: 40px 56px; }
+        .lg-root { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; padding: 16px;
+          background:
+            radial-gradient(800px 460px at 100% 0%, color-mix(in srgb, var(--po-gold) 18%, transparent), transparent 62%),
+            radial-gradient(700px 500px at 60% 110%, color-mix(in srgb, #5B9BD5 14%, transparent), transparent 60%),
+            var(--po-bg); }
+        .lg-brand { position: relative; overflow: hidden; border-radius: 28px; color: #fff; min-height: calc(100vh - 32px);
+          box-shadow: 0 30px 60px -30px rgba(6, 30, 23, .45); background: #c98b5e; }
+        .lg-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 72%; transform: scale(1.02); }
+        .lg-art-shade { position: absolute; inset: 0;
+          background: linear-gradient(180deg, rgba(10, 26, 34, .66) 0%, rgba(10, 26, 34, .38) 26%, rgba(10, 26, 34, .04) 48%, rgba(10, 26, 34, .1) 66%, rgba(10, 26, 34, .78) 100%); }
+        .lg-brand-inner { position: relative; height: 100%; min-height: calc(100vh - 32px); display: flex; flex-direction: column; gap: 14px; padding: 34px 40px 30px; }
+        /* headline up in the sky, tiles along the bottom, the hospital left clear in between */
+        .lg-brand-inner > div { display: contents; }
+        .lg-brand-inner .lg-headline { margin-top: 26px; }
+        .lg-features { margin-top: auto !important; }
         .lg-home { display: inline-flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; }
-        .lg-home img { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,0.1); }
+        .lg-home img { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,0.22); }
         .lg-home strong { display: block; font-size: 15px; }
-        .lg-home small { display: block; font-size: 12px; color: rgba(255,255,255,0.6); }
-        .lg-headline { font-family: var(--font-lora), Georgia, serif; font-size: clamp(34px, 4vw, 52px); line-height: 1.08; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em; }
-        .lg-lede { font-size: 16px; line-height: 1.6; color: rgba(255,255,255,0.72); max-width: 440px; margin: 0 0 36px; }
-        .lg-features { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px; max-width: 440px; }
-        .lg-features li { display: flex; gap: 14px; align-items: flex-start; }
-        .lg-feature-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; background: rgba(232,184,75,0.14); color: #E8B84B; box-shadow: inset 0 0 0 1px rgba(232,184,75,0.2); }
-        .lg-features strong { display: block; font-size: 14.5px; }
-        .lg-features small { display: block; font-size: 13px; color: rgba(255,255,255,0.62); line-height: 1.5; }
-        .lg-motto { margin: 0; font-family: var(--font-lora), Georgia, serif; font-style: italic; color: rgba(232,184,75,0.85); font-size: 15px; }
+        .lg-home small { display: block; font-size: 12px; color: rgba(255,255,255,0.75); }
+        .lg-headline { font-family: var(--font-lora), Georgia, serif; font-size: clamp(34px, 4vw, 54px); line-height: 1.06; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.01em;
+          text-shadow: 0 4px 24px rgba(10, 26, 34, .35); }
+        .lg-lede { font-size: 16px; line-height: 1.6; color: rgba(255,255,255,0.88); max-width: 430px; margin: 0; }
+        .lg-features { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .lg-features li { display: grid; gap: 10px; align-content: start; padding: 16px 14px 18px; border-radius: 18px; min-height: 150px;
+          background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26);
+          backdrop-filter: blur(12px) saturate(1.2); -webkit-backdrop-filter: blur(12px) saturate(1.2); }
+        .lg-feature-icon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.92); color: #0A4F3C; }
+        .lg-features strong { display: block; font-size: 14.5px; line-height: 1.3; margin-bottom: 4px; }
+        .lg-features small { display: block; font-size: 12.5px; color: rgba(255,255,255,0.82); line-height: 1.45; }
+        .lg-motto { margin: 0; font-family: var(--font-lora), Georgia, serif; font-style: italic; color: #F6D58A; font-size: 15px; }
         .lg-main { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; }
-        .lg-back { position: absolute; top: 28px; right: 28px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; color: var(--po-text-3); text-decoration: none; }
+        .lg-back { position: absolute; top: 22px; right: 18px; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; color: var(--po-text-3); text-decoration: none;
+          padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--po-surface) 70%, transparent); }
         .lg-back:hover { color: var(--po-brand-ink); }
-        .lg-card { width: 100%; max-width: 420px !important; background: var(--po-surface); border: 1px solid var(--po-border); border-radius: 20px; padding: 36px 34px 28px; box-shadow: 0 24px 60px -24px rgba(6,30,23,0.25); }
-        .lg-card-icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--po-brand-soft); color: var(--po-brand-ink); margin-bottom: 18px; }
+        .lg-card { width: 100%; max-width: 420px !important; background: var(--po-surface); border: 1px solid color-mix(in srgb, var(--po-border) 55%, transparent); border-radius: 26px;
+          padding: 36px 34px 28px; box-shadow: 0 1px 2px rgba(14, 29, 24, .04), 0 30px 60px -28px rgba(6, 30, 23, .35); }
+        .lg-card-icon { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; margin-bottom: 18px; color: #fff;
+          background: linear-gradient(140deg, #0A4F3C, #1A7A5E); box-shadow: 0 10px 22px -10px rgba(10, 79, 60, .7); }
         .lg-title { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--po-text); }
         .lg-sub { margin: 6px 0 22px; color: var(--po-text-3); font-size: 14px; }
-        .lg-input { height: 44px; font-size: 14.5px; }
-        .lg-submit { height: 46px; font-size: 14.5px; margin-top: 4px; }
+        .lg-input { height: 46px; font-size: 14.5px; border-radius: 12px !important; }
+        .lg-submit { height: 48px; font-size: 14.5px; margin-top: 4px; border-radius: 14px !important; }
         .lg-forgot { justify-self: end; margin-top: -6px; font-size: 13px; font-weight: 600; color: var(--po-brand-ink); text-decoration: none; }
         .lg-forgot:hover { text-decoration: underline; }
         .lg-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--po-border); font-size: 12.5px; color: var(--po-text-3); line-height: 1.5; }
         .lg-foot { margin: 28px 0 0; font-size: 12px; color: var(--po-text-3); }
+        /* two by two when four across gets too narrow */
+        @media (max-width: 1280px) { .lg-features { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lg-features li { min-height: 0; } }
         @media (max-width: 900px) {
-          .lg-root { grid-template-columns: minmax(0, 1fr); }
-          .lg-brand-inner { min-height: 0; padding: 28px 24px 32px; gap: 24px; }
+          .lg-root { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 12px; }
+          .lg-brand, .lg-brand-inner { min-height: 0; }
+          .lg-brand-inner { padding: 22px 20px 26px; gap: 70px; }
           .lg-lede, .lg-features, .lg-motto { display: none; }
           .lg-headline { font-size: 30px; margin: 0; }
-          .lg-main { padding: 32px 16px 40px; justify-content: flex-start; }
-          .lg-back { position: static; align-self: flex-start; margin-bottom: 18px; }
+          .lg-main { padding: 12px 4px 32px; justify-content: flex-start; }
+          .lg-back { position: static; align-self: flex-start; margin-bottom: 14px; }
           .lg-card { padding: 28px 22px 22px; }
         }
       `}</style>

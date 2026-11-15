@@ -250,7 +250,7 @@ export default function AccountsPage() {
         {!acc.loaded ? (
           <div style={{ padding: 18 }}><SkeletonRows rows={6} cols={5} /></div>
         ) : shown.length === 0 ? (
-          <EmptyState icon={Receipt} title="Nothing recorded for this period" text="New receipts and payment vouchers will show here." />
+          <EmptyState art="ledger" icon={Receipt} title="Nothing recorded for this period" text="New receipts and payment vouchers will show here." />
         ) : (
           <div className="po-table-wrap">
             <table className="po-table">

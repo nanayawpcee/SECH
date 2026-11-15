@@ -338,7 +338,7 @@ function Dashboard() {
                 {[0, 1, 2, 3].map((i) => <Skeleton key={i} h={44} r={10} />)}
               </div>
             ) : stats.next7.length === 0 ? (
-              <EmptyState icon={CalendarDays} title="A clear week" text="No appointments are scheduled for the next 7 days." />
+              <EmptyState art="calendar" icon={CalendarDays} title="A clear week" text="No appointments are scheduled for the next 7 days." />
             ) : (
               <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
                 {stats.next7.slice(0, 7).map((b) => (
@@ -380,7 +380,7 @@ function Dashboard() {
             {loading ? (
               <div style={{ display: "grid", gap: 14 }}>{[0, 1, 2, 3].map((i) => <Skeleton key={i} h={26} />)}</div>
             ) : stats.depts.length === 0 ? (
-              <EmptyState icon={Stethoscope} title="No requests yet" text="Department demand appears once bookings arrive in this period." />
+              <EmptyState art="calendar" icon={Stethoscope} title="No requests yet" text="Department demand appears once bookings arrive in this period." />
             ) : (
               <div style={{ display: "grid", gap: 14 }}>
                 {stats.depts.map(([dept, n], i) => (
@@ -413,7 +413,7 @@ function Dashboard() {
             {loading ? (
               <div style={{ padding: "0 18px 18px", display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={40} r={10} />)}</div>
             ) : posts.length === 0 ? (
-              <EmptyState icon={Newspaper} title="No posts yet" action={<Link href="/admin/posts/new" className="po-btn po-btn--primary"><FilePlus2 size={15} />Write the first one</Link>} />
+              <EmptyState art="documents" icon={Newspaper} title="No posts yet" action={<Link href="/admin/posts/new" className="po-btn po-btn--primary"><FilePlus2 size={15} />Write the first one</Link>} />
             ) : (
               <ul style={{ listStyle: "none", margin: 0, padding: "0 10px 10px" }}>
                 {posts.slice(0, 5).map((p) => (

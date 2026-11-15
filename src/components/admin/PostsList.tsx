@@ -264,14 +264,14 @@ export function PostsList({ base }: { base: "/admin/posts" | "/staff/posts" }) {
         {postsLoading && posts.length === 0 ? (
           <SkeletonRows rows={6} cols={5} />
         ) : postsError ? (
-          <EmptyState
+          <EmptyState art="offline"
             icon={AlertTriangle}
             title="Couldn’t load posts"
             text={postsError}
             action={<button type="button" className="po-btn" onClick={refresh}><RefreshCw size={15} />Try again</button>}
           />
         ) : filtered.length === 0 ? (
-          <EmptyState
+          <EmptyState art="documents"
             icon={Newspaper}
             title={posts.length ? "No posts match" : "No posts yet"}
             text={posts.length ? "Try a different filter or search term." : "Publish news, blogs, events and announcements for the website."}

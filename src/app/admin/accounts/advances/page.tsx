@@ -98,7 +98,7 @@ export default function AdvancesPage() {
         {!acc.loaded ? (
           <div style={{ padding: 18 }}><SkeletonRows rows={5} cols={5} /></div>
         ) : list.length === 0 ? (
-          <EmptyState icon={HandCoins} title="No advances here" text="Advances are recorded with “New advance”, which also prints the payment voucher." />
+          <EmptyState art="ledger" icon={HandCoins} title="No advances here" text="Advances are recorded with “New advance”, which also prints the payment voucher." />
         ) : (
           <div className="po-table-wrap">
             <table className="po-table">

@@ -612,7 +612,7 @@ export default function SettingsPage() {
                         ))}
                       </div>
                     ) : usersError ? (
-                      <EmptyState
+                      <EmptyState art="offline"
                         icon={AlertTriangle}
                         title="Couldn’t load the team"
                         text={usersError}

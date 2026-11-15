@@ -101,7 +101,7 @@ export default function StaffHome() {
 
       {!canWrite ? (
         <Card>
-          <EmptyState
+          <EmptyState art="locked"
             icon={Lock}
             title="Your account can’t write posts yet"
             text="You’re signed in to the staff area. If you’d like to contribute news or articles to the hospital website, ask an administrator to give your account writing access."
@@ -142,7 +142,7 @@ export default function StaffHome() {
                 {postsLoading ? (
                   <div style={{ padding: "0 18px 18px", display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={44} r={10} />)}</div>
                 ) : posts.length === 0 ? (
-                  <EmptyState
+                  <EmptyState art="documents"
                     icon={PenLine}
                     title="Nothing written yet"
                     text="Share news from your department, a health tip for patients, or an upcoming event."

@@ -260,7 +260,7 @@ export default function EmployeesPage() {
         {!staff.loaded ? (
           <SkeletonRows rows={6} cols={5} />
         ) : filtered.length === 0 ? (
-          <EmptyState
+          <EmptyState art="team"
             icon={Users}
             title={employees.length ? "No staff match" : "No staff records yet"}
             text={employees.length ? "Try widening the filters." : "Add your first staff member, or set up departments and ranks first."}

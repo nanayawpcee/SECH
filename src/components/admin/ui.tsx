@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { Illustration, type IllustrationName } from "@/components/admin/illustrations";
 
 export type Tone =
   | "brand" | "gold" | "success" | "warn" | "danger"
@@ -203,18 +204,21 @@ export function Trend({ current, previous, suffix = "vs last period" }: {
 
 export function EmptyState({
   icon: Icon,
+  art,
   title,
   text,
   action,
 }: {
   icon: LucideIcon;
+  /** a spot illustration in place of the icon */
+  art?: IllustrationName;
   title: string;
   text?: ReactNode;
   action?: ReactNode;
 }) {
   return (
     <div className="po-empty">
-      <div className="po-empty-icon"><Icon size={24} strokeWidth={1.8} /></div>
+      {art ? <Illustration name={art} size={150} className="po-empty-art" /> : <div className="po-empty-icon"><Icon size={24} strokeWidth={1.8} /></div>}
       <div className="po-empty-title">{title}</div>
       {text && <div className="po-empty-text">{text}</div>}
       {action && <div style={{ marginTop: 10 }}>{action}</div>}

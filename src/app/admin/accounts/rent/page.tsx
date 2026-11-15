@@ -104,7 +104,7 @@ export default function RentPage() {
         {!acc.loaded ? (
           <div style={{ padding: 18 }}><SkeletonRows rows={5} cols={5} /></div>
         ) : list.length === 0 ? (
-          <EmptyState icon={Home} title="No tenancies yet" text={acc.housingTypes.length ? "Add each staff tenant with “Add tenancy”." : "Add the housing types and their monthly rates first."} />
+          <EmptyState art="ledger" icon={Home} title="No tenancies yet" text={acc.housingTypes.length ? "Add each staff tenant with “Add tenancy”." : "Add the housing types and their monthly rates first."} />
         ) : (
           <div className="po-table-wrap">
             <table className="po-table">

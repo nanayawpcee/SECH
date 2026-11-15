@@ -187,7 +187,7 @@ export default function CalendarPage() {
               {bookingsLoading ? (
                 <div style={{ display: "grid", gap: 12, padding: 10 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={56} r={10} />)}</div>
               ) : agendaDays.length === 0 ? (
-                <EmptyState icon={CalendarDays} title={`Nothing booked in ${monthLabel}`} text="Use the arrows to look at another month." />
+                <EmptyState art="calendar" icon={CalendarDays} title={`Nothing booked in ${monthLabel}`} text="Use the arrows to look at another month." />
               ) : (
                 agendaDays.map(({ key, list }) => (
                   <div key={key} className="po-agenda-day" data-today={key === today}>
@@ -217,7 +217,7 @@ export default function CalendarPage() {
             </div>
             <div style={{ padding: "0 10px 12px" }}>
               {dayList.length === 0 ? (
-                <EmptyState icon={CalendarDays} title="Nothing booked" text="Pick another day to see its appointments." />
+                <EmptyState art="calendar" icon={CalendarDays} title="Nothing booked" text="Pick another day to see its appointments." />
               ) : (
                 <div style={{ display: "grid", gap: 6 }}>{dayList.map((b) => <ApptRow key={b.databaseId} b={b} />)}</div>
               )}

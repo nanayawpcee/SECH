@@ -81,9 +81,9 @@ export default function MyStaffRecordPage() {
       {!loaded ? (
         <Card><SkeletonRows rows={6} cols={2} /></Card>
       ) : needsPlugin ? (
-        <EmptyState icon={IdCard} title="Not available yet" text="This page needs the latest version of the portal on the hospital’s WordPress site." />
+        <EmptyState art="documents" icon={IdCard} title="Not available yet" text="This page needs the latest version of the portal on the hospital’s WordPress site." />
       ) : !r ? (
-        <EmptyState
+        <EmptyState art="team"
           icon={IdCard}
           title="No staff record is linked to your account"
           text="If you work at the hospital, ask the HR office to link your staff record to your portal account."

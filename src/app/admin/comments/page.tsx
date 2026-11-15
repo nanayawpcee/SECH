@@ -234,14 +234,14 @@ export default function CommentsPage() {
 
       {error ? (
         <section className="po-card">
-          <EmptyState icon={AlertTriangle} title="Couldn’t load comments" text={error}
+          <EmptyState art="offline" icon={AlertTriangle} title="Couldn’t load comments" text={error}
             action={<button type="button" className="po-btn" onClick={load}><RefreshCw size={15} />Try again</button>} />
         </section>
       ) : loading && comments.length === 0 ? (
         <div style={{ display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={130} r={12} />)}</div>
       ) : visible.length === 0 ? (
         <section className="po-card">
-          <EmptyState
+          <EmptyState art={comments.length ? "documents" : "done"}
             icon={MessageSquare}
             title={comments.length ? "No comments match" : "All caught up"}
             text={comments.length ? "Try a different search or filter." : "New comments from the website appear here for approval before they go live."}

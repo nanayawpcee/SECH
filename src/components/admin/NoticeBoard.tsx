@@ -154,7 +154,7 @@ export function NoticeBoard() {
 
       {noticesNeedPlugin ? (
         <section className="po-card">
-          <EmptyState
+          <EmptyState art="notices"
             icon={Megaphone}
             title="The notice board isn’t switched on yet"
             text={canManage
@@ -192,7 +192,7 @@ export function NoticeBoard() {
             <div style={{ display: "grid", gap: 12 }}>{[0, 1, 2].map((i) => <Skeleton key={i} h={140} r={14} />)}</div>
           ) : filtered.length === 0 ? (
             <section className="po-card">
-              <EmptyState
+              <EmptyState art={notices.length > 0 && view === "unread" ? "done" : "notices"}
                 icon={view === "unread" ? CheckCheck : Megaphone}
                 title={notices.length === 0 ? "No notices yet" : view === "unread" ? "You’re all caught up" : "No notices match"}
                 text={notices.length === 0

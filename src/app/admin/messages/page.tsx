@@ -211,7 +211,7 @@ export default function MessagesPage() {
           {messages === null ? (
             <SkeletonRows rows={6} cols={2} />
           ) : filtered.length === 0 ? (
-            <EmptyState
+            <EmptyState art={query ? "documents" : "done"}
               icon={Inbox}
               title={query ? "No matches" : filter === "done" ? "Nothing marked done yet" : "Inbox zero"}
               text={query ? "Try a different search." : "Messages from the website’s contact form appear here."}
@@ -245,7 +245,7 @@ export default function MessagesPage() {
 
         <section className="po-card msg-read" aria-live="polite">
           {!open ? (
-            <EmptyState icon={MailOpen} title="Select a message" text="Pick a message on the left to read it here." />
+            <EmptyState art="documents" icon={MailOpen} title="Select a message" text="Pick a message on the left to read it here." />
           ) : (
             <article className="msg-article">
               <button type="button" className="po-btn po-btn--ghost po-btn--sm msg-back" onClick={() => setOpenId(null)}>

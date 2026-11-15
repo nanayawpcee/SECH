@@ -165,7 +165,7 @@ export default function DataProtectionPage() {
             {!loaded ? (
               <div style={{ padding: 18 }}><SkeletonRows rows={6} cols={4} /></div>
             ) : shown.length === 0 ? (
-              <EmptyState icon={ShieldCheck} title="Nothing logged yet" text="Activity on staff records will appear here." />
+              <EmptyState art="documents" icon={ShieldCheck} title="Nothing logged yet" text="Activity on staff records will appear here." />
             ) : (
               <div className="po-table-wrap">
                 <table className="po-table">

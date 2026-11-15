@@ -2,7 +2,7 @@
 
 import "@/styles/admin.css";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -179,6 +179,38 @@ const TOAST_ICON: Record<ToastKind, { icon: typeof CheckCircle2; tone: string }>
   danger: { icon: XCircle, tone: "po-tone-danger" },
 };
 
+/**
+ * The large background illustration for each part of the portal: hospital staff
+ * doing that work, vector drawings made with Higgsfield (public/images/sections).
+ * Shown as plain images, so nothing inside the files can run. None on the dashboard.
+ */
+type SectionArt = "accounts" | "hr" | "bookings" | "news" | "notices" | "security";
+const SECTION_ART: [string, SectionArt][] = [
+  ["/admin/accounts", "accounts"],
+  ["/admin/employees", "hr"],
+  ["/admin/departments", "hr"],
+  ["/admin/ranks", "hr"],
+  ["/admin/data-protection", "security"],
+  ["/admin/doctors", "hr"],
+  ["/admin/bookings", "bookings"],
+  ["/admin/calendar", "bookings"],
+  ["/admin/posts", "news"],
+  ["/admin/comments", "news"],
+  ["/admin/messages", "news"],
+  ["/admin/newsletter", "news"],
+  ["/admin/notices", "notices"],
+  ["/admin/settings", "security"],
+  ["/staff/notices", "notices"],
+  ["/staff/my-record", "hr"],
+  ["/staff/posts", "news"],
+];
+// writing and editing screens are busy forms: no picture behind them
+const FORM_PAGE = /\/(new|edit)(\/|$)/;
+const sectionArt = (pathname: string) =>
+  FORM_PAGE.test(pathname)
+    ? null
+    : SECTION_ART.find(([prefix]) => pathname === prefix || pathname.startsWith(prefix + "/"))?.[1] ?? null;
+
 function crumbsFor(pathname: string, labels: Record<string, string>) {
   const out: { href: string; label: string }[] = [];
   let href = "";
@@ -233,6 +265,28 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
   }, [pathname]);
+
+  // Cards drop in one after another when a page opens: give each new card its place
+  // in the queue, including cards that arrive once the page's data has loaded.
+  // Layout effect, so the first cards get their place before the page is painted.
+  useLayoutEffect(() => {
+    const root = scrollRef.current;
+    if (!root || reduceMotion) return;
+    const opened = performance.now();
+    let next = 0;
+    const queue = () => {
+      root.querySelectorAll<HTMLElement>(".po-page .po-card:not([data-dropped])").forEach((el) => {
+        el.setAttribute("data-dropped", "");
+        // only the first moments of a page are staggered; later cards drop straight away
+        el.style.setProperty("--drop-i", performance.now() - opened < 2000 ? String(Math.min(next++, 10)) : "0");
+      });
+    };
+    queue();
+    const watcher = new MutationObserver(queue);
+    watcher.observe(root, { childList: true, subtree: true });
+    const stop = window.setTimeout(() => watcher.disconnect(), 6000);
+    return () => { watcher.disconnect(); window.clearTimeout(stop); };
+  }, [pathname, reduceMotion]);
 
   useEffect(() => {
     const el = document.documentElement;
@@ -302,6 +356,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
   };
 
   const crumbs = crumbsFor(pathname, cfg.crumbs);
+  const art = sectionArt(pathname);
   const needed = permForPath(pathname);
   const blocked = needed !== null && !can(perms, needed);
   const newPostAllowed = can(perms, "posts.write");
@@ -408,6 +463,12 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
         </aside>
 
         <div className="po-main">
+          {art && (
+            <div key={art} className="po-section-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/images/sections/${art}.svg`} alt="" width={560} height={560} />
+            </div>
+          )}
           <header className="po-topbar">
             <button type="button" className="po-menu-btn" onClick={() => setMenuOpen(true)}
               aria-label="Open menu" aria-controls="po-sidebar" aria-expanded={drawerOpen}>

@@ -227,7 +227,7 @@ export default function NewsletterPage() {
         {subscribers === null ? (
           <SkeletonRows rows={5} cols={4} />
         ) : filtered.length === 0 ? (
-          <EmptyState
+          <EmptyState art="team"
             icon={Mail}
             title={query ? "No matches" : filter === "unsubscribed" ? "Nobody has unsubscribed" : "No subscribers yet"}
             text={query ? "Try a different search." : "Sign-ups from the newsletter form at the bottom of every page appear here."}

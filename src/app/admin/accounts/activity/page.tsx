@@ -45,7 +45,7 @@ export default function AccountsActivityPage() {
         }
       />
       {!allowed ? (
-        <EmptyState icon={ClipboardList} title="Administrators only" text="The accounts activity log is kept for administrators." />
+        <EmptyState art="locked" icon={ClipboardList} title="Administrators only" text="The accounts activity log is kept for administrators." />
       ) : (
         <>
           {error && (
@@ -65,7 +65,7 @@ export default function AccountsActivityPage() {
             ) : undefined}
           >
             {!loaded ? <div style={{ padding: 18 }}><SkeletonRows rows={6} cols={4} /></div>
-              : shown.length === 0 ? <EmptyState icon={ClipboardList} title="Nothing logged yet" text="Activity in the accounts office will appear here." />
+              : shown.length === 0 ? <EmptyState art="ledger" icon={ClipboardList} title="Nothing logged yet" text="Activity in the accounts office will appear here." />
               : (
                 <div className="po-table-wrap">
                   <table className="po-table">

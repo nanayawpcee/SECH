@@ -163,7 +163,7 @@ export default function DoctorsAdminPage() {
         {!loaded ? (
           <SkeletonRows rows={5} cols={4} />
         ) : filtered.length === 0 ? (
-          <EmptyState
+          <EmptyState art="team"
             icon={Stethoscope}
             title={doctors.length ? "No profiles match" : "No doctor profiles yet"}
             text={doctors.length

@@ -101,7 +101,7 @@ export default function RanksPage() {
       {!staff.loaded ? (
         <section className="po-card"><SkeletonRows rows={6} cols={3} /></section>
       ) : !draft ? (
-        <section className="po-card"><EmptyState icon={Award} title="Nothing to show yet" /></section>
+        <section className="po-card"><EmptyState art="team" icon={Award} title="Nothing to show yet" /></section>
       ) : (
         <div className="st-stack">
           <div className="st-cadres">
