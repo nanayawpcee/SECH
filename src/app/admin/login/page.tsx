@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
         <div className="lg-art-shade" aria-hidden="true" />
 
         <div className="lg-brand-inner">
-          <Link href="/" className="lg-home">
+          <Link href="/" prefetch={false} className="lg-home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/logo.png" alt="" />
             <span>
@@ -145,7 +145,7 @@ export default function AdminLoginPage() {
       </aside>
 
       <main className="lg-main">
-        <Link href="/" className="lg-back"><ArrowLeft size={15} />Back to website</Link>
+        <Link href="/" prefetch={false} className="lg-back"><ArrowLeft size={15} />Back to website</Link>
 
         <motion.div
           key={shakeKey}

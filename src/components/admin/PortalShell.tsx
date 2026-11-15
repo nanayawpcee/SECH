@@ -439,7 +439,7 @@ export function PortalShell({ variant, children }: { variant: "admin" | "staff";
                 <ShieldCheck size={15} />{!collapsed && "Admin console"}
               </Link>
             ) : null}
-            <Link href="/" className="po-side-link" data-tip={collapsed ? "View website" : undefined} target="_blank">
+            <Link href="/" prefetch={false} className="po-side-link" data-tip={collapsed ? "View website" : undefined} target="_blank">
               <ExternalLink size={15} />{!collapsed && "View website"}
             </Link>
             <div style={{

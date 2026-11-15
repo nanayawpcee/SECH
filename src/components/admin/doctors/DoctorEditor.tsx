@@ -7,6 +7,7 @@ import { Avatar, Switch } from "@/components/admin/ui";
 import { useAdminData } from "@/context/AdminDataContext";
 import { SERVICES } from "@/lib/data";
 import { BIO_MAX, DAYS, DOCTOR_TITLES, doctorName, type DayCode, type Doctor, type DoctorInput } from "@/lib/doctors";
+import { uploadPhoto } from "@/lib/upload-image";
 
 const EMPTY: DoctorInput = {
   title: "Dr.", name: "", specialty: "", services: [], clinicDays: [], clinicHours: "",
@@ -66,17 +67,13 @@ export function DoctorEditor({
   const toggle = <T extends string>(list: T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
   const upload = async (file: File) => {
-    if (!file.type.startsWith("image/")) return addToast("Please choose an image file", "warn");
-    if (file.size > 8 * 1024 * 1024) return addToast("That image is over 8 MB. Please use a smaller one.", "warn");
+    if (!file.type.startsWith("image/") && !/\.(heic|heif)$/i.test(file.name)) return addToast("Please choose an image file", "warn");
     const before = { url: photoUrl, id: form.photoId };
     setPhotoUrl(URL.createObjectURL(file));
     setUploading(true);
-    const data = new FormData();
-    data.append("file", file);
     try {
-      const res = await fetch("/api/media", { method: "POST", body: data });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "The upload failed");
+      // shrunk in the browser first, so big phone photos get through
+      const result = await uploadPhoto(file);
       set("photoId", result.id);
       if (result.url) setPhotoUrl(result.url);
     } catch (err) {

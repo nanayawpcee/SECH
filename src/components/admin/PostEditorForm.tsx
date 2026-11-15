@@ -34,6 +34,7 @@ import type { AdminPost } from "@/lib/wp-posts";
 import { can } from "@/lib/permissions";
 import { Card, Chip, PageHeader, Segmented, StatusBadge, Switch, type Tone } from "@/components/admin/ui";
 import { PostGalleryCard, type GalleryItem } from "@/components/admin/PostGalleryCard";
+import { uploadPhoto } from "@/lib/upload-image";
 
 type PostType = AdminPost["type"];
 type Status = AdminPost["status"];
@@ -195,23 +196,16 @@ export function PostEditorForm({
   };
 
   const upload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
+    if (!file.type.startsWith("image/") && !/\.(heic|heif)$/i.test(file.name)) {
       addToast("Please choose an image file", "warn");
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      addToast("That image is over 8 MB. Please use a smaller one.", "warn");
       return;
     }
     setPreviewUrl(URL.createObjectURL(file));
     setUploading(true);
     markDirty();
-    const formData = new FormData();
-    formData.append("file", file);
     try {
-      const response = await fetch("/api/media", { method: "POST", body: formData });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "The upload failed");
+      // shrunk in the browser first, so big phone photos get through
+      const result = await uploadPhoto(file);
       setImgId(result.id);
       if (result.url) setPreviewUrl(result.url);
       addToast("Image uploaded to the media library");
@@ -468,7 +462,7 @@ export function PostEditorForm({
                 <div className="ed-drop-empty">
                   <UploadCloud size={26} strokeWidth={1.6} />
                   <strong>Drop an image here</strong>
-                  <span>or click to browse · JPG or PNG, up to 8 MB</span>
+                  <span>or click to browse · large photos are resized for you</span>
                 </div>
               )}
             </div>

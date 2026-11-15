@@ -1,4 +1,3 @@
-import "@/styles/not-found.css";
 import { Fragment } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";

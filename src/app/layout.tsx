@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Lora } from "next/font/google";
 import "@/styles/globals.css";
+// the 404 and error screens' styles ride along with the main ones: as their own file,
+// Next preloads them on every page and Chrome warns that they went unused
+import "@/styles/not-found.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminShellSuppressor } from "../components/layout/AdminShellSuppressor";
 import { wpQuery } from "@/lib/wp-graphql";

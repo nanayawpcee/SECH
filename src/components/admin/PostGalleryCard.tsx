@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, ImagePlus, Images, Loader2, X } from "lucide
 import { Card } from "@/components/admin/ui";
 import { useAdminData } from "@/context/AdminDataContext";
 import { GALLERY_MAX } from "@/lib/wp-posts";
+import { uploadPhoto } from "@/lib/upload-image";
 
 export type GalleryItem = { id: number; url: string };
 type Pending = { key: string; url: string };
@@ -32,8 +33,7 @@ export function PostGalleryCard({
 
   const addFiles = async (list: FileList | File[]) => {
     const files = Array.from(list).filter((f) => {
-      if (!f.type.startsWith("image/")) { addToast(`${f.name} isn’t an image`, "warn"); return false; }
-      if (f.size > 8 * 1024 * 1024) { addToast(`${f.name} is over 8 MB. Please use a smaller one.`, "warn"); return false; }
+      if (!f.type.startsWith("image/") && !/\.(heic|heif)$/i.test(f.name)) { addToast(`${f.name} isn’t an image`, "warn"); return false; }
       return true;
     });
     if (files.length > room) addToast(`A gallery holds up to ${GALLERY_MAX} photos; only the first ${Math.max(0, room)} were added.`, "warn");
@@ -43,12 +43,9 @@ export function PostGalleryCard({
 
     let added = 0;
     for (const b of batch) {
-      const form = new FormData();
-      form.append("file", b.file);
       try {
-        const res = await fetch("/api/media", { method: "POST", body: form });
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || "The upload failed");
+        // shrunk in the browser first, so big phone photos get through
+        const result = await uploadPhoto(b.file);
         setItems((list) => [...list, { id: result.id, url: result.url || b.url }]);
         added++;
         onChange();

@@ -30,7 +30,18 @@ export async function POST(request: Request) {
       body: wpFormData,
     });
 
-    const mediaResult = await wpResponse.json();
+    // WordPress or the host can answer with an HTML page (e.g. a size limit); report that plainly
+    const replyText = await wpResponse.text();
+    let mediaResult: { id?: number; source_url?: string; message?: string };
+    try {
+      mediaResult = JSON.parse(replyText);
+    } catch {
+      const tooBig = wpResponse.status === 413 || /too large|exceeds|upload_max_filesize|post_max_size/i.test(replyText);
+      return NextResponse.json(
+        { error: tooBig ? "The photo is bigger than the WordPress hosting allows. Please use a smaller one." : `WordPress gave an unexpected reply (${wpResponse.status}). Please try again.` },
+        { status: tooBig ? 413 : 502 },
+      );
+    }
 
     if (!wpResponse.ok) {
       const raw = String(mediaResult.message || "");
@@ -48,6 +59,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: mediaResult.id, url: mediaResult.source_url });
   } catch (error) {
-    return NextResponse.json({ error: "Media routing thread execution failed" }, { status: 500 });
+    return NextResponse.json({ error: "The photo couldn’t be sent to WordPress. Check the connection and try again." }, { status: 500 });
   }
 }

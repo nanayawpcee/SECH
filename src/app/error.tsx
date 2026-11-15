@@ -1,6 +1,5 @@
 "use client";
 
-import "@/styles/not-found.css";
 import { useEffect, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ErrorScreen } from "@/components/layout/ErrorScreen";
