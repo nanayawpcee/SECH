@@ -2,10 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Info, Loader2, Trash2, X } from "lucide-react";
+import { AlertTriangle, BriefcaseBusiness, IdCard, Info, Loader2, Trash2, X } from "lucide-react";
 import { Avatar } from "@/components/admin/ui";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { useAuth } from "@/context/AuthContext";
+import { EmployeeBiodata, biodataProblem } from "./EmployeeBiodata";
+import { SecretField } from "@/components/admin/RevealPin";
+import { SECRET_FIELDS, isSecretField } from "@/lib/reveal";
 import {
+  BIODATA_FIELDS,
   EMPLOYEE_INPUT_FIELDS,
   EMPLOYMENT_TYPES,
   LICENCE_BODIES,
@@ -32,12 +37,15 @@ const EMPTY: Form = {
   dateFirstAppointment: "", dateCurrentRank: "",
   licenceBody: "", licencePin: "", licenceExpiry: "",
   cagdStaffId: "", ssnit: "", notes: "", dateExited: "", userId: "",
+  ...(Object.fromEntries(BIODATA_FIELDS.map((k) => [k, ""])) as Record<(typeof BIODATA_FIELDS)[number], string>),
 };
 
 function toForm(e: Employee | null): Form {
   if (!e) return EMPTY;
   const f = { ...EMPTY };
   for (const k of EMPLOYEE_INPUT_FIELDS) f[k] = (e[k] as string | null) ?? "";
+  // identifiers arrive masked; their boxes start empty and stay out of the save unless changed
+  for (const k of SECRET_FIELDS) f[k] = "";
   f.userId = e.userId ? String(e.userId) : "";
   return f;
 }
@@ -64,11 +72,16 @@ export function EmployeeEditor({
   const [form, setForm] = useState<Form>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"work" | "biodata">("work");
+  const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
+  const { admin } = useAuth();
 
   useEffect(() => {
     if (open) {
       setForm(toForm(employee));
       setError("");
+      setTab("work");
+      setEditingIds(new Set());
     }
   }, [open, employee]);
 
@@ -80,6 +93,22 @@ export function EmployeeEditor({
   }, [open, onClose]);
 
   const set = (key: keyof Form, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const getField = (key: string) => (form as Record<string, string>)[key] ?? "";
+  /** the masked number on file, e.g. "••••6789", or null */
+  const storedId = (key: string) => (employee && isSecretField(key) ? employee[key] ?? null : null);
+  const isEditingId = (key: string) => !storedId(key) || editingIds.has(key);
+  const setEditingId = (key: string, on: boolean) => {
+    setEditingIds((prev) => { const next = new Set(prev); if (on) next.add(key); else next.delete(key); return next; });
+    set(key as keyof Form, "");
+  };
+  const idField = (key: "licencePin" | "cagdStaffId" | "ssnit", label: string) => (
+    <SecretField label={label} field={key} stored={storedId(key)} editing={isEditingId(key)} onEditing={(on) => setEditingId(key, on)}
+      employeeId={employee?.databaseId}>
+      <input className="po-input" value={form[key]} onChange={(e) => set(key, e.target.value)} autoComplete="off"
+        autoFocus={!!storedId(key)} aria-label={label} spellCheck={false} />
+    </SecretField>
+  );
+  const setField = (key: string, value: string) => set(key as keyof Form, value);
 
   const dept = setup.structure.departments.find((d) => d.id === form.departmentId);
   const cadre = setup.ranks.cadres.find((c) => c.id === form.cadreId);
@@ -94,14 +123,17 @@ export function EmployeeEditor({
   );
 
   const save = async () => {
-    { const p = phoneProblem(form.phone); if (p) { setError(`Phone: ${p}`); return; } }
+    { const p = phoneProblem(form.phone); if (p) { setTab("work"); setError(`Phone: ${p}`); return; } }
     if (!form.firstName.trim() || !form.lastName.trim()) {
+      setTab("work");
       setError("First name and surname are required.");
       return;
     }
+    { const p = biodataProblem(getField); if (p) { setTab("biodata"); setError(p); return; } }
     setSaving(true);
     setError("");
     const input: Record<string, unknown> = { ...form, userId: form.userId ? Number(form.userId) : 0 };
+    for (const k of SECRET_FIELDS) if (!isEditingId(k)) delete input[k];
     const problem = await onSave(input as Partial<Employee>, employee?.databaseId);
     setSaving(false);
     if (problem) setError(problem);
@@ -140,6 +172,17 @@ export function EmployeeEditor({
               <button type="button" className="po-btn po-btn--ghost po-btn--icon" onClick={onClose} aria-label="Close"><X size={18} /></button>
             </div>
 
+            <div className="st-tabs">
+              <div className="po-seg" role="tablist" aria-label="Part of the record">
+                {([["work", "Work record", BriefcaseBusiness], ["biodata", "Biodata", IdCard]] as const).map(([key, label, Icon]) => (
+                  <button key={key} type="button" role="tab" className="po-seg-btn" aria-selected={tab === key} onClick={() => setTab(key)}>
+                    {tab === key && <span className="po-seg-pill" />}
+                    <Icon size={14} />{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <form className="po-drawer-body st-form" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
               {employee?.anonymisedAt && (
                 <div className="po-alert po-tone-info" role="note" style={{ marginBottom: 16 }}>
@@ -150,6 +193,10 @@ export function EmployeeEditor({
                   </span>
                 </div>
               )}
+              {tab === "biodata" ? (
+                <EmployeeBiodata get={getField} set={setField} showErrors={!!error} myName={admin?.name ?? ""}
+                  ids={{ stored: storedId, editing: isEditingId, setEditing: setEditingId, employeeId: employee?.databaseId }} />
+              ) : (<>
               <h3 className="st-h">Name</h3>
               <div className="st-grid st-grid--name">
                 <label className="po-field">
@@ -285,10 +332,7 @@ export function EmployeeEditor({
                     {LICENCE_BODIES.map((b) => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </label>
-                <label className="po-field">
-                  <span className="po-label">PIN / licence number</span>
-                  <input className="po-input" value={form.licencePin} onChange={(e) => set("licencePin", e.target.value)} />
-                </label>
+                {idField("licencePin", "PIN / licence number")}
                 <label className="po-field">
                   <span className="po-label">Expiry date</span>
                   <DatePicker value={form.licenceExpiry} onChange={(v) => set("licenceExpiry", v)} ariaLabel="Licence expiry date" />
@@ -299,14 +343,8 @@ export function EmployeeEditor({
 
               <h3 className="st-h">Payroll</h3>
               <div className="st-grid">
-                <label className="po-field">
-                  <span className="po-label">Controller (CAGD) staff ID</span>
-                  <input className="po-input" value={form.cagdStaffId} onChange={(e) => set("cagdStaffId", e.target.value)} autoComplete="off" />
-                </label>
-                <label className="po-field">
-                  <span className="po-label">SSNIT number</span>
-                  <input className="po-input" value={form.ssnit} onChange={(e) => set("ssnit", e.target.value)} autoComplete="off" />
-                </label>
+                {idField("cagdStaffId", "Controller (CAGD) staff ID")}
+                {idField("ssnit", "SSNIT number")}
               </div>
 
               <h3 className="st-h">Portal login</h3>
@@ -325,8 +363,9 @@ export function EmployeeEditor({
               <textarea className="po-input" rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000}
                 style={{ resize: "vertical", minHeight: 80 }} aria-label="Notes" aria-describedby="emp-notes-hint" />
               <span id="emp-notes-hint" className="po-hint">
-                Work-related notes only. Do not record health, religious, disciplinary or family details here.
+                Work-related notes only. Family, religion and next of kin go under Biodata. Do not record health or disciplinary details here.
               </span>
+              </>)}
 
               {error && (
                 <div className="po-alert po-tone-danger" role="alert" style={{ marginTop: 16 }}>

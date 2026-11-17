@@ -116,8 +116,10 @@ export default function DataProtectionPage() {
                 <>
                   <p style={{ margin: "0 0 10px" }}><Chip tone={encTone}>{encLabel}</Chip></p>
                   <p className="po-hint" style={{ margin: 0 }}>
-                    SSNIT numbers, CAGD staff IDs and licence PINs are stored encrypted, so a copy of the database alone does not reveal them.
-                    {encryption === "site" && " They use the website’s own secret keys. For a separate key, the web host can add SECH_DATA_KEY to wp-config.php."}
+                    SSNIT numbers, CAGD staff IDs, licence PINs, Ghana Card and bank account numbers are stored encrypted, so a copy of the
+                    database alone does not reveal them. The portal only ever shows them masked: seeing one in full needs the person’s own
+                    reveal PIN, and is recorded below.
+                    {encryption === "site" && " The encryption uses the website’s own secret keys. For a separate key, the web host can add SECH_DATA_KEY to wp-config.php."}
                     {encryption === "off" && " The web server is missing the sodium extension. Ask the web host to enable it."}
                   </p>
                 </>
@@ -138,7 +140,7 @@ export default function DataProtectionPage() {
                     </button>
                   </div>
                   <p className="po-hint" style={{ margin: 0 }}>
-                    Once a day, staff who left longer ago than this lose their contact details, payroll and licence IDs and notes.
+                    Once a day, staff who left longer ago than this lose their contact details, biodata, payroll and licence IDs, bank details and notes.
                     Their name, staff number, posting and dates of service stay for references and pensions.
                     {status?.retentionYears && status.dueForCleanup
                       ? ` ${status.dueForCleanup} record${status.dueForCleanup === 1 ? " is" : "s are"} due at the next clean-up.`
@@ -178,7 +180,7 @@ export default function DataProtectionPage() {
                         <td style={{ whiteSpace: "nowrap" }}>{when(a.at)}</td>
                         <td className="po-cell-main">{a.userName}</td>
                         <td><Chip tone={ACTION_TONE[a.action] ?? "muted"}>{AUDIT_ACTIONS[a.action] ?? a.action}</Chip></td>
-                        <td>{a.employeeName || "All records"}</td>
+                        <td>{a.employeeName || (a.action.startsWith("pin_") ? "Their own PIN" : "All records")}</td>
                         <td>{a.detail}</td>
                       </tr>
                     ))}

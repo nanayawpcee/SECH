@@ -20,3 +20,23 @@ export function phoneProblem(value: string, required = false): string | null {
 }
 
 export const isValidPhone = (value: string) => phoneProblem(value, true) === null;
+
+/** The phone numbers on a staff record, with the names HR sees for them */
+export const STAFF_PHONE_FIELDS = [
+  ["phone", "Phone"],
+  ["nextOfKinPhone", "Next of kin phone"],
+  ["nextOfKinAltPhone", "Next of kin other phone"],
+  ["emergencyPhone", "Emergency contact phone"],
+] as const;
+
+/** Cleans each phone number in a request body in place; returns the first problem, if any */
+export function cleanStaffPhones(body: Record<string, unknown>): string | null {
+  for (const [key, label] of STAFF_PHONE_FIELDS) {
+    if (typeof body[key] !== "string") continue;
+    const clean = cleanPhone(body[key] as string);
+    body[key] = clean;
+    const problem = phoneProblem(clean);
+    if (problem) return `${label}: ${problem}`;
+  }
+  return null;
+}

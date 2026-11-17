@@ -92,7 +92,7 @@ export default function RanksPage() {
         <div className="po-alert po-tone-info" role="note" style={{ marginBottom: 16 }}>
           <Info size={17} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>
-            These ladders started as a <strong>draft based on the Ghana Health Service scheme of service</strong>. Check them against the
+            ToDo: These ladders started as a <strong>draft based on the Ghana Health Service scheme of service</strong>. We will have to align them with the
             current MoH and Controller (CAGD) structure and correct any names or pay levels. List ranks from most junior to most senior.
           </span>
         </div>

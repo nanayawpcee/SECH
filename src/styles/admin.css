@@ -926,6 +926,8 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 
 .po-root .st-drawer { width: min(620px, 100vw); }
 .po-root .st-form { display: block; }
+.po-root .st-tabs { padding: 10px 22px 0; flex-shrink: 0; }
+.po-root .st-tabs .po-seg-btn { height: 32px; padding: 0 14px; font-size: 13px; }
 .po-root .st-h { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); margin: 22px 0 10px; }
 .po-root .st-h:first-child { margin-top: 0; }
 .po-root .st-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; margin-bottom: 12px; }
@@ -1039,6 +1041,12 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 .mr-row dd { margin: 0; color: var(--po-text); overflow-wrap: anywhere; }
 @media (max-width: 900px) { .mr-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .mr-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.mr-sub { margin: 16px 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--po-text-3); }
+.mr-table-wrap { overflow-x: auto; }
+.mr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mr-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--po-text-3); padding: 0 10px 6px 0; border-bottom: 1px solid var(--po-border); }
+.mr-table td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--po-border); color: var(--po-text); vertical-align: top; }
+.mr-table tr:last-child td { border-bottom: 0; }
 
 /* ── Phones: the sidebar slides in over the page behind a menu button ── */
 .po-menu-btn { display: none; }
@@ -1150,11 +1158,11 @@ tr:hover .po-row-actions, .po-row-actions:focus-within { opacity: 1; }
 [data-admin-theme="dark"] .po-root { --po-card-glass: color-mix(in srgb, var(--po-surface) 90%, transparent); }
 .po-page .po-card { background: var(--po-card-glass); }
 
+/* the art sits behind everything in the main column; the scroll area is not given
+   its own layer, so drawers and dialogs inside it still cover the top bar */
 .po-main { position: relative; isolation: isolate; }
-.po-main > .po-topbar { position: relative; z-index: 2; }
-.po-main > .po-scroll { position: relative; z-index: 1; }
 .po-section-art {
-  position: absolute; right: 0; bottom: 0; z-index: 0;
+  position: absolute; right: 0; bottom: 0; z-index: -1;
   width: min(500px, 38vw); pointer-events: none; opacity: 0.55;
   animation: po-art-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

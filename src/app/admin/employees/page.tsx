@@ -23,17 +23,26 @@ import { Avatar, Chip, ConfirmDialog, EmptyState, PageHeader, SkeletonRows, type
 import { EmployeeEditor } from "@/components/admin/staff/EmployeeEditor";
 import { useStaff } from "@/components/admin/staff/useStaff";
 import { downloadCsv } from "@/lib/csv";
+import { revealRequest, useRevealGate } from "@/components/admin/RevealPin";
 import { todayKey } from "@/lib/admin-dates";
 import {
+  MARITAL_STATUSES,
   STATUSES,
+  WORK_PATTERNS,
   employmentLabel,
   formatDate,
   fullName,
   isTemporary,
   licenceState,
+  parseList,
   statusLabel,
+  type ChildRow,
+  type EducationRow,
   type Employee,
+  type WorkRow,
 } from "@/lib/staff";
+
+const labelFrom = (list: readonly { value: string; label: string }[], v: string | null) => list.find((x) => x.value === v)?.label ?? v;
 
 type Focus = "all" | "temporary" | "licence" | "payroll";
 
@@ -126,15 +135,28 @@ export default function EmployeesPage() {
 
   const [exportOpen, setExportOpen] = useState(false);
   const [exportIds, setExportIds] = useState(false);
+  const [exportBio, setExportBio] = useState(false);
   const [exporting, setExporting] = useState(false);
   // every export is logged first. no log entry, no file
+  const { gate: revealGate, dialog: revealDialog } = useRevealGate();
   const exportCSV = async () => {
     setExporting(true);
+    // identifiers leave WordPress only after the person's reveal PIN
+    type Ids = Record<string, Partial<Record<"ssnit" | "cagdStaffId" | "licencePin" | "ghanaCard" | "gmoneyAccount" | "gcbAccount", string | null>>>;
+    let ids: Ids = {};
+    if (exportIds) {
+      const got = await revealGate(
+        (pin) => revealRequest("/api/staff/reveal-export", { ids: filtered.map((e) => e.databaseId), pin }, (d) => (d.values ?? {}) as Ids),
+        "Export with identifiers",
+      );
+      if (!got) { setExporting(false); return; }
+      ids = got;
+    }
     try {
       const res = await fetch("/api/staff/export-log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: filtered.length, withIdentifiers: exportIds }),
+        body: JSON.stringify({ count: filtered.length, withIdentifiers: exportIds, withBiodata: exportBio }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "The export could not be recorded.");
     } catch (err) {
@@ -153,7 +175,19 @@ export default function EmployeesPage() {
         index.positions.get(e.positionId ?? "")?.name, (roles.get(e.databaseId) ?? []).join("; "),
         e.phone, e.email, e.dateFirstAppointment, e.dateCurrentRank,
         e.licenceBody, e.licenceExpiry,
-        ...(exportIds ? [e.licencePin, e.cagdStaffId, e.ssnit] : []),
+        ...(exportIds ? [ids[e.databaseId]?.licencePin, ids[e.databaseId]?.cagdStaffId, ids[e.databaseId]?.ssnit] : []),
+        ...(exportBio ? [
+          e.dateOfBirth, e.nationality, e.hometown, e.hometownDistrict, e.hometownRegion,
+          e.homeAddress, e.gpsAddress, e.residentialAddress, e.religion, labelFrom(MARITAL_STATUSES, e.maritalStatus), e.spouseName,
+          parseList<ChildRow>(e.children).map((c) => [c.name, c.dob].filter(Boolean).join(" ")).join("; "),
+          e.fatherName, e.fatherAlive, e.motherName, e.motherAlive,
+          e.nextOfKinName, e.nextOfKinRelationship, e.nextOfKinPhone, e.nextOfKinAltPhone, e.nextOfKinEmail, e.nextOfKinAddress,
+          e.emergencyName, e.emergencyPhone, e.emergencyAddress,
+          labelFrom(WORK_PATTERNS, e.workPattern), e.dateEnding,
+          parseList<EducationRow>(e.education).map((x) => [x.certificate, x.institution, x.year].filter(Boolean).join(", ")).join("; "),
+          parseList<WorkRow>(e.workHistory).map((x) => [x.position, x.organisation, x.year].filter(Boolean).join(", ")).join("; "),
+        ] : []),
+        ...(exportIds && exportBio ? [ids[e.databaseId]?.ghanaCard, ids[e.databaseId]?.gmoneyAccount, ids[e.databaseId]?.gcbAccount, e.gcbBranch] : []),
       ];
     });
     downloadCsv(`sech-staff-${todayKey()}.csv`, [
@@ -162,15 +196,25 @@ export default function EmployeesPage() {
       "Phone", "Email", "First appointment", "Current rank since",
       "Licence council", "Licence expiry",
       ...(exportIds ? ["Licence PIN", "CAGD staff ID", "SSNIT"] : []),
+      ...(exportBio ? [
+        "Date of birth", "Nationality", "Hometown", "Hometown district", "Hometown region",
+        "Permanent home address", "GPS address", "Residential address", "Religious denomination", "Marital status", "Spouse",
+        "Children", "Father", "Father alive", "Mother", "Mother alive",
+        "Next of kin", "Relationship", "Next of kin phone", "Next of kin other phone", "Next of kin email", "Next of kin address",
+        "Emergency contact", "Emergency phone", "Emergency address",
+        "Work pattern", "Date ending", "Education", "Work history",
+      ] : []),
+      ...(exportIds && exportBio ? ["Ghana Card", "G-Money account", "GCB account", "GCB branch"] : []),
     ], rows);
     setExportOpen(false);
     setExportIds(false);
+    setExportBio(false);
     addToast(
       `Exported ${rows.length} staff record${rows.length === 1 ? "" : "s"}. ` +
       (exportIds ? "The file contains payroll IDs: keep it on a hospital device and delete it when done." : "Store the file securely and delete it when done."),
     );
   };
-  const closeExport = useCallback(() => { setExportOpen(false); setExportIds(false); }, []);
+  const closeExport = useCallback(() => { setExportOpen(false); setExportIds(false); setExportBio(false); }, []);
 
   const refresh = async () => { setRefreshing(true); await staff.reload(); setRefreshing(false); };
   const closeDelete = useCallback(() => setToDelete(null), []);
@@ -238,7 +282,7 @@ export default function EmployeesPage() {
         <div className="po-toolbar">
           <div className="po-input-wrap" style={{ flex: "1 1 240px", maxWidth: 340 }}>
             <Search size={15} />
-            <input className="po-input" placeholder="Name, staff no., phone, PIN" value={query}
+            <input className="po-input" placeholder="Name, staff no. or phone" value={query}
               onChange={(e) => setQuery(e.target.value)} aria-label="Search staff" />
           </div>
           <select className="po-select" style={{ width: 200 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Department">
@@ -361,7 +405,11 @@ export default function EmployeesPage() {
           </p>
           <label style={{ display: "flex", gap: 8, alignItems: "flex-start", cursor: "pointer" }}>
             <input type="checkbox" checked={exportIds} onChange={(e) => setExportIds(e.target.checked)} style={{ marginTop: 3 }} />
-            <span>Include payroll and licence identifiers (SSNIT, CAGD staff ID, licence PIN). Only for payroll or licensing work.</span>
+            <span>Include payroll and licence identifiers (SSNIT, CAGD staff ID, licence PIN). Only for payroll or licensing work. Asks for your reveal PIN.</span>
+          </label>
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", cursor: "pointer", marginTop: 10 }}>
+            <input type="checkbox" checked={exportBio} onChange={(e) => setExportBio(e.target.checked)} style={{ marginTop: 3 }} />
+            <span>Include biodata (date of birth, hometown, family, next of kin, emergency contact, education). With identifiers ticked too, the Ghana Card and bank details are added.</span>
           </label>
         </>}
         confirmLabel="Export"
@@ -383,6 +431,7 @@ export default function EmployeesPage() {
         onConfirm={doDelete}
         onCancel={closeDelete}
       />
+      {revealDialog}
     </>
   );
 }

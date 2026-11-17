@@ -76,6 +76,45 @@ export interface Employee {
   anonymisedAt: string | null;
   userId: number | null;
   updatedAt: string;
+  // biodata from HR's forms (plugin 1.23.0); lists are JSON text
+  dateOfBirth: string | null;
+  nationality: string | null;
+  hometown: string | null;
+  hometownDistrict: string | null;
+  hometownRegion: string | null;
+  ghanaCard: string | null;
+  homeAddress: string | null;
+  gpsAddress: string | null;
+  residentialAddress: string | null;
+  religion: string | null;
+  maritalStatus: string | null;
+  spouseName: string | null;
+  fatherName: string | null;
+  fatherAlive: string | null;
+  fatherAddress: string | null;
+  motherName: string | null;
+  motherAlive: string | null;
+  motherAddress: string | null;
+  nextOfKinName: string | null;
+  nextOfKinRelationship: string | null;
+  nextOfKinAddress: string | null;
+  nextOfKinPhone: string | null;
+  nextOfKinAltPhone: string | null;
+  nextOfKinEmail: string | null;
+  emergencyName: string | null;
+  emergencyAddress: string | null;
+  emergencyPhone: string | null;
+  gmoneyAccount: string | null;
+  gcbAccount: string | null;
+  gcbBranch: string | null;
+  dateEnding: string | null;
+  workPattern: string | null;
+  declarationDate: string | null;
+  hrCertifiedBy: string | null;
+  hrCertifiedDate: string | null;
+  children: string | null;
+  education: string | null;
+  workHistory: string | null;
 }
 
 export interface PortalUserOption {
@@ -170,7 +209,18 @@ export const EMPLOYEE_INPUT_FIELDS = [
   "dateFirstAppointment", "dateCurrentRank",
   "licenceBody", "licencePin", "licenceExpiry",
   "cagdStaffId", "ssnit", "notes", "dateExited",
+  // biodata (plugin 1.23.0)
+  "dateOfBirth", "nationality", "hometown", "hometownDistrict", "hometownRegion", "ghanaCard",
+  "homeAddress", "gpsAddress", "residentialAddress", "religion", "maritalStatus", "spouseName",
+  "fatherName", "fatherAlive", "fatherAddress", "motherName", "motherAlive", "motherAddress",
+  "nextOfKinName", "nextOfKinRelationship", "nextOfKinAddress", "nextOfKinPhone", "nextOfKinAltPhone", "nextOfKinEmail",
+  "emergencyName", "emergencyAddress", "emergencyPhone", "gmoneyAccount", "gcbAccount", "gcbBranch",
+  "dateEnding", "workPattern", "declarationDate", "hrCertifiedBy", "hrCertifiedDate", "children",
+  "education", "workHistory",
 ] as const;
+
+/** Biodata fields, added in plugin 1.23.0 */
+export const BIODATA_FIELDS = ["dateOfBirth", "nationality", "hometown", "hometownDistrict", "hometownRegion", "ghanaCard", "homeAddress", "gpsAddress", "residentialAddress", "religion", "maritalStatus", "spouseName", "fatherName", "fatherAlive", "fatherAddress", "motherName", "motherAlive", "motherAddress", "nextOfKinName", "nextOfKinRelationship", "nextOfKinAddress", "nextOfKinPhone", "nextOfKinAltPhone", "nextOfKinEmail", "emergencyName", "emergencyAddress", "emergencyPhone", "gmoneyAccount", "gcbAccount", "gcbBranch", "dateEnding", "workPattern", "declarationDate", "hrCertifiedBy", "hrCertifiedDate", "children", "education", "workHistory"] as const;
 
 const EMPLOYEE_FIELDS = `databaseId userId updatedAt anonymisedAt ${EMPLOYEE_INPUT_FIELDS.join(" ")}`;
 
@@ -194,7 +244,7 @@ function saveEmployeeMutation(inputs: readonly string[], fields: string) {
 
 export const SAVE_EMPLOYEE = saveEmployeeMutation(EMPLOYEE_INPUT_FIELDS, EMPLOYEE_FIELDS);
 
-const LEGACY_INPUT_FIELDS = EMPLOYEE_INPUT_FIELDS.filter((f) => f !== "dateExited");
+const LEGACY_INPUT_FIELDS = EMPLOYEE_INPUT_FIELDS.filter((f) => f !== "dateExited" && !(BIODATA_FIELDS as readonly string[]).includes(f));
 export const SAVE_EMPLOYEE_LEGACY = saveEmployeeMutation(
   LEGACY_INPUT_FIELDS,
   `databaseId userId updatedAt ${LEGACY_INPUT_FIELDS.join(" ")}`,
@@ -210,18 +260,19 @@ export async function saveEmployeeCompat<T>(
     return await run(SAVE_EMPLOYEE, vars);
   } catch (error) {
     if (!isOutdated(error)) throw error;
-    const { dateExited: _ignored, ...rest } = vars;
-    return run(SAVE_EMPLOYEE_LEGACY, rest);
+    const keep = new Set<string>(["databaseId", "userId", ...LEGACY_INPUT_FIELDS]);
+    return run(SAVE_EMPLOYEE_LEGACY, Object.fromEntries(Object.entries(vars).filter(([k]) => keep.has(k))));
   }
 }
 
-// fallback while WordPress is on a plugin older than 1.10.0
-export const STAFF_QUERY_LEGACY = STAFF_QUERY
-  .replace(" anonymisedAt", "")
-  .replace(" dateExited", "");
+// fallback while WordPress is on an older plugin (before 1.10.0 for dateExited, 1.23.0 for biodata)
+export const STAFF_QUERY_LEGACY = STAFF_QUERY.replace(
+  EMPLOYEE_FIELDS,
+  EMPLOYEE_FIELDS.split(" ").filter((f) => f !== "anonymisedAt" && f !== "dateExited" && !(BIODATA_FIELDS as readonly string[]).includes(f)).join(" "),
+);
 
 export function isOutdatedStaffPlugin(message: string) {
-  return /dateExited|anonymisedAt|staffDataProtection|staffAudit|myStaffRecord|logStaffExport|setStaffRetention/.test(message)
+  return /dateExited|anonymisedAt|staffDataProtection|staffAudit|myStaffRecord|logStaffExport|setStaffRetention|dateOfBirth|nationality|hometown|ghanaCard|nextOfKin|emergency|gmoneyAccount|gcbAccount|workHistory|children|education|declarationDate|hrCertified|workPattern|dateEnding/.test(message)
     && /Cannot query field|Unknown|not exist|not defined/i.test(message);
 }
 
@@ -246,6 +297,8 @@ export const STAFF_DP_QUERY = `query StaffDP { staffDataProtection { retentionYe
 export const STAFF_AUDIT_QUERY = `query StaffAudit($first: Int) { staffAudit(first: $first) { id at userName action employeeId employeeName detail } }`;
 export const SET_STAFF_RETENTION = `mutation SetStaffRetention($years: Int!) { setStaffRetention(input: { years: $years }) { years } }`;
 export const LOG_STAFF_EXPORT = `mutation LogStaffExport($count: Int!, $withIdentifiers: Boolean) { logStaffExport(input: { count: $count, withIdentifiers: $withIdentifiers }) { ok } }`;
+/** plugin 1.23.0 and later: also records that biodata went into the file */
+export const LOG_STAFF_EXPORT_BIODATA = `mutation LogStaffExport($count: Int!, $withIdentifiers: Boolean, $withBiodata: Boolean) { logStaffExport(input: { count: $count, withIdentifiers: $withIdentifiers, withBiodata: $withBiodata }) { ok } }`;
 
 export interface MyStaffRecord {
   title: string | null;
@@ -272,13 +325,52 @@ export interface MyStaffRecord {
   ssnit: string | null;
   notes: string | null;
   updatedAt: string | null;
+  // biodata, from plugin 1.23.0 (bank details stay with HR)
+  dateOfBirth?: string | null;
+  nationality?: string | null;
+  hometown?: string | null;
+  hometownDistrict?: string | null;
+  hometownRegion?: string | null;
+  ghanaCard?: string | null;
+  homeAddress?: string | null;
+  gpsAddress?: string | null;
+  residentialAddress?: string | null;
+  religion?: string | null;
+  maritalStatus?: string | null;
+  spouseName?: string | null;
+  fatherName?: string | null;
+  fatherAlive?: string | null;
+  fatherAddress?: string | null;
+  motherName?: string | null;
+  motherAlive?: string | null;
+  motherAddress?: string | null;
+  nextOfKinName?: string | null;
+  nextOfKinRelationship?: string | null;
+  nextOfKinAddress?: string | null;
+  nextOfKinPhone?: string | null;
+  nextOfKinAltPhone?: string | null;
+  nextOfKinEmail?: string | null;
+  emergencyName?: string | null;
+  emergencyAddress?: string | null;
+  emergencyPhone?: string | null;
+  dateEnding?: string | null;
+  workPattern?: string | null;
+  children?: string | null;
+  education?: string | null;
+  workHistory?: string | null;
 }
 
-export const MY_STAFF_RECORD_QUERY = `query MyStaffRecord { myStaffRecord {
-  title firstName otherNames lastName gender staffNumber department unit cadre rank position
+const MY_RECORD_BASE = `title firstName otherNames lastName gender staffNumber department unit cadre rank position
   employmentType status phone email dateFirstAppointment dateCurrentRank
-  licenceBody licencePin licenceExpiry cagdStaffId ssnit notes updatedAt
-} }`;
+  licenceBody licencePin licenceExpiry cagdStaffId ssnit notes updatedAt`;
+const MY_RECORD_BIODATA = `dateOfBirth nationality hometown hometownDistrict hometownRegion ghanaCard
+  homeAddress gpsAddress residentialAddress religion maritalStatus spouseName
+  fatherName fatherAlive fatherAddress motherName motherAlive motherAddress
+  nextOfKinName nextOfKinRelationship nextOfKinAddress nextOfKinPhone nextOfKinAltPhone nextOfKinEmail
+  emergencyName emergencyAddress emergencyPhone dateEnding workPattern children education workHistory`;
+export const MY_STAFF_RECORD_QUERY = `query MyStaffRecord { myStaffRecord { ${MY_RECORD_BASE} ${MY_RECORD_BIODATA} } }`;
+/** for WordPress still on a plugin before 1.23.0 */
+export const MY_STAFF_RECORD_QUERY_LEGACY = `query MyStaffRecord { myStaffRecord { ${MY_RECORD_BASE} } }`;
 
 export const AUDIT_ACTIONS: Record<string, string> = {
   viewed: "Opened staff records",
@@ -287,6 +379,9 @@ export const AUDIT_ACTIONS: Record<string, string> = {
   deleted: "Deleted a record",
   exported: "Exported records",
   anonymised: "Retention clean-up",
+  revealed: "Showed a hidden number",
+  pin_set: "Set a reveal PIN",
+  pin_locked: "Reveal PIN locked",
   settings: "Changed retention",
   viewed_own: "Viewed own record",
   encrypted: "Encrypted identifiers",
@@ -308,4 +403,45 @@ export function employeeVariables(body: Record<string, unknown>) {
   }
   if ("userId" in body) vars.userId = Number(body.userId) || 0;
   return vars;
+}
+
+/* ── Biodata (HR's new staff forms) ─────────────────────────── */
+
+export const GHANA_REGIONS = [
+  "Ahafo", "Ashanti", "Bono", "Bono East", "Central", "Eastern", "Greater Accra", "North East",
+  "Northern", "Oti", "Savannah", "Upper East", "Upper West", "Volta", "Western", "Western North",
+];
+
+export const MARITAL_STATUSES = [
+  { value: "single", label: "Single" },
+  { value: "married", label: "Married" },
+  { value: "divorced", label: "Divorced" },
+  { value: "widowed", label: "Widowed" },
+];
+
+export const WORK_PATTERNS = [
+  { value: "full_time", label: "Full-time" },
+  { value: "part_time", label: "Part-time" },
+  { value: "seasonal", label: "Seasonal" },
+];
+
+export interface ChildRow { name: string; sex: string; dob: string }
+export interface EducationRow { institution: string; year: string; certificate: string }
+export interface WorkRow { organisation: string; year: string; position: string }
+
+/** A biodata list from its stored JSON; anything unreadable is treated as empty. */
+export function parseList<T>(json: string | null | undefined): T[] {
+  if (!json) return [];
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? (v as T[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** "••••6789" for account numbers shown outside the editor */
+export function maskAccount(v: string | null | undefined) {
+  const d = String(v ?? "").replace(/\s/g, "");
+  return d.length > 4 ? `••••${d.slice(-4)}` : d;
 }
