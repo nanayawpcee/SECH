@@ -45,12 +45,15 @@ function peelShapes(W: number, H: number, t: number) {
   return { sheet: poly(sheet), flap: poly(flap), angle };
 }
 
+const stopKey = (e: KeyboardEvent) => { e.preventDefault(); e.stopPropagation(); };
+
 export function IdleScreen({ onDone }: { onDone: () => void }) {
   const [now, setNow] = useState(() => new Date());
   const [peeling, setPeeling] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const flapRef = useRef<HTMLDivElement>(null);
   const started = useRef(false);
+  const ctaRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 15_000);
@@ -87,15 +90,31 @@ export function IdleScreen({ onDone }: { onDone: () => void }) {
   }, [onDone]);
 
   useEffect(() => {
-    const go = (e: Event) => {
-      if (e instanceof KeyboardEvent && (e.metaKey || e.ctrlKey) && e.key.length > 1) return;
+    // nothing underneath keeps the cursor while the sheet is up (a browser may have
+    // put it in the sign-in form), so no key ends up typed into a field
+    const el = document.activeElement;
+    if (el instanceof HTMLElement && el !== ctaRef.current && el.matches("input, textarea, select, [contenteditable]")) el.blur();
+    ctaRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // leave browser shortcuts alone (reload, new tab and so on)
+      if ((e.metaKey || e.ctrlKey || e.altKey) && e.key.length > 1) return;
+      // every other key belongs to the sheet: it peels it and is not typed anywhere,
+      // including keys pressed while it is still peeling
+      e.preventDefault();
+      e.stopPropagation();
       peel();
     };
-    window.addEventListener("keydown", go);
-    window.addEventListener("pointerdown", go);
+    const onPointer = () => peel();
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("keypress", stopKey, true);
+    window.addEventListener("pointerdown", onPointer);
     return () => {
-      window.removeEventListener("keydown", go);
-      window.removeEventListener("pointerdown", go);
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("keypress", stopKey, true);
+      window.removeEventListener("pointerdown", onPointer);
     };
   }, [peel]);
 
@@ -124,7 +143,7 @@ export function IdleScreen({ onDone }: { onDone: () => void }) {
           </div>
         </div>
 
-        <button type="button" className="idl-cta" onClick={peel} autoFocus disabled={peeling}>
+        <button type="button" className="idl-cta" ref={ctaRef} onClick={peel} disabled={peeling}>
           Press any key or tap anywhere to sign in
         </button>
       </div>

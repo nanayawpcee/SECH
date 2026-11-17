@@ -36,7 +36,7 @@ export default function AccountsActivityPage() {
     <>
       <PageHeader
         title="Accounts activity log"
-        subtitle="Every receipt, void, print, export and change in the accounts office. It can't be edited."
+        subtitle="Every receipt, reversal, print, export and change in the accounts office. It can't be edited."
         actions={
           <>
             <Link href="/admin/accounts" className="po-btn"><ArrowLeft size={15} />Accounts</Link>

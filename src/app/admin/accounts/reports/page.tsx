@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, CalendarDays, FileSpreadsheet, HandCoins, Home, Printer, ReceiptText, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CalendarDays, FileSpreadsheet, HandCoins, Home, Printer, ReceiptText, ShieldAlert, Tags } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminData } from "@/context/AdminDataContext";
 import { EmptyState, PageHeader, SkeletonRows } from "@/components/admin/ui";
@@ -10,14 +10,14 @@ import { can } from "@/lib/permissions";
 import { dayKey, useAccounts } from "@/components/admin/accounts/useAccounts";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { SITE } from "@/lib/data";
-import { formatMoney } from "@/lib/accounts";
+import { CATEGORIES, formatMoney } from "@/lib/accounts";
 import {
-  advancesReport, dailyReport, periodReport, rentReport, reportSheets, REPORT_KINDS,
+  advancesReport, categoryReport, dailyReport, periodReport, rentReport, reportSheets, REPORT_KINDS,
   type Cell, type Col, type Report, type ReportKind,
 } from "@/lib/accounts-reports";
 import { downloadXlsx } from "@/lib/xlsx";
 
-const ICONS = { daily: ReceiptText, period: CalendarDays, advances: HandCoins, rent: Home };
+const ICONS = { daily: ReceiptText, period: CalendarDays, category: Tags, advances: HandCoins, rent: Home };
 // wide tables go across the page
 const LANDSCAPE: ReportKind[] = ["advances", "rent"];
 
@@ -36,10 +36,11 @@ export default function AccountsReportsPage() {
   const [withEnded, setWithEnded] = useState(false);
   // "" is every cashier; otherwise a cashier's user id
   const [cashierId, setCashierId] = useState("");
+  const [category, setCategory] = useState(CATEGORIES[0]?.key ?? "");
   const seesAll = can(admin?.perms, "accounts.all");
 
   const range = useMemo(
-    () => (kind === "daily" ? { from: date, to: date } : kind === "period" ? { from, to } : { from: today, to: today }),
+    () => (kind === "daily" ? { from: date, to: date } : kind === "period" || kind === "category" ? { from, to } : { from: today, to: today }),
     [kind, date, from, to, today],
   );
   const acc = useAccounts(range);
@@ -60,9 +61,10 @@ export default function AccountsReportsPage() {
     const who = own ? admin?.name : picked ? cashiers.find(([id]) => id === picked)?.[1] ?? "" : undefined;
     if (kind === "daily") return dailyReport(txns, date, who);
     if (kind === "period") return periodReport(txns, from, to, who);
+    if (kind === "category") return categoryReport(txns, category, from, to, who);
     if (kind === "advances") return advancesReport(acc.advances, owingOnly, today);
     return rentReport(acc.tenancies, acc.housingTypes, !withEnded, today);
-  }, [acc.loaded, acc.transactions, acc.advances, acc.tenancies, acc.housingTypes, kind, date, from, to, owingOnly, withEnded, today, seesAll, cashierId, cashiers, admin?.name]);
+  }, [acc.loaded, acc.transactions, acc.advances, acc.tenancies, acc.housingTypes, kind, date, from, to, category, owingOnly, withEnded, today, seesAll, cashierId, cashiers, admin?.name]);
 
   const generatedAt = new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   const generatedBy = admin?.name ?? "";
@@ -123,7 +125,20 @@ export default function AccountsReportsPage() {
               <DatePicker value={date} max={today} ariaLabel="Day" clearable={false} onChange={setDate} />
             </label>
           )}
-          {kind === "period" && (
+          {kind === "category" && (
+            <label className="po-field" style={{ width: 280 }}>
+              <span className="po-label">Category</span>
+              <select className="po-select" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category">
+                <optgroup label="Cash receipts">
+                  {CATEGORIES.filter((c) => c.direction === "in").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </optgroup>
+                <optgroup label="Disbursements">
+                  {CATEGORIES.filter((c) => c.direction === "out").map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </optgroup>
+              </select>
+            </label>
+          )}
+          {(kind === "period" || kind === "category") && (
             <>
               <label className="po-field" style={{ width: 180 }}>
                 <span className="po-label">From</span>
@@ -135,7 +150,7 @@ export default function AccountsReportsPage() {
               </label>
             </>
           )}
-          {(kind === "daily" || kind === "period") && (
+          {(kind === "daily" || kind === "period" || kind === "category") && (
             seesAll ? (
               <label className="po-field" style={{ width: 220 }}>
                 <span className="po-label">Cashier</span>

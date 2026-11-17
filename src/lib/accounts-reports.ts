@@ -3,16 +3,17 @@
 // Money is in pesewas throughout, like the rest of the accounts code.
 
 import {
-  categoryLabel, CATEGORIES, maskGhanaCard, monthLabel,
+  categoryLabel, CATEGORIES, detailRows, maskGhanaCard, monthLabel,
   type AccAdvance, type AccHousingType, type AccTenancy, type AccTransaction,
 } from "@/lib/accounts";
 import type { XRow, XSheet, XStyle } from "@/lib/xlsx";
 
-export type ReportKind = "daily" | "period" | "advances" | "rent";
+export type ReportKind = "daily" | "period" | "category" | "advances" | "rent";
 
 export const REPORT_KINDS: { id: ReportKind; label: string; hint: string }[] = [
   { id: "daily", label: "Daily cash report", hint: "One day's collections and payments, for close of day" },
   { id: "period", label: "Period summary", hint: "Totals by category, cashier and day for any dates" },
+  { id: "category", label: "Category report", hint: "One item, such as Mortuary or OPD card, in detail for any dates" },
   { id: "advances", label: "Salary advances", hint: "What each staff member was given, has repaid and still owes" },
   { id: "rent", label: "Staff rent", hint: "Each tenancy's rent due, paid, arrears and months ahead" },
 ];
@@ -95,7 +96,7 @@ function cashStats(valid: AccTransaction[], voided: AccTransaction[]) {
         { label: "Net cash", value: collected - paid, kind: "money" as const, note: "Collected less paid out" },
         { label: "Receipts", value: inn.length, kind: "count" as const },
         { label: "Payment vouchers", value: out.length, kind: "count" as const },
-        { label: "Voided", value: voided.length, kind: "count" as const, note: "Not in the totals" },
+        { label: "Reversed", value: voided.length, kind: "count" as const, note: "Not in the totals" },
       ],
     },
   };
@@ -109,13 +110,13 @@ const CASHIER_COLS: Col[] = [
 
 function voidedTable(voided: AccTransaction[]): Section {
   return {
-    type: "table", title: "Voided receipts and vouchers", sheet: "Voided",
+    type: "table", title: "Reversed transactions", sheet: "Reversed",
     cols: [
       { label: "No.", width: 18 }, { label: "Category", width: 30 }, { label: "Amount (GHS)", kind: "money", width: 14 },
-      { label: "Reason", width: 36 }, { label: "Voided by", width: 22 },
+      { label: "Reason", width: 36 }, { label: "Reversed by", width: 22 },
     ],
     rows: voided.map((t) => [t.receiptNo, categoryLabel(t.category), t.amount, t.voidReason ?? "", t.voidedBy ?? ""]),
-    empty: "None voided.",
+    empty: "None reversed.",
   };
 }
 
@@ -141,8 +142,8 @@ export function dailyReport(all: AccTransaction[], date: string, cashier?: strin
     signOff: ["Cashier", "Accountant", "Date received"],
     sections: [
       stats.section,
-      { type: "table", title: "Money in by category", sheet: "Money in", cols: CATEGORY_COLS, rows: inn.rows, total: inn.total, empty: "Nothing collected." },
-      { type: "table", title: "Money out by category", sheet: "Money out", cols: CATEGORY_COLS, rows: out.rows, total: out.total, empty: "Nothing paid out." },
+      { type: "table", title: "Cash Receipts by Category", sheet: "Cash receipts", cols: CATEGORY_COLS, rows: inn.rows, total: inn.total, empty: "Nothing collected." },
+      { type: "table", title: "Disbursements by Category", sheet: "Disbursements", cols: CATEGORY_COLS, rows: out.rows, total: out.total, empty: "Nothing paid out." },
       { type: "table", title: "By cashier", sheet: "By cashier", cols: CASHIER_COLS, rows: byCashier(valid), empty: "No cashier activity." },
       {
         type: "table", title: "Receipts and vouchers", sheet: "Receipts and vouchers",
@@ -191,8 +192,8 @@ export function periodReport(all: AccTransaction[], from: string, to: string, ca
     signOff: ["Prepared by", "Checked by"],
     sections: [
       stats.section,
-      { type: "table", title: "Money in by category", sheet: "Money in", cols: CATEGORY_COLS, rows: inn.rows, total: inn.total, empty: "Nothing collected." },
-      { type: "table", title: "Money out by category", sheet: "Money out", cols: CATEGORY_COLS, rows: out.rows, total: out.total, empty: "Nothing paid out." },
+      { type: "table", title: "Cash Receipts by Category", sheet: "Cash receipts", cols: CATEGORY_COLS, rows: inn.rows, total: inn.total, empty: "Nothing collected." },
+      { type: "table", title: "Disbursements by Category", sheet: "Disbursements", cols: CATEGORY_COLS, rows: out.rows, total: out.total, empty: "Nothing paid out." },
       { type: "table", title: "By cashier", sheet: "By cashier", cols: CASHIER_COLS, rows: byCashier(valid), empty: "No cashier activity." },
       {
         type: "table", title: "Day by day", sheet: "Day by day",
@@ -203,6 +204,84 @@ export function periodReport(all: AccTransaction[], from: string, to: string, ca
         rows: dayRows,
         total: ["Total", inn.total[1], stats.collected, out.total[1], stats.paid, stats.collected - stats.paid],
         empty: "No receipts or vouchers in this period.",
+      },
+      voidedTable(voided),
+    ],
+  };
+}
+
+/* ── One category ──────────────────────────────────────────── */
+
+export function categoryReport(all: AccTransaction[], category: string, from: string, to: string, cashier?: string): Report {
+  const txns = all
+    .filter((t) => t.category === category && day(t.createdAt) >= from && day(t.createdAt) <= to)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const valid = txns.filter((t) => t.status !== "voided");
+  const voided = txns.filter((t) => t.status === "voided");
+  const out = CATEGORIES.find((c) => c.key === category)?.direction === "out";
+  const label = categoryLabel(category);
+  const total = valid.reduce((n, t) => n + t.amount, 0);
+  const amounts = valid.map((t) => t.amount);
+  const what = out ? "Payment vouchers" : "Receipts";
+  const money = out ? "Paid out (GHS)" : "Collected (GHS)";
+
+  const cashiers = sumBy(valid, (t) => t.cashier || "Unknown", (t) => t.amount);
+  const days = sumBy(valid, (t) => day(t.createdAt), (t) => t.amount);
+  // some older records hold the word "null" as their note
+  const note = (t: AccTransaction) => (t.description && t.description.trim().toLowerCase() !== "null" ? `Note: ${t.description.trim()}` : "");
+  const showDetails = valid.some((t) => detailRows(t).length || note(t));
+
+  return {
+    kind: "category",
+    title: `${out ? "Disbursements" : "Cash receipts"}: ${label}${cashier ? `, ${cashier}` : ""}`,
+    period: from === to ? longDate(from) : `${shortDate(from)} to ${shortDate(to)}`,
+    count: txns.length,
+    fileName: `sech-${slug(label)}-${from}-to-${to}${cashier ? `-${slug(cashier)}` : ""}`,
+    signOff: ["Prepared by", "Checked by"],
+    sections: [
+      {
+        type: "stats",
+        items: [
+          { label: out ? "Paid out" : "Collected", value: total, kind: "money" },
+          { label: what, value: valid.length, kind: "count" },
+          { label: "Average", value: valid.length ? Math.round(total / valid.length) : 0, kind: "money", note: `Per ${out ? "voucher" : "receipt"}` },
+          { label: "Largest", value: amounts.length ? Math.max(...amounts) : 0, kind: "money" },
+          { label: "Smallest", value: amounts.length ? Math.min(...amounts) : 0, kind: "money" },
+          { label: "Reversed", value: voided.length, kind: "count", note: "Not in the totals" },
+        ],
+      },
+      {
+        type: "table", title: "By cashier", sheet: "By cashier",
+        cols: [{ label: "Cashier", width: 28 }, { label: what, kind: "count", width: 12 }, { label: money, kind: "money", width: 16 }],
+        rows: Array.from(cashiers.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([n, r]) => [n, r.count, r.total]),
+        total: ["Total", valid.length, total],
+        empty: "No cashier activity.",
+      },
+      {
+        type: "table", title: "Day by day", sheet: "Day by day",
+        cols: [{ label: "Date", width: 14 }, { label: what, kind: "count", width: 12 }, { label: money, kind: "money", width: 16 }],
+        rows: Array.from(days.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([d, r]) => [shortDate(d), r.count, r.total]),
+        total: ["Total", valid.length, total],
+        empty: `No ${what.toLowerCase()} in these dates.`,
+      },
+      {
+        type: "table", title: out ? "Payment vouchers" : "Receipts", sheet: out ? "Vouchers" : "Receipts",
+        cols: [
+          { label: "Date", width: 13 }, { label: "No.", width: 17 },
+          ...(out ? [{ label: "Hospital PV", width: 16 }] : []),
+          { label: out ? "Paid to" : "Received from", width: 28 },
+          ...(showDetails ? [{ label: "Details", width: 40 }] : []),
+          { label: "Amount (GHS)", kind: "money" as const, width: 14 }, { label: "Cashier", width: 22 },
+        ],
+        rows: valid.map((t) => [
+          `${shortDate(day(t.createdAt))} ${time(t.createdAt)}`, t.receiptNo,
+          ...(out ? [t.manualRef ?? ""] : []),
+          t.party,
+          ...(showDetails ? [[...detailRows(t).map(([k, v]) => `${k}: ${v}`), note(t)].filter(Boolean).join("; ")] : []),
+          t.amount, t.cashier,
+        ]),
+        total: ["Total", null, ...(out ? [null] : []), null, ...(showDetails ? [null] : []), total, null],
+        empty: `No ${what.toLowerCase()} in these dates.`,
       },
       voidedTable(voided),
     ],

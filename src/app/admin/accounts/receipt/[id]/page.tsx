@@ -57,7 +57,7 @@ const PRINT_CSS = `
 .rc-a5 .rc-amount { margin: 5mm 0 2mm; padding: 3mm 4mm; border: 2px solid #000; font-size: 19px; }
 .rc-a5 .rc-words { font-size: 13px; margin-bottom: 4mm; }
 .rc-a5 .rc-sign { margin-top: 18mm; gap: 16mm; font-size: 12px; }
-.rc-a5 .rc-void { font-size: 80px; }
+.rc-a5 .rc-void { font-size: 64px; }
 .rc-a5 .rc-reprint b { font-size: 14px; padding: 1mm 5mm; }
 .rc-a5 .rc-reprint small { font-size: 11px; }
 .rc-a5 .rc-foot { margin-top: 6mm !important; font-size: 11.5px; }
@@ -168,7 +168,7 @@ export default function ReceiptPage() {
       {t && (
         <div className="rc-wrap">
           <div className={`rc-slip${paper === "a5" ? " rc-a5" : ""}`}>
-            {t.status === "voided" && <div className="rc-void">VOID</div>}
+            {t.status === "voided" && <div className="rc-void">REVERSED</div>}
             <div className="rc-head">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/images/logo.png" alt="" width={46} height={46} />
@@ -209,7 +209,7 @@ export default function ReceiptPage() {
             <div className="rc-row"><span>Method</span><span>Cash</span></div>
             <div className="rc-row"><span>Cashier</span><span>{t.cashier}</span></div>
             {t.status === "voided" && (
-              <div className="rc-row"><span>Voided</span><span>{t.voidReason}</span></div>
+              <div className="rc-row"><span>Reversed</span><span>{t.voidReason}</span></div>
             )}
 
             <div className="rc-sign">

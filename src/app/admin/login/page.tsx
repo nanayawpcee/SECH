@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -46,8 +46,15 @@ export default function AdminLoginPage() {
     try { flagged = sessionStorage.getItem(IDLE_SIGNOUT_KEY) === "1"; } catch {}
     return flagged || new URLSearchParams(window.location.search).get("idle") === "1";
   });
+  const identifierRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const leaveIdle = useCallback(() => {
     setIdle(false);
+    // the sheet is gone: put the cursor where the person will type next
+    requestAnimationFrame(() => {
+      const id = identifierRef.current;
+      (id && id.value.trim() ? passwordRef.current : id)?.focus();
+    });
     try { sessionStorage.removeItem(IDLE_SIGNOUT_KEY); } catch {}
     const url = new URL(window.location.href);
     url.searchParams.delete("idle");
@@ -172,12 +179,14 @@ export default function AdminLoginPage() {
                 <UserRound size={16} />
                 <input
                   className="po-input lg-input"
+                  ref={identifierRef}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   autoComplete="username"
                   autoCapitalize="none"
                   spellCheck={false}
-                  autoFocus
+                  // not while the idle screen is up, or the key that peels it would type here
+                  autoFocus={!idle}
                   placeholder="admin@sech-gh.org"
                 />
               </div>
@@ -188,6 +197,7 @@ export default function AdminLoginPage() {
               <div className="po-input-wrap">
                 <Lock size={16} />
                 <input
+                  ref={passwordRef}
                   className="po-input lg-input"
                   type={showPass ? "text" : "password"}
                   value={password}

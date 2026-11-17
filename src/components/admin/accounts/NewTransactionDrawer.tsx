@@ -204,7 +204,7 @@ export function NewTransactionDrawer({
                 <div style={{ fontSize: 17, fontWeight: 750, color: "var(--po-text)" }}>
                   {cat?.direction === "out" ? "New payment voucher" : "New receipt"}
                 </div>
-                <div className="po-cell-sub">Cash. Once saved it can only be voided, not edited.</div>
+                <div className="po-cell-sub">Cash. Once saved it can only be reversed, not edited.</div>
               </div>
               <button type="button" className="po-btn po-btn--ghost po-btn--icon" onClick={onClose} aria-label="Close" disabled={saving}><X size={18} /></button>
             </div>

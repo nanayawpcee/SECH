@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   ArrowDownLeft,
   ArrowUpRight,
-  Ban,
+  Undo2,
   ClipboardList,
   Download,
   HandCoins,
@@ -116,12 +116,12 @@ export default function AccountsPage() {
 
   const doVoid = async () => {
     if (!toVoid) return;
-    if (voidReason.trim().length < 5) return addToast("Give a reason for voiding.", "warn");
+    if (voidReason.trim().length < 5) return addToast("Give a reason for the reversal.", "warn");
     setVoiding(true);
     const r = await acc.voidTxn(toVoid.databaseId, voidReason.trim());
     setVoiding(false);
     if (!r.ok) return addToast(r.error, "danger");
-    addToast(`${toVoid.receiptNo} voided`);
+    addToast(`${toVoid.receiptNo} reversed`);
     setToVoid(null);
     setVoidReason("");
   };
@@ -132,11 +132,11 @@ export default function AccountsPage() {
     if (!r.ok) return addToast(r.error, "danger");
     downloadCsv(`sech-accounts-${range.from}-to-${range.to}.csv`,
       ["Receipt no", "Hospital voucher no", "Date", "In/Out", "Category", "Received from / paid to", "Department or unit", "Ghana Card (masked)", "Phone",
-        "Amount (GHS)", "Details", "Note", "Cashier", "Status", "Void reason"],
+        "Amount (GHS)", "Details", "Note", "Cashier", "Status", "Reversal reason"],
       shown.map((t) => [
         t.receiptNo, t.manualRef ?? "", new Date(t.createdAt).toLocaleString("en-GB"), t.direction === "in" ? "In" : "Out", categoryLabel(t.category),
         t.party, t.department ?? "", maskGhanaCard(t.ghanaCard), t.phone ?? "", (t.amount / 100).toFixed(2), detailRows(t).map(([k, v]) => `${k}: ${v}`).join("; "),
-        t.description ?? "", t.cashier, t.status === "voided" ? "Void" : "Valid", t.voidReason ?? "",
+        t.description ?? "", t.cashier, t.status === "voided" ? "Reversed" : "Valid", t.voidReason ?? "",
       ]));
     addToast(`Exported ${shown.length} record${shown.length === 1 ? "" : "s"}. Keep the file safe and delete it when done.`);
   };
@@ -243,7 +243,7 @@ export default function AccountsPage() {
             {CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
           </select>
           <label style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
-            <input type="checkbox" checked={showVoid} onChange={(e) => setShowVoid(e.target.checked)} />Show voided
+            <input type="checkbox" checked={showVoid} onChange={(e) => setShowVoid(e.target.checked)} />Show reversed
           </label>
         </div>
 
@@ -267,7 +267,7 @@ export default function AccountsPage() {
                     </td>
                     <td>
                       {categoryLabel(t.category)}
-                      {t.status === "voided" && <div style={{ marginTop: 4 }}><Chip tone="danger">Void</Chip></div>}
+                      {t.status === "voided" && <div style={{ marginTop: 4 }}><Chip tone="danger">Reversed</Chip></div>}
                     </td>
                     <td>
                       <div className="po-cell-main">{t.party}</div>
@@ -285,8 +285,8 @@ export default function AccountsPage() {
                           <Printer size={14} />
                         </Link>
                         {t.status === "valid" && mayVoid && (
-                          <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToVoid(t)} aria-label={`Void ${t.receiptNo}`}>
-                            <Ban size={14} />
+                          <button type="button" className="po-btn po-btn--sm po-btn--ghost" onClick={() => setToVoid(t)} aria-label={`Reverse transaction ${t.receiptNo}`} title="Reverse transaction">
+                            <Undo2 size={14} />
                           </button>
                         )}
                       </div>
@@ -331,17 +331,17 @@ export default function AccountsPage() {
 
       <ConfirmDialog
         open={!!toVoid}
-        title={`Void ${toVoid?.receiptNo ?? ""}?`}
-        icon={Ban}
+        title={`Reverse transaction ${toVoid?.receiptNo ?? ""}?`}
+        icon={Undo2}
         busy={voiding}
-        confirmLabel="Void"
+        confirmLabel="Reverse transaction"
         text={<>
           <p style={{ margin: "0 0 10px" }}>
-            {toVoid ? `${categoryLabel(toVoid.category)}, ${formatMoney(toVoid.amount)}, ${toVoid.party}.` : ""} The record stays, marked void,
+            {toVoid ? `${categoryLabel(toVoid.category)}, ${formatMoney(toVoid.amount)}, ${toVoid.party}.` : ""} The record stays, marked reversed,
             and no longer counts in the totals. This can’t be undone.
           </p>
           <textarea className="po-input" rows={3} placeholder="Reason, e.g. wrong amount entered" value={voidReason}
-            onChange={(e) => setVoidReason(e.target.value)} maxLength={300} aria-label="Reason for voiding" style={{ width: "100%" }} />
+            onChange={(e) => setVoidReason(e.target.value)} maxLength={300} aria-label="Reason for the reversal" style={{ width: "100%" }} />
         </>}
         onConfirm={doVoid}
         onCancel={closeVoid}

@@ -7,6 +7,7 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 import { phoneProblem } from "@/lib/phone";
 import { normalizeGhanaCard } from "@/lib/accounts";
 import { SecretField } from "@/components/admin/RevealPin";
+import { NameFields } from "./NameFields";
 import {
   GHANA_REGIONS,
   MARITAL_STATUSES,
@@ -101,7 +102,9 @@ function ListEditor<T extends { [K in keyof T]: string }>({ k, get, set, blank, 
   );
 }
 
-export function EmployeeBiodata({ get, set, showErrors, myName, ids }: { get: Get; set: Set; showErrors: boolean; myName: string; ids: IdFields }) {
+export function EmployeeBiodata({ get, set, showErrors, myName, ids, isNew = false }: {
+  get: Get; set: Set; showErrors: boolean; myName: string; ids: IdFields; isNew?: boolean;
+}) {
   const card = get("ghanaCard");
   const cardOk = !card.trim() || !!normalizeGhanaCard(card);
   const married = get("maritalStatus") === "married";
@@ -109,6 +112,9 @@ export function EmployeeBiodata({ get, set, showErrors, myName, ids }: { get: Ge
   return (
     <>
       <p className="st-note"><Info size={14} />From HR’s new staff forms: the CHST family and personal records form, and the SECH new employee form. Keep the signed paper forms and certificates on file.</p>
+
+      <h3 className="st-h">Name</h3>
+      <NameFields get={get} set={set} autoFocus={isNew && !get("firstName")} />
 
       <h3 className="st-h">Personal details</h3>
       <div className="st-grid">

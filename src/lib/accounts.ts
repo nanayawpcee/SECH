@@ -2,11 +2,11 @@ export type Direction = "in" | "out";
 
 /** Accounts permissions an administrator gives each accounts officer. Keep in step with sech_acc_permissions() in the plugin. */
 export const ACCOUNTS_PERMISSIONS = [
-  { key: "void", perm: "accounts.void", short: "Void", label: "Void receipts and vouchers", description: "Cancel a saved receipt or payment voucher, with a reason." },
+  { key: "void", perm: "accounts.void", short: "Reverse", label: "Reverse transactions", description: "Reverse a saved receipt or payment voucher, with a reason. The record stays, marked reversed." },
   { key: "payout", perm: "accounts.payout", short: "Pay out", label: "Pay out money", description: "Issue payment vouchers: salary advances, client refunds and other payments." },
   { key: "reports", perm: "accounts.reports", short: "Reports", label: "Reports and exports", description: "The Reports page, Excel downloads and the CSV export." },
   { key: "rent", perm: "accounts.rent", short: "Rent setup", label: "Rent and housing setup", description: "Add or change tenancies, and housing types and their rates." },
-  { key: "all", perm: "accounts.all", short: "All cashiers", label: "See everyone’s collections", description: "See, reprint and void every cashier’s receipts and vouchers, and report on any cashier. Without it they see only what they issued." },
+  { key: "all", perm: "accounts.all", short: "All cashiers", label: "See everyone’s collections", description: "See, reprint and reverse every cashier’s receipts and vouchers, and report on any cashier. Without it they see only what they issued." },
 ] as const;
 export type AccountsPermissionKey = (typeof ACCOUNTS_PERMISSIONS)[number]["key"];
 
@@ -375,7 +375,7 @@ export const ACC_AUDIT_QUERY = `query AccAudit($first: Int) { accAudit(first: $f
 export const ACC_AUDIT_ACTIONS: Record<string, string> = {
   viewed: "Opened transactions",
   recorded: "Recorded",
-  voided: "Voided",
+  voided: "Reversed transaction",
   permissions: "Changed accounts access",
   printed: "Printed receipt",
   reprinted: "Reprinted receipt",
